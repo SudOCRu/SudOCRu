@@ -1,15 +1,16 @@
 #pragma once
 
-struct Sudoku {
-    char* board;
+typedef unsigned char u8;
+typedef struct Sudoku {
+    u8* board;
     size_t cols;
     size_t rows;
-}
+} Sudoku;
 
 /*
  * Initializes a new Sudoku board.
  */
-Sudoku* CreateSudoku(char* array, size_t cols, size_t rows);
+Sudoku* CreateSudoku(u8* array, size_t cols, size_t rows);
 
 /*
  * Destroys of the provided Sudoku board.
@@ -21,7 +22,7 @@ void DestroySudoku(Sudoku* board);
  * function returns NULL if the board couldn't be loaded or the file does not
  * exist.
  */
-Sodoku* ImportSudoku(char* in_file);
+Sudoku* ImportSudoku(char* in_file);
 /*
  * Save a Sudoku board to a given file using the EPITA format (9x9). This 
  * function returns 0 (false) if the board couldn't be saved.
