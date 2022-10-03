@@ -3,8 +3,8 @@ TARGET := ipp
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
-CFLAGS = `pkg-config --cflags sdl2`
-LDFLAGS := `pkg-config --libs sdl2`
+CFLAGS = `pkg-config --cflags sdl2 SDL2_image`
+LDFLAGS := `pkg-config --libs sdl2 SDL2_image`
 LDLIBS :=  $(addprefix -l,\
 	m \
 )
@@ -19,12 +19,19 @@ else
 	CPPFLAGS += -DDEBUG
 endif
 
+TEST := 0
+ifneq ($(TEST), 0)
+	TEST_FILES_OPTS = -not -name "main.c"
+else
+	TEST_FILES_OPTS = -not -name "test[0-9]*.c"
+endif
+
 INDIRS := $(addprefix -I, \
 	src \
 	src/utils \
 )
 
-CFILES := $(shell find . -name "*.c")
+CFILES := $(shell find . -name "*.c" $(TEST_FILES_OPTS))
 OFILES := $(CFILES:%.c=$(BUILD)/%.o)
 DFILES := $(OFILES:%.o=%.d)
 

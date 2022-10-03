@@ -1,20 +1,62 @@
 #pragma once
 #include <stddef.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 typedef struct Image {
-    int* pixels;
+    unsigned int* pixels;
     size_t width;
     size_t height;
 } Image;
 
-/* Loads an image from a file using SDL */
-Image* LoadImageFile(char* path);
-/* Loads an image from a RGB buffer */
-Image* LoadRawImage(int* rgb, size_t width, size_t height);
+typedef enum ImageStatus
+{
+    ImageOk = 0,
+    LoadError = 1,
+    FormatError = 2,
+    AllocError = 3
+} ImageStatus;
+
+/* Loads an image from a file using SDL and copies its surface pixels to a new
+ * pixel array stored in the Image struct. Do not forgot to call DestroyImage
+ * to free up the allocated memory. The path string must be a valid string. 
+ * Returns NULL if an error occured.
+ *
+ * The variable out_status returns if the function succeded (ImageOk) or failed
+ * (else), it is safe to pass NULl for no image status information.
+ * */
+Image* LoadImageFile(const char* path, ImageStatus* out_status);
+
+/* Saves the `src` image to the `dest` file using SDL. The dest string must be
+ * a valid string. If the operation fails this function returns 0 (false), 1
+ * otherwise (true). 
+ */
+int SaveImageFile(const Image* src, const char* dest);
+
+/* Loads an image from a RGB buffer without copying the pixels in a new 
+ * buffer. Do not forgot to call DestroyImage to free up the allocated memory. 
+ * Returns NULL if an error occured.
+ *
+ * The variable out_status returns if the function succeded (ImageOk) or failed
+ * (else), it is safe to pass NULl for no image status information.
+ * */
+Image* LoadRawImage(unsigned int* rgb, size_t w, size_t h, 
+        ImageStatus* out_status);
+
+/* Loads an image from a RGB buffer and copies the pixels in a new 
+ * buffer. Do not forgot to call DestroyImage to free up the allocated memory. 
+ * Returns NULL if an error occured.
+ *
+ * The variable out_status returns if the function succeded (ImageOk) or failed
+ * (else), it is safe to pass NULl for no image status information.
+ * */
+Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h, 
+        ImageStatus* out_status);
 
 /* Rotate the given image by `angle` rads and fills the missing pixels by
  * the `fill` color */
 void RotateImage(Image* image, double angle, int fill);
 
-/* Destroys (free the memory) the loaded Image */
+/* Destroys (free the memory) the loaded Image.
+ * It is safe to pass NULL to this function. */
 void DestroyImage(Image* image);
