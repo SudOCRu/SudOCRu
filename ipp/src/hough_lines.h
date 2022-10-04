@@ -1,8 +1,7 @@
 #pragma once
 #include "image.h"
 
-#define MAX_LINES 4096
-#define MAX_RECTS 256
+#define MAX_LINES 256
 
 typedef struct Point {
     unsigned int x;
@@ -10,8 +9,8 @@ typedef struct Point {
 } Point;
 
 typedef struct Line {
-    Point p1;
-    Point p2;
+    double rho;
+    double theta;
 } Line;
 
 typedef struct Rect {
@@ -26,7 +25,8 @@ typedef struct SudokuGrid {
     double angle;
 } SudokuGrid;
 
-Line** HoughLines(const Image* image, int* found_count);
+Line** HoughLines(const Image* image, size_t* found_count);
+void FreeLines(Line** lines, size_t len);
 Rect** FindRects(const Image* image, int* found_count);
 void RenderLines(Image* image, unsigned int color, Line** lines, int len);
 
