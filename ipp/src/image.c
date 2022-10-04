@@ -1,6 +1,36 @@
 #include "image.h"
 #include <err.h>
 
+Image* CreateImage(unsigned int col, size_t w, size_t h,
+        ImageStatus* out_status)
+{
+    size_t len = w * h;
+    unsigned int* out_pixels = malloc(len * sizeof(unsigned int));
+
+    if (out_pixels == NULL)
+    {
+        if (out_status != NULL) *out_status = AllocError;
+        return NULL;
+    }
+    for(size_t i = 0; i < len; i++)
+    {
+        out_pixels[i] = col;
+    }
+
+    Image* img = malloc(sizeof(Image));
+    if (img == NULL)
+    {
+        if (out_status != NULL) *out_status = AllocError;
+        return NULL;
+    }
+    img->width = w;
+    img->height = h;
+    img->pixels = out_pixels;
+
+    if (out_status != NULL) *out_status = ImageOk;
+    return NULL;
+}
+
 Image* LoadImageFile(const char* path, ImageStatus* out_status)
 {
     SDL_Surface* surf = IMG_Load(path);

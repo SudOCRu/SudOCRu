@@ -24,7 +24,7 @@ typedef struct Rect {
 typedef struct SudokuGrid {
     Rect bounds;
     double angle;
-} Board;
+} SudokuGrid;
 
 Line** HoughLines(const Image* image, int* found_count);
 Rect** FindRects(const Image* image, int* found_count);
