@@ -28,7 +28,7 @@ Image* CreateImage(unsigned int col, size_t w, size_t h,
     img->pixels = out_pixels;
 
     if (out_status != NULL) *out_status = ImageOk;
-    return NULL;
+    return img;
 }
 
 Image* LoadImageFile(const char* path, ImageStatus* out_status)
@@ -119,7 +119,7 @@ Image* LoadRawImage(unsigned int* rgb, size_t w, size_t h,
     img->pixels = rgb;
 
     if (out_status != NULL) *out_status = ImageOk;
-    return NULL;
+    return img;
 }
 
 Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h,
@@ -146,7 +146,7 @@ Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h,
     img->pixels = out_pixels;
 
     if (out_status != NULL) *out_status = ImageOk;
-    return NULL;
+    return img;
 }
 
 void RotateImage(Image* image, double angle, int fill)
