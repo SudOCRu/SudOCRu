@@ -62,11 +62,14 @@ Line** HoughLines(const Image* img, size_t* found_count)
             {
                 double theta = x * theta_step;
                 double p = (double)y - hsp_height / 2;
-                out_lines[lines] = LineFrom(theta, p);
-                lines++;
+                out_lines[lines++] = LineFrom(theta, p);
+                if (lines == MAX_LINES)
+                    break;
             }
             acc[i] *= 100;
         }
+        if (lines == MAX_LINES)
+            break;
     }
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
