@@ -26,12 +26,15 @@ int main(int argc, char** argv)
 
         size_t len = 0;
 
-        Line** lines = HoughLines(img, &len);
+        Line** lines = HoughLines(img, &len, WHITE_EDGE,
+                THETA_STEPS, -75);
         for(size_t i = 0; i < len; i++)
         {
             Line* l = lines[i];
-            printf("Line%lu: theta = %f; rho = %f\n", i, l->theta, l->rho);
+            printf("%lu: theta = %f; rho = %f => y = %fx + %f\n",
+                    i, l->theta, l->rho, l->a, l->b);
         }
+        RenderLines(img, 0xFF0000, lines, len);
         FreeLines(lines, len);
 
         if (SaveImageFile(img, "out.png"))
