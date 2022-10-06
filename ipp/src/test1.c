@@ -8,8 +8,8 @@
 
 int main(int argc, char** argv)
 {
-    if (argc != 2)
-        errx(EXIT_FAILURE, "Usage: ipp <image_file_path>");
+    if (argc < 2)
+        errx(EXIT_FAILURE, "Usage: ipp <image_file_path> [white_edge]");
 
     // Initializes the SDL.
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -26,8 +26,9 @@ int main(int argc, char** argv)
 
         size_t len = 0;
 
-        Line** lines = HoughLines(img, &len, WHITE_EDGE,
-                THETA_STEPS, -75);
+        int white_edge = argc >= 3 ? argv[2][0] == '1' : WHITE_EDGE;
+        Line** lines = HoughLines(img, &len, white_edge,
+                THETA_STEPS, -70);
         /*
         for(size_t i = 0; i < len; i++)
         {
@@ -36,7 +37,10 @@ int main(int argc, char** argv)
                     i, l->theta, l->rho, l->a, l->b);
         }
         */
-        RenderLines(img, 0xFF0000, lines, len);
+        RenderLines(img, 0x0000FF, lines, len);
+        size_t fil_len = 0;
+        Line** filtered = AverageLines(lines, len, &fil_len);
+        RenderLines(img, 0xFF0000, filtered, fil_len);
         FreeLines(lines, len);
 
         if (SaveImageFile(img, "out.png"))

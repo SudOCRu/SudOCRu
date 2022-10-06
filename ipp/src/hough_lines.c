@@ -1,36 +1,34 @@
 #include "hough_lines.h"
 #include <math.h>
-#include <sys/time.h>
 
-Line* LineFrom(double theta, double rho, double a, double b)
+Line* LineFrom(double theta, double rho, double x1, double y1, double
+        x2, double y2)
 {
     Line* l = (Line*) malloc(sizeof(Line));
     l->theta = theta;
     l->rho = rho;
-    l->a = a;
-    l->b = b;
+    l->x1 = x1;
+    l->y1 = y1;
+    l->x2 = x2;
+    l->y2 = y2;
     return l;
 }
 
 Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
         size_t theta_steps, int threshold)
 {
-    struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-
     double dtheta = M_PI/theta_steps;
     size_t w = img->width, h = img->height;
     int hsp_width = theta_steps; // M_PI / dtheta
     int hsp_height = (int)ceil(sqrt(w*w + h*h))*2;
 
+    // Pre-generate sin, cos, 1/sin tables for faster computation.
     double sin_t[hsp_width];
-    double isin_t[hsp_width];
     double cos_t[hsp_width];
     size_t col = 0;
-    for(double th = 0; col < hsp_width; th += dtheta, col++)
+    for(double th = 0; col < hsp_width; col++, th += dtheta)
     {
         sin_t[col] = sin(th);
-        isin_t[col] = 1.0/sin_t[col];
         cos_t[col] = cos(th);
     }
 
@@ -68,45 +66,73 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
     {
         threshold = max * -threshold / 100;
     }
-    /*unsigned int threshold = (unsigned int) round(max * 0.75);*/
     for(size_t y = 0; y < hsp_height; y++)
     {
         for(size_t x = 0; x < hsp_width; x++)
         {
             size_t i = y * hsp_width + x;
-            if (acc[i] > threshold)
+            if (acc[i] >= threshold)
             {
-                double theta = x * dtheta;
                 double p = (double)y - hsp_height / 2;
-                double a = -cos_t[x] * isin_t[x];
-                double b = p * isin_t[x];
-                out_lines[lines++] = LineFrom(theta, p, a, b);
+                double x0 = cos_t[x] * p;
+                double y0 = sin_t[x] * p;
+                double a = -1000*sin_t[x];
+                double b = 1000*cos_t[x];
+                out_lines[lines++] = LineFrom(x * dtheta, p, 
+                        x0 + a, y0 + b, 
+                        x0 - a, y0 - b);
                 if (lines == MAX_LINES)
                     break;
             }
-            acc[i] *= 100;
+            //acc[i] *= 100; // better visualization in outpout image
         }
         if (lines == MAX_LINES)
             break;
     }
-    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
-    uint64_t delta_us = (end.tv_sec - start.tv_sec) * 1000000
-        + (end.tv_nsec - start.tv_nsec) / 1000;
-    printf("done in %fms\n", delta_us * 0.001);
-
-    printf("------\n");
-    printf("Nb lines: %lu\n", lines);
-    printf("Threshold: %u\n", threshold);
-    printf("Max: %u\n", max);
     /*
     printf("Accumulator saved as acc.png\n");
     SaveImageFile(accumulator, "acc.png");
     */
-    printf("------\n");
     DestroyImage(accumulator);
 
     *found_count = lines;
+    return out_lines;
+}
+
+Line** AverageLines(Line** lines, size_t len, size_t* out_len)
+{
+    double deltaT = 5 * M_PI / 180; // 5° tolerance
+    double deltaR = 15;
+    Line** out_lines = (Line**)malloc(MAX_LINES * sizeof(Line*));
+    size_t p = 0;
+
+    for(size_t i = 0; i < len; i++)
+    {
+        Line* candidate = lines[i];
+        int add = 1;
+        for(size_t j = 0; j < p; j++)
+        {
+            Line* other = out_lines[j];
+            if (fabs(candidate->theta - other->theta) < deltaT
+                    && fabs(candidate->rho - other->rho) < deltaR)
+            {
+                other->rho = (candidate->rho + other->rho) / 2;
+                other->theta = (candidate->theta + other->theta) / 2;
+                other->x1 = (candidate->x1 + other->x1) / 2;
+                other->y1 = (candidate->y1 + other->y1) / 2;
+                other->x2 = (candidate->x2 + other->x2) / 2;
+                other->y2 = (candidate->y2 + other->y2) / 2;
+                add = 0;
+                break;
+            }
+        }
+        if (add) {
+            if (p + 1 == MAX_LINES) break;
+            out_lines[p++] = candidate;
+        }
+    }
+    *out_len = p;
     return out_lines;
 }
 
@@ -159,21 +185,7 @@ void RenderLines(Image* image, unsigned int color, Line** lines, int len)
     for(size_t i = 0; i < len; i++)
     {
         Line* l = lines[i];
-        if (l->theta == 0)
-        {
-            if (l->rho >= 0 && l->rho <= h)
-            {
-                size_t x = (size_t)(l->rho);
-                for(size_t y = 0; y < h; y++)
-                {
-                    pix[y * w + x] = color;
-                }
-            }
-        }
-        else
-        {
-            int y1 = l->a * ((double)w - 1) + l->b;
-            DrawLine(pix, color, w, h, 0, (int)l->b, w - 1, y1);
-        }
+        DrawLine(pix, color, w, h, (int)l->x1, (int)l->y1, (int)l->x2,
+                (int)l->y2);
     }
 }
