@@ -44,21 +44,21 @@ Sudoku* ImportSudoku(char* in_file);
  *      - sudoku : Sudoku to save into file
  *      - out_file : Name of saved file that contains Sudoku grid
  */
-u8 SaveSudoku(const Sudoku* sudoku, char* out_file);
+int SaveSudoku(const Sudoku* sudoku, char* out_file);
 
 /*  > IsSudokuValid
  * Check if "sudoku" grid is valid (if it's solvable)
  * > Returns 0 (false) if the board is not valid, else 1 (true)
  *      - sudoku : Sudoku grid to check
  */
-u8 IsSudokuValid(const Sudoku* sudoku);
+int IsSudokuValid(const Sudoku* sudoku);
 
 /*  > IsSudokuSolved
  * Check if "sudoku" grid is solved (if the grid is filled of numbers != 0)
  * > Returns 0 (false) if the board not solved, else 1 (true)
  *      - sudoku : Sudoku grid to check
  */
-u8 IsSudokuSolved(const Sudoku* sudoku);
+int IsSudokuSolved(const Sudoku* sudoku);
 
 /*  > SolveSudoku
  * Solve Sudoku using back-tracking algorithm
