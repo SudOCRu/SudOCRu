@@ -65,4 +65,11 @@ int IsSudokuSolved(const Sudoku* sudoku);
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
  *      - sudoku : Sudoku grid to solve
  */
-Sudoku* SolveSudoku(const Sudoku* sudoku);
+Sudoku* SolveSudoku(Sudoku* sudoku);
+
+/*  > PrintSudoku
+ * Print the sudoku board
+ * > Returns *anything*
+ *      - sudoku : Sudoku grid to print
+ */
+void PrintBoard(const Sudoku* sudoku);

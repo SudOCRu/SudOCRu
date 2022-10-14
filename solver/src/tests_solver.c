@@ -179,22 +179,31 @@ int is_solution(const unsigned char* board, const Sudoku* sudoku){
 int main()
 {
     Sudoku* sudoku = CreateSudoku(board1, 9, 9);
+    PrintBoard(sudoku);
 
     // Import Sudoku from file
     //Sodoku* sudoku = ImportSudoku(argv[1]);
 
     if (sudoku->board == NULL) 
         errx(EXIT_FAILURE, "Error: Sudoku can't be loaded");
+
+    for (int i = 0; i < sudoku->cols*sudoku->rows; i++){
+        if (sudoku->board[i] != board1_s[i]) 
+            printf("index : %i is different : should be %u8 but it is %u8\n", i, board1_s[i], sudoku->board[i]);
+    }
+
     //if (!IsSudokuValid(sudoku)) 
     //    errx(EXIT_FAILURE, "Error: Sudoku can't be loaded (not solvable)");
 
-    Sudoku* sudoku_solved = 
-        (!IsSudokuSolved(sudoku) ? SolveSudoku(sudoku) : sudoku);
+    //Sudoku* sudoku_solved = 
+    //    (!IsSudokuSolved(sudoku) ? SolveSudoku(sudoku) : sudoku);
     
     // Check if Sudoku is solved
+    /*  
     if (sudoku_solved == NULL) // TODO in SolveSudoku
         errx(EXIT_FAILURE, "SudokuSolver : NOT SOLVED\n");
     else
         printf("SudokuSolver : Successfully Solved\n"); 
     return 0;
+    */
 }

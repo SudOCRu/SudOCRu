@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <err.h>
 #include "solver.h"
+#include "stdio.h"
 
 // ===========================================================================
 // -----------------------      Sudoku Treatment        ---------------------- 
@@ -71,10 +72,11 @@ void DestroySudoku(Sudoku* board){
  */
 Sudoku* ImportSudoku(char* in_file){
 
-    // TODO
-    
-    Sudoku* sudoku;
-    return sudoku;
+    in_file++;
+    // TODO 
+    //Sudoku* sudoku;
+
+    return NULL;
 }
 
 /*  > SaveSudoku
@@ -87,6 +89,8 @@ Sudoku* ImportSudoku(char* in_file){
 int SaveSudoku(const Sudoku* sudoku, char* out_file){
 
     // TODO
+    sudoku++;
+    out_file++;
     
     return 1;
 }
@@ -295,9 +299,36 @@ int Backtracking(Sudoku* sudoku, size_t i){
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
  *      - sudoku : Sudoku grid to solve
  */
-Sudoku* SolveSudoku(const Sudoku* sudoku){ // TODO return int ?? 
-    Sudoku* sudoku_solved; // TODO : use createsudoku function
-    if (IsSudokuSolved(sudoku_solved))
-        return sudoku_solved;
+Sudoku* SolveSudoku(Sudoku* sudoku){ // TODO return int ?? const ????
+    //Sudoku* sudoku_solved; // TODO : use createsudoku function
+
+    Backtracking(sudoku,0);
+    if (IsSudokuSolved(sudoku))
+        return sudoku;
     return NULL;
+}
+
+/*  > PrintSudoku
+ * Print the sudoku board
+ * > Returns *anything*
+ *      - sudoku : Sudoku grid to print
+ */
+void PrintBoard(const Sudoku* sudoku){
+    // print first edge of square
+    for (size_t col = 0; col < sudoku->cols; col++){
+            printf(" ---");
+    }
+    printf("\n");
+
+    for (size_t row = 0; row < sudoku->rows; row++){
+        printf("|");
+        for (size_t col = 0; col < sudoku->cols; col++){
+            printf(" %hhu |", sudoku->board[row*sudoku->rows + col]);
+        }
+        printf("\n");
+        for (size_t col = 0; col < sudoku->cols; col++){
+            printf(" ---");
+        }
+        printf("\n");
+    }
 }
