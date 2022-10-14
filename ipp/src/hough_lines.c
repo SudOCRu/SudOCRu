@@ -1,5 +1,6 @@
 #include "hough_lines.h"
 #include <math.h>
+#define DEBUG_VIEW
 
 Line* LineFrom(double theta, double rho, double x1, double y1, double
         x2, double y2)
@@ -84,16 +85,20 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
                 if (lines == MAX_LINES)
                     break;
             }
-            //acc[i] *= 100; // better visualization in outpout image
+#ifdef DEBUG_VIEW
+            // better visualization in outpout image
+            unsigned int col = ((0xFF * acc[i]) / max) & 0xFF;
+            acc[i] = col << 16 | col << 8 | col; 
+#endif
         }
         if (lines == MAX_LINES)
             break;
     }
 
-    /*
-    printf("Accumulator saved as acc.png\n");
+#ifdef DEBUG_VIEW
+    printf("[DEBUG_VIEW] Hough Lines accumulator saved as acc.png\n");
     SaveImageFile(accumulator, "acc.png");
-    */
+#endif
     DestroyImage(accumulator);
 
     *found_count = lines;
@@ -128,12 +133,53 @@ Line** AverageLines(Line** lines, size_t len, size_t* out_len)
             }
         }
         if (add) {
-            if (p + 1 == MAX_LINES) break;
             out_lines[p++] = candidate;
+            if (p == MAX_LINES) break;
         }
     }
     *out_len = p;
     return out_lines;
+}
+
+int LineIntersection(const Line* l1, const Line* l2, int *x, int *y) {
+    double a = cosf(l1->theta);
+    double b = sinf(l1->theta);
+    double c = cosf(l2->theta);
+    double d = sinf(l2->theta);
+    double dt = a * d - b * c; //determinative (rearranged matrix for inverse)
+    if(fabs(dt) > 0.1) { // account for error, dt != 0
+        if (x != NULL && y != NULL)
+        {
+            *x = (int)((d * l1->rho - b * l2->rho) / dt);
+            *y = (int)((-c * l1->rho + a * l2->rho) / dt);
+        }
+        return 1;
+    }
+    return 0;
+}
+
+Rect** FindRects(Image* img, const Line** lines, size_t len, int* found_count)
+{
+    int p1_x = 0;
+    int p1_y = 0;
+    for(size_t i = 0; i < len; i++)
+    {
+        const Line* candidate = lines[i];
+        for(size_t j = 0; j < len; j++)
+        {
+            if (i == j) continue;
+            if (LineIntersection(candidate, lines[j], &p1_x, &p1_y))
+            {
+                if (p1_y >= 0 && p1_y < img->height && p1_x >= 0 &&
+                        p1_x < img->width)
+                {
+                    img->pixels[p1_y * img->width + p1_x] = 0xFFFF00;
+                }
+            }
+        }
+    }
+    *found_count = 0;
+    return NULL;
 }
 
 void FreeLines(Line** lines, size_t len)
@@ -177,14 +223,14 @@ void DrawLine(unsigned int* pixels, unsigned int color, unsigned int w,
     }
 }
 
-void RenderLines(Image* image, unsigned int color, Line** lines, int len)
+void RenderLines(Image* image, unsigned int color, const Line** lines, int len)
 {
     size_t w = image->width;
     size_t h = image->height;
     unsigned int* pix = image->pixels;
     for(size_t i = 0; i < len; i++)
     {
-        Line* l = lines[i];
+        const Line* l = lines[i];
         DrawLine(pix, color, w, h, (int)l->x1, (int)l->y1, (int)l->x2,
                 (int)l->y2);
     }

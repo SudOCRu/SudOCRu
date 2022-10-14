@@ -2,7 +2,7 @@
 #include "image.h"
 
 #define MAX_LINES 512
-#define THETA_STEPS 180
+#define THETA_STEPS 360
 #define BLACK_EDGE 0
 #define WHITE_EDGE 1
 
@@ -40,8 +40,8 @@ void FreeLines(Line** lines, size_t len);
 
 Line** AverageLines(Line** lines, size_t len, size_t* out_len);
 
-void RenderLines(Image* image, unsigned int color, Line** lines, int len);
+void RenderLines(Image* img, unsigned int color, const Line** lines, int len);
 
-Rect** FindRects(const Image* image, int* found_count);
+Rect** FindRects(Image* img, const Line** lines, size_t len, int* found_count);
 void DetectGrid(const Image* image, SudokuGrid* grid);
 double DetectAngle(const Rect* rect);
