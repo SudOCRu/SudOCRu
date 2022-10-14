@@ -33,6 +33,18 @@ unsigned char board1[] =  {
     8, 0, 0, 5, 1, 2, 0, 0, 4,
     };
 
+unsigned char board1_false[] =  {
+    1, 0, 0, 4, 8, 9, 0, 0, 6,
+    7, 3, 0, 0, 0, 0, 0, 4, 0,
+    7, 0, 0, 0, 0, 1, 2, 9, 5,
+    0, 0, 7, 1, 2, 0, 6, 0, 0,
+    5, 0, 0, 7, 0, 3, 0, 0, 8,
+    0, 0, 6, 0, 9, 5, 7, 0, 0,
+    9, 1, 4, 6, 0, 0, 0, 0, 0,
+    0, 2, 0, 0, 0, 0, 0, 3, 7,
+    8, 0, 0, 5, 1, 2, 0, 0, 4,
+    };
+
 unsigned char board2[] =  {
     5, 3, 0, 0, 7, 0, 0, 0, 0,
     6, 0, 0, 1, 9, 5, 0, 0, 0,
@@ -178,12 +190,64 @@ int is_solution(const unsigned char* board, const Sudoku* sudoku){
 
 int main()
 {
+
     Sudoku* sudoku = CreateSudoku(board1, 9, 9);
     PrintBoard(sudoku);
+
+    Sudoku* sudoku_solved = CreateSudoku(board1, 9, 9);
+    PrintBoard(sudoku_solved);
+
+    Sudoku* sudoku_1_false = CreateSudoku(board1_false, 9, 9);
+    PrintBoard(sudoku_1_false);
+
+    // -------------------------------------------------------------
+
+
+    int issolved = IsSudokuSolved(sudoku);
+    printf("IsSolved(sudoku) = %i\n", issolved);
+
+    int issolved_solved = IsSudokuSolved(sudoku_solved);
+    printf("IsSolved(sudoku_solved) = %i\n", issolved_solved);
+
+    int issolved_1 = IsSudokuSolved(sudoku_solved);
+    printf("IsSolved(sudoku_false) = %i\n", issolved_1);
+
+    // -------------------------------------------------------------
+
+    int isvalid = IsSudokuValid(sudoku);
+    printf("IsValid(sudoku) = %i\n", isvalid);
+
+    int isvalid_solved = IsSudokuValid(sudoku_solved);
+    printf("IsValid(sudoku_solved) = %i\n", isvalid_solved);
+
+    int isvalid_false = IsSudokuValid(sudoku_1_false);
+    printf("IsValid(sudoku_false) = %i\n", isvalid_false);
+
+    // -------------------------------------------------------------
+    
+    printf("======================================\n");
+
+
+    Sudoku* sudoku_2 = CreateSudoku(board6, 9, 9);
+    PrintBoard(sudoku_2);
+
+    Sudoku* sudoku_s = SolveSudoku(sudoku_2);
+
+    if (sudoku_s == NULL) // TODO in SolveSudoku
+        errx(EXIT_FAILURE, "SudokuSolver : NOT SOLVED\n");
+    else
+    {
+        PrintBoard(sudoku_s);
+        printf("SudokuSolver : Successfully Solved\n"); 
+    }
+    return 0;
+
+
 
     // Import Sudoku from file
     //Sodoku* sudoku = ImportSudoku(argv[1]);
 
+    /*
     if (sudoku->board == NULL) 
         errx(EXIT_FAILURE, "Error: Sudoku can't be loaded");
 
@@ -191,6 +255,7 @@ int main()
         if (sudoku->board[i] != board1_s[i]) 
             printf("index : %i is different : should be %u8 but it is %u8\n", i, board1_s[i], sudoku->board[i]);
     }
+    */
 
     //if (!IsSudokuValid(sudoku)) 
     //    errx(EXIT_FAILURE, "Error: Sudoku can't be loaded (not solvable)");

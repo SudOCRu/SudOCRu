@@ -20,6 +20,7 @@
 #include <err.h>
 #include "solver.h"
 #include "stdio.h"
+#include <unistd.h>
 
 // ===========================================================================
 // -----------------------      Sudoku Treatment        ---------------------- 
@@ -136,6 +137,7 @@ int IsSudokuValid(const Sudoku* sudoku){
     u8 index = 0;
     while (index < len){
         if (!BoxCheck(sudoku, index)) return 0;
+        index++;
     }
 
     return 1;
@@ -189,15 +191,15 @@ void clear (short n, short* flag){
 short PossibleValues(const Sudoku* sudoku, u8 index){
     // possibilities are in binary representation and are power of 2 numbers
     //  ex : if 9 is possible : 2^9 is added to possibilities
-    u8 row = index / sudoku->cols;
-    u8 col = index % sudoku->cols;
+    u8 row = index / 9;
+    u8 col = index % 9;
     short possibilities = 0b111111111;
     size_t idx;
     u8 cell;
 
-    for(size_t i = 0; i < sudoku->cols; i++)
+    for(size_t i = 0; i < 9; i++)
     {
-        idx = row * sudoku->cols + i;
+        idx = row * 9 + i;
         cell = sudoku->board[idx];
         if (cell != 0)
         {
@@ -206,9 +208,9 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
     }
     if (possibilities == 0) return possibilities;
 
-    for(size_t i = 0; i < sudoku->rows; i++)
+    for(size_t i = 0; i < 9; i++)
     {
-        idx = i * sudoku->rows + col;
+        idx = i * 9 + col;
         cell = sudoku->board[idx];
         if (cell != 0)
         {
@@ -218,13 +220,14 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
 
     if (possibilities == 0) return possibilities;
 
-    size_t vgroups = sudoku->rows / 3;
-    size_t hgroups = sudoku->cols / 3;
+     
+    size_t vgroups = 9 / 3;
+    size_t hgroups = 9 / 3;
     size_t init_row = (row/hgroups)*hgroups;
     size_t init_col = (col/vgroups)*vgroups;
-    for (size_t i = init_row; i < init_row + 3; i++){
-        for (size_t j = init_col; j < init_col + 3; j++){
-            idx = j * sudoku->cols + i;
+    for (size_t i = 0; i < 3; i++){
+        for (size_t j = 0; j < 3; j++){
+            idx = (init_row + i)  * 9 + (j + init_col) ;
             cell = sudoku->board[idx];
             if (cell != 0){
                 clear(cell, &possibilities);
@@ -243,7 +246,8 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
  *      - sudoku : sudoku pointer to modify
  */
 int Backtracking(Sudoku* sudoku, size_t i){
-    u8 len = sudoku->cols * sudoku->rows; 
+    //u8 len = sudoku->cols * sudoku->rows; 
+    u8 len = 81;
     
     // TODO: boucle while pour chercher
     while (i < len && sudoku->board[i] != 0) i++;
@@ -253,18 +257,28 @@ int Backtracking(Sudoku* sudoku, size_t i){
     }
 
 
+    //printf("index: %lu", i);
     short possibilities = PossibleValues(sudoku, i);
     for (u8 possible_values = 1; possible_values <= 9; 
             possible_values++)
     {
+        //printf("is %hhu valid -> %i\n", possible_values, 
+        //        (verify(possible_values, possibilities)));
+        
         if (verify(possible_values, possibilities)){
             sudoku->board[i] = possible_values; 
-            if(Backtracking(sudoku, i + 1))
+
+            //printf("\e[1;1H\e[2J");           
+            //PrintBoard(sudoku);
+            //sleep(1);
+
+            if(Backtracking(sudoku, i))
             { 
                 return 1;
             }
             sudoku->board[i] = 0;
-        }            
+        }   
+        
     }    
 
     return 0;
@@ -302,8 +316,8 @@ int Backtracking(Sudoku* sudoku, size_t i){
 Sudoku* SolveSudoku(Sudoku* sudoku){ // TODO return int ?? const ????
     //Sudoku* sudoku_solved; // TODO : use createsudoku function
 
-    Backtracking(sudoku,0);
-    if (IsSudokuSolved(sudoku))
+    int is_solved = Backtracking(sudoku,0);
+    if (is_solved)
         return sudoku;
     return NULL;
 }
