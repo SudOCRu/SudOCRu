@@ -56,12 +56,12 @@ Sudoku* CreateSudoku(u8* array, u8 cols, u8 rows){
  * Destroys of the provided Sudoku board.
  *      - board : Board to destroy
  */
-void DestroySudoku(Sudoku* board){
+void DestroySudoku(Sudoku* sudoku){
 
-    if (board == NULL) return;
+    if (sudoku == NULL) return;
 
-    free(board->board);
-    free(board);        
+    free(sudoku->board);
+    free(sudoku);        
 }
 
 /*  > ImportSudoku
@@ -191,15 +191,15 @@ void clear (short n, short* flag){
 short PossibleValues(const Sudoku* sudoku, u8 index){
     // possibilities are in binary representation and are power of 2 numbers
     //  ex : if 9 is possible : 2^9 is added to possibilities
-    u8 row = index / 9;
-    u8 col = index % 9;
+    u8 row = index / sudoku->rows;
+    u8 col = index % sudoku->cols;
     short possibilities = 0b111111111;
     size_t idx;
     u8 cell;
 
-    for(size_t i = 0; i < 9; i++)
+    for(size_t i = 0; i < sudoku->rows; i++)
     {
-        idx = row * 9 + i;
+        idx = row * sudoku->rows + i;
         cell = sudoku->board[idx];
         if (cell != 0)
         {
@@ -208,9 +208,9 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
     }
     if (possibilities == 0) return possibilities;
 
-    for(size_t i = 0; i < 9; i++)
+    for(size_t i = 0; i < sudoku->cols; i++)
     {
-        idx = i * 9 + col;
+        idx = i * sudoku->cols + col;
         cell = sudoku->board[idx];
         if (cell != 0)
         {
@@ -221,13 +221,13 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
     if (possibilities == 0) return possibilities;
 
      
-    size_t vgroups = 9 / 3;
-    size_t hgroups = 9 / 3;
+    size_t vgroups = sudoku->cols / 3;
+    size_t hgroups = sudoku->rows / 3;
     size_t init_row = (row/hgroups)*hgroups;
     size_t init_col = (col/vgroups)*vgroups;
-    for (size_t i = 0; i < 3; i++){
-        for (size_t j = 0; j < 3; j++){
-            idx = (init_row + i)  * 9 + (j + init_col) ;
+    for (size_t i = 0; i < vgroups; i++){
+        for (size_t j = 0; j < hgroups; j++){
+            idx = (init_row + i)  * sudoku->rows + (j + init_col) ;
             cell = sudoku->board[idx];
             if (cell != 0){
                 clear(cell, &possibilities);
