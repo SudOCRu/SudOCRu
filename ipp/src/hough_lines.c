@@ -2,10 +2,11 @@
 #include <math.h>
 #define DEBUG_VIEW
 
-Line* LineFrom(double theta, double rho, double x1, double y1, double
-        x2, double y2)
+Line* LineFrom(unsigned int val, double theta, double rho, double x1,
+        double y1, double x2, double y2)
 {
     Line* l = (Line*) malloc(sizeof(Line));
+    l->val = (int)val;
     l->theta = theta;
     l->rho = rho;
     l->x1 = x1;
@@ -79,7 +80,7 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
                 double y0 = sin_t[x] * p;
                 double a = -1000*sin_t[x];
                 double b = 1000*cos_t[x];
-                out_lines[lines++] = LineFrom(x * dtheta, p, 
+                out_lines[lines++] = LineFrom(acc[i], x * dtheta, p,
                         x0 + a, y0 + b, 
                         x0 - a, y0 - b);
                 if (lines == MAX_LINES)
@@ -107,8 +108,8 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
 
 Line** AverageLines(Line** lines, size_t len, size_t* out_len)
 {
-    double deltaT = 5 * M_PI / 180; // 5° tolerance
-    double deltaR = 15;
+    double deltaT = 3 * M_PI / 180; // 3° tolerance
+    double deltaR = 3;
     Line** out_lines = (Line**)malloc(MAX_LINES * sizeof(Line*));
     size_t p = 0;
 
@@ -158,28 +159,88 @@ int LineIntersection(const Line* l1, const Line* l2, int *x, int *y) {
     return 0;
 }
 
-Rect** FindRects(Image* img, const Line** lines, size_t len, int* found_count)
+Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
 {
-    int p1_x = 0;
-    int p1_y = 0;
-    for(size_t i = 0; i < len; i++)
+    double a90 = M_PI / 2;
+    double Ta = 3 * M_PI / 180;
+    double Tt = 3 * M_PI / 180;
+    double Tp = 15;
+    double Tl = 0.4;
+
+    size_t Dmin = 100;
+    size_t Dmax = (size_t)sqrt(img->width * img->width
+            + img->height * img->height);
+    size_t threshold = Dmin / 2; // Tc
+
+    ExtPeak** pairs = malloc(sizeof(ExtPeak*) * len * len);
+    size_t nb_pairs = 0;
+
+    printf("nb_lines = %lu\n", len);
+
+    for (size_t i = 0; i < len; i++)
     {
-        const Line* candidate = lines[i];
-        for(size_t j = 0; j < len; j++)
+        const Line* l1 = lines[i];
+        for (size_t j = 0; j < len; j++)
         {
             if (i == j) continue;
-            if (LineIntersection(candidate, lines[j], &p1_x, &p1_y))
+            const Line* l2 = lines[j];
+
+            double dT = fabs(l1->theta - l2->theta);
+            //double dP = fabs(l1->rho + l2->rho);
+
+            int dC = abs(l1->val - l2->val);
+            int mid = (l1->val + l2->val) / 2;
+
+            /*
+            printf("%lu|%lu: dP = %f; l1_p = %f, l2_p = %f\n",
+                    i, j, dP, l1->rho, l2->rho);
+            */
+
+            if (dT < Tt && dC < Tl * mid)
             {
-                if (p1_y >= 0 && p1_y < img->height && p1_x >= 0 &&
-                        p1_x < img->width)
-                {
-                    img->pixels[p1_y * img->width + p1_x] = 0xFFFF00;
-                }
+                ExtPeak* ep = malloc(sizeof(ExtPeak));
+                ep->l1 = l1;
+                ep->l2 = l2;
+                ep->alpha = (l1->theta + l2->theta) / 2;
+                ep->epsilon = fabs(l1->rho - l2->rho) / 2;
+                pairs[nb_pairs++] = ep;
             }
         }
     }
-    *found_count = 0;
-    return NULL;
+    printf("nb_pairs = %lu\n", nb_pairs);
+
+    //RenderPairs(img, 0x00FF00, pairs, nb_pairs);
+
+    Rect** rects = malloc(sizeof(Rect*) * nb_pairs * nb_pairs);
+    size_t rect_count = 0;
+
+    for(size_t i = 0; i < nb_pairs; i++)
+    {
+        ExtPeak* ep1 = pairs[i];
+        for(size_t j = 0; j < nb_pairs; j++)
+        {
+            if (i == j) continue;
+            ExtPeak* ep2 = pairs[j];
+            double dA = fabs(fabs(ep1->alpha - ep2->alpha) - a90);
+            double dP = fabs((ep1->l1->rho + ep1->l2->rho / 2) - 
+                    (ep2->l1->rho + ep2->l2->rho / 2));
+            if (dA < Ta && dP < Tp)
+            {
+                Rect* rect = malloc(sizeof(Rect));
+                rect->ep1 = ep1;
+                rect->ep2 = ep2;
+                rects[rect_count++] = rect;
+            }
+        }
+    }
+    printf("rect_count = %lu\n", rect_count);
+
+    *found_count = rect_count;
+
+    /*
+    for(size_t i = 0; i < nb_pairs; i++) free(pairs[i]);
+    free(pairs);*/
+    return rects;
 }
 
 void FreeLines(Line** lines, size_t len)
@@ -223,15 +284,73 @@ void DrawLine(unsigned int* pixels, unsigned int color, unsigned int w,
     }
 }
 
-void RenderLines(Image* image, unsigned int color, const Line** lines, int len)
+void RenderLines(Image* img, unsigned int color, Line** lines, size_t l)
 {
-    size_t w = image->width;
-    size_t h = image->height;
-    unsigned int* pix = image->pixels;
-    for(size_t i = 0; i < len; i++)
+    size_t w = img->width;
+    size_t h = img->height;
+    unsigned int* pix = img->pixels;
+    for(size_t i = 0; i < l; i++)
     {
         const Line* l = lines[i];
         DrawLine(pix, color, w, h, (int)l->x1, (int)l->y1, (int)l->x2,
                 (int)l->y2);
+    }
+}
+
+void RenderPairs(Image* img, unsigned int color, ExtPeak** pairs, size_t l)
+{
+    size_t w = img->width;
+    size_t h = img->height;
+    unsigned int* pix = img->pixels;
+    for(size_t i = 0; i < l; i++)
+    {
+        const ExtPeak* ep = pairs[i];
+
+        const Line* l1 = ep->l1;
+        const Line* l2 = ep->l2;
+        color = (rand() % 255) << 16 | (rand() % 255) << 8 | (rand() % 255);
+
+        DrawLine(pix, color, w, h, (int)l1->x1, (int)l1->y1, (int)l1->x2,
+                (int)l1->y2);
+        DrawLine(pix, color, w, h, (int)l2->x1, (int)l2->y1, (int)l2->x2,
+                (int)l2->y2);
+    }
+}
+
+void RenderRects(Image* img, unsigned int color, Rect** rects, size_t l)
+{
+    size_t w = img->width;
+    size_t h = img->height;
+    unsigned int* pix = img->pixels;
+    for(size_t i = 0; i < l; i++)
+    {
+        const Rect* r = rects[i];
+
+        const Line* l1 = r->ep1->l1;
+        const Line* l2 = r->ep1->l2;
+        const Line* l3 = r->ep2->l1;
+        const Line* l4 = r->ep2->l2;
+        color = (rand() % 255) << 16 | (rand() % 255) << 8 | (rand() % 255);
+
+        int p1_x = 0;
+        int p1_y = 0;
+        LineIntersection(l1, l3, &p1_x, &p1_y);
+
+        int p2_x = 0;
+        int p2_y = 0;
+        LineIntersection(l2, l3, &p2_x, &p2_y);
+
+        int p3_x = 0;
+        int p3_y = 0;
+        LineIntersection(l1, l4, &p3_x, &p3_y);
+
+        int p4_x = 0;
+        int p4_y = 0;
+        LineIntersection(l2, l4, &p4_x, &p4_y);
+
+        DrawLine(pix, color, w, h, p1_x, p1_y, p2_x, p2_y);
+        DrawLine(pix, color, w, h, p1_x, p1_y, p3_x, p3_y);
+        DrawLine(pix, color, w, h, p2_x, p2_y, p4_x, p4_y);
+        DrawLine(pix, color, w, h, p3_x, p3_y, p4_x, p4_y);
     }
 }

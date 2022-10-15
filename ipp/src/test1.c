@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
         int white_edge = argc >= 3 ? argv[2][0] == '1' : WHITE_EDGE;
         Line** lines = HoughLines(img, &len, white_edge,
-                THETA_STEPS, -45);
+                THETA_STEPS, -40);
         /*
         for(size_t i = 0; i < len; i++)
         {
@@ -37,13 +37,15 @@ int main(int argc, char** argv)
                     i, l->theta, l->rho, l->a, l->b);
         }
         */
-        RenderLines(img, 0x0000FF, lines, len);
+        //RenderLines(img, 0x0000FF, lines, len);
         size_t fil_len = 0;
         Line** filtered = AverageLines(lines, len, &fil_len);
-        RenderLines(img, 0xFF0000, filtered, fil_len);
+        //RenderLines(img, 0xFF0000, filtered, fil_len);
 
-        int rect_count = 0;
+        size_t rect_count = 0;
         Rect** rects = FindRects(img, filtered, fil_len, &rect_count);
+        RenderRects(img, 0xFF0000, rects, rect_count);
+
         FreeLines(lines, len);
 
         if (SaveImageFile(img, "out.png"))
