@@ -5,9 +5,9 @@
  *
  *    Description: Functions used to solve Sudokus 
  *
- *        Version:  0.1.2
+ *        Version:  0.2.0
  *        Created:  10/01/22 16:12:22
- *       Revision:  finished SolveSudoku, ImportSudoku and began debugging
+ *       Revision:  finished SaveSudoku
  *       Compiler:  gcc
  *
  *         Author:  Kevin JAMET, 
@@ -159,10 +159,26 @@ Sudoku* ImportSudoku(char* in_file){
  */
 int SaveSudoku(const Sudoku* sudoku, char* out_file){
 
-    // TODO
-    sudoku++;
-    out_file++;
-    
+    // INDEXES
+    size_t index = 0;
+
+    // VARIABLES TO READ LINES
+    FILE* file = NULL;
+
+    // CHECK IF FILE EXISTS
+    file = fopen(out_file, "w");
+    if (file == NULL) return 0;
+
+    while (index < sudoku->rows * sudoku->cols){
+        if (index != 0 && index % 9 == 0) fprintf(file, "\n");
+        else if (index != 0 && index % 3 == 0) fprintf(file, " ");
+        fprintf(file, "%hhu", sudoku->board[index]);
+        index++;
+    }
+    fprintf(file, "\n ");
+
+    fclose(file);
+
     return 1;
 }
 

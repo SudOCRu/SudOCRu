@@ -192,11 +192,18 @@ int main()
 {
     Sudoku* imported = ImportSudoku("grid_00");
     PrintBoard(imported);
+    printf("\n");
+    SolveSudoku(imported);
+    PrintBoard(imported);
+    printf("\n");
+    SaveSudoku(imported, "lasolution.result");
     DestroySudoku(imported);
 
+    /* 
     Sudoku* imported_solved = ImportSudoku("grid_00.result");
     PrintBoard(imported_solved);
     DestroySudoku(imported_solved);
+    */
 
     /*
     Sudoku* sudoku = CreateSudoku(board1, 9, 9);
