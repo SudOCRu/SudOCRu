@@ -207,6 +207,9 @@ int BoxCheck(const Sudoku* sudoku, u8 index){
     return 1;
 }
 
+short PossibleValues(const Sudoku* sudoku, u8 index);
+void clear (short n, short* flag);
+
 /*  > IsSudokuValid
  * Check if "sudoku" grid is valid (if it's solvable)
  * > Returns 0 (false) if the board is not valid, else 1 (true)
@@ -219,56 +222,65 @@ int IsSudokuValid(const Sudoku* sudoku){
     // for i in range len sudoku
     //      if (!(check column && check row && check square)) return 0;
 
+    u8 index = 0;
+    while (index < sudoku->cols * sudoku->rows){
+        u8 row = index / sudoku->rows;
+        u8 col = index % sudoku->cols;
+        short possibilities = 0b111111111;
+        short previous_poss = 0b111111111;
+        size_t idx;
+        u8 cell;
 
-    /*  
-    u8 row = index / sudoku->rows;
-    u8 col = index % sudoku->cols;
-    short possibilities = 0b111111111;
-    size_t idx;
-    u8 cell;
-
-    for(size_t i = 0; i < sudoku->rows; i++)
-    {
-        idx = row * sudoku->rows + i;
-        cell = sudoku->board[idx];
-        if (cell != 0)
+        for(size_t i = 0; i < sudoku->rows; i++)
         {
-            clear(cell, &possibilities);
-        }
-    }
-    if (possibilities == 0) return possibilities;
-
-    for(size_t i = 0; i < sudoku->cols; i++)
-    {
-        idx = i * sudoku->cols + col;
-        cell = sudoku->board[idx];
-        if (cell != 0)
-        {
-            clear(cell, &possibilities);
-        }
-    }
-
-    if (possibilities == 0) return possibilities;
-
-     
-    size_t vgroups = sudoku->cols / 3;
-    size_t hgroups = sudoku->rows / 3;
-    size_t init_row = (row/hgroups)*hgroups;
-    size_t init_col = (col/vgroups)*vgroups;
-    for (size_t i = 0; i < vgroups; i++){
-        for (size_t j = 0; j < hgroups; j++){
-            idx = (init_row + i)  * sudoku->rows + (j + init_col) ;
+            idx = row * sudoku->rows + i;
             cell = sudoku->board[idx];
-            if (cell != 0){
+            if (cell != 0)
+            {
+                previous_poss = possibilities;
                 clear(cell, &possibilities);
+                if (possibilities == previous_poss) return 0;
             }
         }
+        //if (possibilities == 0) return possibilities;
+
+        for(size_t i = 0; i < sudoku->cols; i++)
+        {
+            idx = i * sudoku->cols + col;
+            cell = sudoku->board[idx];
+            if (cell != 0)
+            {
+                previous_poss = possibilities;
+                clear(cell, &possibilities);
+                if (possibilities == previous_poss) return 0;
+            }
+        }
+
+        //if (possibilities == 0) return possibilities;
+
+         
+        size_t vgroups = sudoku->cols / 3;
+        size_t hgroups = sudoku->rows / 3;
+        size_t init_row = (row/hgroups)*hgroups;
+        size_t init_col = (col/vgroups)*vgroups;
+        for (size_t i = 0; i < vgroups; i++){
+            for (size_t j = 0; j < hgroups; j++){
+                idx = (init_row + i)  * sudoku->rows + (j + init_col) ;
+                cell = sudoku->board[idx];
+                if (cell != 0){
+                    previous_poss = possibilities;
+                    clear(cell, &possibilities);
+                    if (possibilities == previous_poss) return 0;
+                }
+            }
+        }
+        index++;
     }
     
-    return possibilities;
-    */
+    return 1;
+    
 
-     
+    /* /
     u8 len = sudoku->rows*sudoku->cols;
     u8 index = 0;
     while (index < len){
@@ -277,7 +289,7 @@ int IsSudokuValid(const Sudoku* sudoku){
     }
 
     return 1;
-    
+    */
 }
 
 /*  > IsSudokuSolved
@@ -293,11 +305,10 @@ int IsSudokuSolved(const Sudoku* sudoku){
     u8 len = sudoku->cols * sudoku->rows;
     u8 index = 0;
 
-    /*
     while(index < len && 
-            (short) PossibleValues(sudoku, index) == (short) 0) 
+             PossibleValues(sudoku, index) == 0) 
         index++;
-    */
+    
     return index == len;
     
 }

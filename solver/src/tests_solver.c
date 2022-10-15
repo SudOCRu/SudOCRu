@@ -35,7 +35,7 @@ unsigned char board1[] =  {
 
 unsigned char board1_false[] =  {
     1, 0, 0, 4, 8, 9, 0, 0, 6,
-    7, 3, 0, 0, 0, 0, 0, 4, 0,
+    0, 3, 7, 0, 0, 0, 0, 4, 0,
     7, 0, 0, 0, 0, 1, 2, 9, 5,
     0, 0, 7, 1, 2, 0, 6, 0, 0,
     5, 0, 0, 7, 0, 3, 0, 0, 8,
@@ -191,13 +191,26 @@ int is_solution(const unsigned char* board, const Sudoku* sudoku){
 int main()
 {
     Sudoku* imported = ImportSudoku("grid_00");
+
+    printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
+    printf("IsSudokuSolved : %i\n", IsSudokuSolved(imported));
     PrintBoard(imported);
     printf("\n");
+
     SolveSudoku(imported);
+    
+    printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
+    printf("IsSudokuSolved : %i\n", IsSudokuSolved(imported));
     PrintBoard(imported);
     printf("\n");
+
     SaveSudoku(imported, "lasolution.result");
     DestroySudoku(imported);
+
+    Sudoku* false_sudoku = CreateSudoku(board1_false, 9, 9);
+    printf("IsSudokuValid (false) : %i\n", IsSudokuValid(false_sudoku));
+    DestroySudoku(false_sudoku);
+
 
     /* 
     Sudoku* imported_solved = ImportSudoku("grid_00.result");
