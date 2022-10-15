@@ -190,7 +190,15 @@ int is_solution(const unsigned char* board, const Sudoku* sudoku){
 
 int main()
 {
+    Sudoku* imported = ImportSudoku("grid_00");
+    PrintBoard(imported);
+    DestroySudoku(imported);
 
+    Sudoku* imported_solved = ImportSudoku("grid_00.result");
+    PrintBoard(imported_solved);
+    DestroySudoku(imported_solved);
+
+    /*
     Sudoku* sudoku = CreateSudoku(board1, 9, 9);
     PrintBoard(sudoku);
 
@@ -246,6 +254,8 @@ int main()
 
     // Import Sudoku from file
     //Sodoku* sudoku = ImportSudoku(argv[1]);
+    
+    */
 
     /*
     if (sudoku->board == NULL) 
