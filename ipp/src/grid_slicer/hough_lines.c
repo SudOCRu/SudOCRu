@@ -149,9 +149,9 @@ Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
     float Ta = 8 * M_PI / 180; // max angle diff between two orhogonal lines
     float Tt = 3 * M_PI / 180; // max angle diff between two lines
     float Tp = 100; // Rho diff
-    float Tl = 0.4; // threshold for line segements to have similar lengths
+    float Tl = 0.3; // threshold for line segements to have similar lengths
     float Dmin = 10 * 100;
-    float Ts = 0; // sides length diff
+    float Ts = 1 - 0.1; // sides length diff
 
     PSet** pairs = malloc(sizeof(PSet*) * len * len);
     size_t nb_pairs = 0;
@@ -204,23 +204,18 @@ Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
             float dP = fabs((ep1->l1->rho + ep1->l2->rho / 2) - 
                     (ep2->l1->rho + ep2->l2->rho / 2));
             float squareness = a > b ? b / a : a / b;
-            if (dA < Ta)
+            if (dA < Ta && dP < Tp && squareness > Ts /*&& a * b >= Dmin*/)
             {
-                printf("dP = %f, squareness = %f\n", dP, squareness);
-                if (dP < Tp && squareness > Ts &&
-                        a * b >= Dmin)
+                Rect* rect = malloc(sizeof(Rect));
+                rect->ep1 = ep1;
+                rect->ep2 = ep2;
+                rect->area = a * b;
+                rect->squareness = squareness;
+                rects[rect_count++] = rect;
+                if (rect_count == nb_pairs)
                 {
-                    Rect* rect = malloc(sizeof(Rect));
-                    rect->ep1 = ep1;
-                    rect->ep2 = ep2;
-                    rect->area = a * b;
-                    rect->squareness = squareness;
-                    rects[rect_count++] = rect;
-                    if (rect_count == nb_pairs)
-                    {
-                        *found_count = rect_count;
-                        return rects;
-                    }
+                    *found_count = rect_count;
+                    return rects;
                 }
             }
         }
@@ -237,11 +232,11 @@ Rect* FindSudokuBoard(Rect** rects, size_t rect_count)
     if (rect_count == 0) return NULL;
 
     Rect* max = rects[0];
-    float m_score = max->squareness * max->area;
+    float m_score = (max->squareness + 1) * max->area;
     for (size_t i = 1; i < rect_count; i++)
     {
         Rect* rect = rects[i];
-        float score = rect->squareness * rect->area;
+        float score = (rect->squareness + 1) * rect->area;
         if (score > m_score)
         {
             m_score = score;

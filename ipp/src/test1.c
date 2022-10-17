@@ -4,14 +4,13 @@
 
 #include "image.h"
 #include "image_filter.h"
-#include "renderer.h"
-#include "geom.h"
+#include "grid_slicer/renderer.h"
 #include "grid_slicer/hough_lines.h"
 
 int main(int argc, char** argv)
 {
     if (argc < 2)
-        errx(EXIT_FAILURE, "Usage: ipp <image_file_path> [white_edge]");
+        errx(EXIT_FAILURE, "Usage: ipp <image_file_path> [white_edge] [th]");
 
     // Initializes the SDL.
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -28,9 +27,10 @@ int main(int argc, char** argv)
 
         size_t len = 0;
 
+        printf("Running edge detection (HT)...\n");
         int white_edge = argc >= 3 ? argv[2][0] == '1' : WHITE_EDGE;
-        Line** lines = HoughLines(img, &len, white_edge,
-                THETA_STEPS, -30);
+        int threshold = argc >= 4 ? strtol(argv[3], NULL, 10) : -50;
+        Line** lines = HoughLines(img, &len, white_edge,THETA_STEPS, threshold);
         /*
         for(size_t i = 0; i < len; i++)
         {
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
         size_t rect_count = 0;
         Rect** rects = FindRects(img, filtered, fil_len, &rect_count);
         //Rect** rects = FindRects(img, lines, len, &rect_count);
-        RenderRects(img, rects, rect_count);
+        //RenderRects(img, rects, rect_count);
 
         Rect* candidate = FindSudokuBoard(rects, rect_count);
         if (candidate != NULL)
