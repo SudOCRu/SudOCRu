@@ -4,7 +4,9 @@
 
 #include "image.h"
 #include "image_filter.h"
-#include "hough_lines.h"
+#include "renderer.h"
+#include "geom.h"
+#include "grid_slicer/hough_lines.h"
 
 int main(int argc, char** argv)
 {
