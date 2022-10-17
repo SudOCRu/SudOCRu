@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
         int white_edge = argc >= 3 ? argv[2][0] == '1' : WHITE_EDGE;
         Line** lines = HoughLines(img, &len, white_edge,
-                THETA_STEPS, -40);
+                THETA_STEPS, -30);
         /*
         for(size_t i = 0; i < len; i++)
         {
@@ -40,12 +40,25 @@ int main(int argc, char** argv)
         //RenderLines(img, 0x0000FF, lines, len);
         size_t fil_len = 0;
         Line** filtered = AverageLines(lines, len, &fil_len);
-        //RenderLines(img, 0xFF0000, filtered, fil_len);
+        printf("Filtered lines, %lu -> %lu\n", len, fil_len);
+        RenderLines(img, 0xFF0000, filtered, fil_len);
 
         size_t rect_count = 0;
         Rect** rects = FindRects(img, filtered, fil_len, &rect_count);
-        RenderRects(img, 0xFF0000, rects, rect_count);
+        //Rect** rects = FindRects(img, lines, len, &rect_count);
+        RenderRects(img, rects, rect_count);
 
+        Rect* candidate = FindSudokuBoard(rects, rect_count);
+        if (candidate != NULL)
+        {
+            printf("=> Found rect:\n");
+            printf("   > angle = %f°\n", (candidate->ep1->alpha) * 180 / M_PI);
+            printf("   > squareness = %f\n", candidate->squareness);
+            printf("   > area = %f pix*pix\n", candidate->area);
+            RenderRect(img, 0x00FF00, candidate);
+        }
+
+        FreeRects(rects, rect_count);
         FreeLines(lines, len);
 
         if (SaveImageFile(img, "out.png"))

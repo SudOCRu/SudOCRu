@@ -1,20 +1,20 @@
 #pragma once
 #include "image.h"
 
-#define MAX_LINES 512
-#define THETA_STEPS 360
+#define MAX_LINES 4096
+#define THETA_STEPS 480
 #define BLACK_EDGE 0
 #define WHITE_EDGE 1
 
 typedef struct Line {
     int val; // peak value C(p_i, theta_i)
-    double rho;
-    double theta;
+    float rho;
+    float theta;
 
-    double x1;
-    double y1;
-    double x2;
-    double y2;
+    float x1;
+    float y1;
+    float x2;
+    float y2;
 } Line;
 
 typedef struct ExtPeak {
@@ -27,6 +27,8 @@ typedef struct ExtPeak {
 typedef struct Rect {
     ExtPeak* ep1;
     ExtPeak* ep2;
+    double squareness;
+    double area;
 } Rect;
 
 typedef struct SudokuGrid {
@@ -38,14 +40,15 @@ void Dilate(Image* img);
 
 Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
         size_t theta_steps, int threshold);
+void FreeRects(Rect** rects, size_t len);
 void FreeLines(Line** lines, size_t len);
 
 Line** AverageLines(Line** lines, size_t len, size_t* out_len);
 
 void RenderLines(Image* image, unsigned int color, Line** lines, size_t len);
-void RenderRects(Image* image, unsigned int color, Rect** rects, size_t len);
-void RenderPairs(Image* img, unsigned int color, ExtPeak** pairs, size_t l);
+void RenderRect(Image* image, unsigned int color, Rect* rect);
+void RenderRects(Image* image, Rect** rects, size_t len);
+void RenderPairs(Image* img, ExtPeak** pairs, size_t l);
 
 Rect** FindRects(Image* image, Line** lines, size_t len, size_t* found_count);
-void DetectGrid(const Image* image, SudokuGrid* grid);
-double DetectAngle(const Rect* rect);
+Rect* FindSudokuBoard(Rect** rects, size_t rect_count);
