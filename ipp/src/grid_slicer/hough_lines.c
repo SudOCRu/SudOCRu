@@ -1,5 +1,6 @@
 #include "hough_lines.h"
 #include <math.h>
+#include "renderer.h"
 #define DEBUG_VIEW
 
 Line* LineFrom(unsigned int val, float theta, float rho, float x1,
@@ -20,16 +21,17 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
         size_t theta_steps, int threshold)
 {
     size_t w = img->width, h = img->height;
-    int hsp_height = (int)ceil(sqrt(w*w + h*h))*2;
-    float dtheta = (4*M_PI)/(3*hsp_height/2);
+    int hsp_height = (int)ceil(sqrt(w*w + h*h));
+    int h_d2 = hsp_height / 2;
+    float dtheta = /*(4*M_PI)/(3*hsp_height/2)*/M_PI/200;
     int hsp_width = M_PI / dtheta; // M_PI / dtheta
+    float max_angle = 0;
 
     // Pre-generate sin, cos, 1/sin tables for faster computation.
     float sin_t[hsp_width];
     float cos_t[hsp_width];
     size_t col = 0;
-    float max_angle = M_PI;
-    for(float th = 0; col < hsp_width; col++, th += dtheta)
+    for (float th = -max_angle; col < hsp_width; col++, th += dtheta)
     {
         sin_t[col] = sin(th);
         cos_t[col] = cos(th);
@@ -55,8 +57,9 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
             {
                 for(col = 0; col < hsp_width; col++)
                 {
-                    float p = hsp_height/2 + x * cos_t[col] + y * sin_t[col];
-                    size_t idx = hsp_width * (size_t)round(p) + col;
+                    float r = x * cos_t[col] + y * sin_t[col];
+                    int rs = round((r * h_d2) / hsp_height) + h_d2;
+                    size_t idx = hsp_width * rs + col;
                     acc[idx] += 1;
                     if (acc[idx] > max) max = acc[idx];
                 }
@@ -76,12 +79,13 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
             size_t i = y * hsp_width + x;
             if (acc[i] >= threshold)
             {
-                float p = (float)y - hsp_height / 2;
+                float theta = x * dtheta - max_angle;
+                float p = ((float)y - h_d2) * hsp_height / h_d2;
                 float x0 = cos_t[x] * p;
                 float y0 = sin_t[x] * p;
                 float a = -1000*sin_t[x];
                 float b = 1000*cos_t[x];
-                out_lines[lines++] = LineFrom(acc[i], x * dtheta, p,
+                out_lines[lines++] = LineFrom(acc[i], theta, p,
                         x0 + a, y0 + b, 
                         x0 - a, y0 - b);
                 if (lines == MAX_LINES)
@@ -109,8 +113,8 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
 
 Line** AverageLines(Line** lines, size_t len, size_t* out_len)
 {
-    float deltaT = 3 * M_PI / 180; // 3° tolerance
-    float deltaR = 3;
+    float deltaT = 5 * M_PI / 180; // 3° tolerance
+    float deltaR = 15;
     Line** out_lines = (Line**)malloc(MAX_LINES * sizeof(Line*));
     size_t p = 0;
 
@@ -180,9 +184,9 @@ Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
     }
     printf("nb_pairs = %lu\n", nb_pairs);
 
-    //RenderPairs(img, pairs, nb_pairs);
+    //RenderPSets(img, pairs, nb_pairs);
 
-    size_t alloc_size = nb_pairs * 2;
+    size_t alloc_size = nb_pairs * nb_pairs;
     if (nb_pairs < len)
     {
         alloc_size = len;
@@ -201,10 +205,10 @@ Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
             float b = 2 * ep2->epsilon;
 
             float dA = fabs(fabs(ep1->alpha - ep2->alpha) - a90);
-            float dP = fabs((ep1->l1->rho + ep1->l2->rho / 2) - 
-                    (ep2->l1->rho + ep2->l2->rho / 2));
+            /*float dP = fabs((ep1->l1->rho + ep1->l2->rho / 2) -
+                    (ep2->l1->rho + ep2->l2->rho / 2));*/
             float squareness = a > b ? b / a : a / b;
-            if (dA < Ta && dP < Tp && squareness > Ts /*&& a * b >= Dmin*/)
+            if (dA < Ta /*&& dP < Tp*/ && squareness > Ts /*&& a * b >= Dmin*/)
             {
                 Rect* rect = malloc(sizeof(Rect));
                 rect->ep1 = ep1;
@@ -212,9 +216,10 @@ Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
                 rect->area = a * b;
                 rect->squareness = squareness;
                 rects[rect_count++] = rect;
-                if (rect_count == nb_pairs)
+                if (rect_count == alloc_size)
                 {
                     *found_count = rect_count;
+                    printf("rect_count (max) = %lu\n", rect_count);
                     return rects;
                 }
             }
@@ -232,11 +237,17 @@ Rect* FindSudokuBoard(Rect** rects, size_t rect_count)
     if (rect_count == 0) return NULL;
 
     Rect* max = rects[0];
-    float m_score = (max->squareness + 1) * max->area;
+    float m_score = 1/(max->squareness)
+        * fabs(max->ep1->l1->theta - max->ep1->l2->theta)
+        * fabs(max->ep2->l1->theta - max->ep2->l2->theta)
+        * max->area;
     for (size_t i = 1; i < rect_count; i++)
     {
         Rect* rect = rects[i];
-        float score = (rect->squareness + 1) * rect->area;
+        float score = 1/(rect->squareness)
+        * fabs(rect->ep1->l1->theta - rect->ep1->l2->theta)
+        * fabs(rect->ep2->l1->theta - rect->ep2->l2->theta)
+        * rect->area;
         if (score > m_score)
         {
             m_score = score;

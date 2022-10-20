@@ -50,7 +50,7 @@ void RenderLines(Image* img, unsigned int color, Line** lines, size_t l)
     }
 }
 
-void RenderPairs(Image* img, PSet** psets, size_t l)
+void RenderPSets(Image* img, PSet** psets, size_t l)
 {
     size_t w = img->width;
     size_t h = img->height;
