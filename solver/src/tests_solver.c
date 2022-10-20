@@ -224,7 +224,7 @@ int main()
 
     // HARDEST SUDOKU
 
-    /*
+    /*  
     Sudoku* hardest = CreateSudoku(hardest_board, 9, 81, 3);
     PrintBoard(hardest);
     printf("\n");

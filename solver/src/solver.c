@@ -5,9 +5,9 @@
  *
  *    Description: Functions used to solve Sudokus 
  *
- *        Version:  0.3.0
+ *        Version:  0.5
  *        Created:  10/01/22 16:12:22
- *       Revision:  code cleaning and optimizing
+ *       Revision:  finished optimizing and began error management
  *       Compiler:  gcc
  *
  *         Author:  Kevin JAMET, 
