@@ -35,14 +35,14 @@
  *      - cols : Number of cols of Sudoku board
  *      - cols : Number of rows of Sudoku board
  */
-Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 boardsize){
+Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 boardsize, u8 nbsquares){
 
     Sudoku* sudoku = malloc(sizeof(Sudoku));
     sudoku->board = array; 
     sudoku->boardedge = boardedge;
     sudoku->boardsize = boardsize;
-    
-    //u8 len = rows*cols;
+    sudoku->nbsquares = nbsquares;
+
     u8 index = 0;
 
     while (index < sudoku->boardsize){
@@ -108,6 +108,7 @@ Sudoku* ImportSudoku(char* in_file){
                 if (line[i] == '.' || line[i] == '0') 
                     index++;
                 else if (line[i] > '0' && line[i] <= '9'){ 
+                    //printf("%u\n", (unsigned char) len);
                     // TODO change this for hexa tables
                     //printf("placed at index %lu, %c\n", index, line[i]);
                     array[index] = line[i] - '0';
@@ -134,7 +135,7 @@ Sudoku* ImportSudoku(char* in_file){
     if (line) free(line);
 
     if (array == NULL) return NULL;
-    Sudoku* imported_sodoku = CreateSudoku(array, len, len*len);
+    Sudoku* imported_sodoku = CreateSudoku(array, len, len*len, len/3);
 
     return imported_sodoku;
 }
@@ -159,7 +160,7 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file){
     if (file == NULL) return 0;
 
     while (index < sudoku->boardsize){
-        if (index != 0 && index % 9 == 0) fprintf(file, "\n");
+        if (index != 0 && index % sudoku->boardedge == 0) fprintf(file, "\n");
         else if (index != 0 && index % 3 == 0) fprintf(file, " ");
         fprintf(file, "%hhu", sudoku->board[index]);
         index++;
@@ -286,16 +287,14 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
             clear(cell, &possibilities);
         }
     }
-
     if (possibilities == 0) return possibilities;
-
-     
-    size_t vgroups = sudoku->boardedge / 3;
-    size_t hgroups = sudoku->boardedge / 3;
-    size_t init_row = (row/hgroups)*hgroups;
-    size_t init_col = (col/vgroups)*vgroups;
-    for (size_t i = 0; i < vgroups; i++){
-        for (size_t j = 0; j < hgroups; j++){
+    
+    //size_t vgroups = sudoku->boardedge / 3;
+    //size_t hgroups = sudoku->boardedge / 3;
+    size_t init_row = (row/sudoku->nbsquares)*sudoku->nbsquares;
+    size_t init_col = (col/sudoku->nbsquares)*sudoku->nbsquares;
+    for (size_t i = 0; i < sudoku->nbsquares; i++){
+        for (size_t j = 0; j < sudoku->nbsquares; j++){
             idx = (init_row + i)  * sudoku->boardedge + (j + init_col) ;
             cell = sudoku->board[idx];
             if (cell != 0){
@@ -381,7 +380,10 @@ void PrintBoard(const Sudoku* sudoku){
     for (size_t row = 0; row < sudoku->boardedge; row++){
         printf("|");
         for (size_t col = 0; col < sudoku->boardedge; col++){
-            printf(" %hhu |", sudoku->board[row*sudoku->boardedge + col]);
+            if (sudoku->board[row*sudoku->boardedge + col] != 0)
+                printf(" %hhu |", sudoku->board[row*sudoku->boardedge + col]);
+            else
+                printf("   |");
         }
         printf("\n");
         for (size_t col = 0; col < sudoku->boardedge; col++){

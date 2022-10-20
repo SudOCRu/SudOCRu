@@ -203,27 +203,29 @@ int is_solution(const unsigned char* board, const Sudoku* sudoku){
 
 int main()
 {
+    
     Sudoku* imported = ImportSudoku("grid_00");
 
-    printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
+    //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
     printf("IsSudokuSolved : %i\n", IsSudokuSolved(imported));
     PrintBoard(imported);
     printf("\n");
 
     SolveSudoku(imported);
     
-    printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
+    //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
     printf("IsSudokuSolved : %i\n", IsSudokuSolved(imported));
     PrintBoard(imported);
     printf("\n");
 
     SaveSudoku(imported, "lasolution.result");
     DestroySudoku(imported);
+    
 
     // HARDEST SUDOKU
 
-    /*  
-    Sudoku* hardest = CreateSudoku(hardest_board, 9, 9);
+    /*
+    Sudoku* hardest = CreateSudoku(hardest_board, 9, 81, 3);
     PrintBoard(hardest);
     printf("\n");
 
@@ -234,7 +236,7 @@ int main()
     printf("\n");
 
     SaveSudoku(hardest, "leplusdur.result");
-    DestroySudoku(hardest);
+    //DestroySudoku(hardest);
     */
 
 
