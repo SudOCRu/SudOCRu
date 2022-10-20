@@ -5,9 +5,9 @@
  *
  *    Description: Functions used to solve Sudokus 
  *
- *        Version:  0.2.0
+ *        Version:  0.3.0
  *        Created:  10/01/22 16:12:22
- *       Revision:  finished SaveSudoku
+ *       Revision:  code cleaning and optimizing
  *       Compiler:  gcc
  *
  *         Author:  Kevin JAMET, 
@@ -35,17 +35,17 @@
  *      - cols : Number of cols of Sudoku board
  *      - cols : Number of rows of Sudoku board
  */
-Sudoku* CreateSudoku(u8* array, u8 cols, u8 rows){
+Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 boardsize){
 
     Sudoku* sudoku = malloc(sizeof(Sudoku));
     sudoku->board = array; 
-    sudoku->cols = cols;
-    sudoku->rows = rows;
+    sudoku->boardedge = boardedge;
+    sudoku->boardsize = boardsize;
     
-    u8 len = rows*cols;
+    //u8 len = rows*cols;
     u8 index = 0;
 
-    while (index < len){
+    while (index < sudoku->boardsize){
         sudoku->board[index] = array[index];
         index++;
     }
@@ -75,7 +75,6 @@ void DestroySudoku(Sudoku* sudoku){
 Sudoku* ImportSudoku(char* in_file){
 
     //in_file++;
-    // TODO 
     //Sudoku* sudoku;
 
     // INDEXES
@@ -92,23 +91,9 @@ Sudoku* ImportSudoku(char* in_file){
     if (file == NULL) return NULL;
 
     // COUNT THE NUMBER OF ROWS/COLS
-    /*
-    line_reader = getline(&line, &length, file);
-    while (line[index] != '\n') index++;
-
-    printf("%lu\n", index);
-    index = (index == 12? 9 : 16); // if 11 lines : 9 cols/rows; else 12
-    printf("%lu\n", index);
-
-
-    u8* array = calloc(index * index, sizeof(u8));
-    //for (size_t i = 0; i < index*index; i++) array[i] = 0; 
-    */
-
     // FILL THE SUDOKU
     u8* array = NULL;
     size_t len = 0;
-    index = 0;
     while ((line_reader = getline(&line, &length, file)) != -1){
         //printf("%lu", length);
         // SUDOKU FILLING 
@@ -130,10 +115,14 @@ Sudoku* ImportSudoku(char* in_file){
                     index++;
                 }    
                 else{
+
+                    //  --- DEBUG  ---
                     //printf("invalid char at index: %lu => '%hhu'\n", i, line[i]);
                     fclose(file);
                     if (line) free(line);
                     free(array);
+
+                    //  --- DEBUG  ---
                     //printf("invalid char at index: %lu => '%c'\n", i, line[i]);
                     return NULL;
                 }
@@ -145,7 +134,7 @@ Sudoku* ImportSudoku(char* in_file){
     if (line) free(line);
 
     if (array == NULL) return NULL;
-    Sudoku* imported_sodoku = CreateSudoku(array, len, len);
+    Sudoku* imported_sodoku = CreateSudoku(array, len, len*len);
 
     return imported_sodoku;
 }
@@ -169,7 +158,7 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file){
     file = fopen(out_file, "w");
     if (file == NULL) return 0;
 
-    while (index < sudoku->rows * sudoku->cols){
+    while (index < sudoku->boardsize){
         if (index != 0 && index % 9 == 0) fprintf(file, "\n");
         else if (index != 0 && index % 3 == 0) fprintf(file, " ");
         fprintf(file, "%hhu", sudoku->board[index]);
@@ -188,25 +177,6 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file){
 // ----------------------------      Checks        --------------------------- 
 // ===========================================================================
 
-/*  > BoxCheck
- * Check if one number of the "sudoku" grid is valid (if it's in the right 
- * place)
- * > Returns 0 (false) if the number is not at a valid position, else 1 (true)
- *      - sudoku : Sudoku grid to check
- *      - index : 
- */
-int BoxCheck(const Sudoku* sudoku, u8 index){
-
-    // TODO
-    
-    for (u8 i = index%sudoku->rows; i <= index+3*(sudoku->cols); 
-            i += sudoku->cols){
-        //for (u8 j = index/cols; // TODO finsih function using indexes
-    }
-
-    return 1;
-}
-
 short PossibleValues(const Sudoku* sudoku, u8 index);
 void clear (short n, short* flag);
 
@@ -215,81 +185,10 @@ void clear (short n, short* flag);
  * > Returns 0 (false) if the board is not valid, else 1 (true)
  *      - sudoku : Sudoku grid to check
  */
-int IsSudokuValid(const Sudoku* sudoku){
-
-    // TODO : check if correct
-    //
-    // for i in range len sudoku
-    //      if (!(check column && check row && check square)) return 0;
-
-    u8 index = 0;
-    while (index < sudoku->cols * sudoku->rows){
-        u8 row = index / sudoku->rows;
-        u8 col = index % sudoku->cols;
-        short possibilities = 0b111111111;
-        short previous_poss = 0b111111111;
-        size_t idx;
-        u8 cell;
-
-        for(size_t i = 0; i < sudoku->rows; i++)
-        {
-            idx = row * sudoku->rows + i;
-            cell = sudoku->board[idx];
-            if (cell != 0)
-            {
-                previous_poss = possibilities;
-                clear(cell, &possibilities);
-                if (possibilities == previous_poss) return 0;
-            }
-        }
-        //if (possibilities == 0) return possibilities;
-
-        for(size_t i = 0; i < sudoku->cols; i++)
-        {
-            idx = i * sudoku->cols + col;
-            cell = sudoku->board[idx];
-            if (cell != 0)
-            {
-                previous_poss = possibilities;
-                clear(cell, &possibilities);
-                if (possibilities == previous_poss) return 0;
-            }
-        }
-
-        //if (possibilities == 0) return possibilities;
-
-         
-        size_t vgroups = sudoku->cols / 3;
-        size_t hgroups = sudoku->rows / 3;
-        size_t init_row = (row/hgroups)*hgroups;
-        size_t init_col = (col/vgroups)*vgroups;
-        for (size_t i = 0; i < vgroups; i++){
-            for (size_t j = 0; j < hgroups; j++){
-                idx = (init_row + i)  * sudoku->rows + (j + init_col) ;
-                cell = sudoku->board[idx];
-                if (cell != 0){
-                    previous_poss = possibilities;
-                    clear(cell, &possibilities);
-                    if (possibilities == previous_poss) return 0;
-                }
-            }
-        }
-        index++;
-    }
-    
+int IsSudokuValid(Sudoku* sudoku){
+    Sudoku* issolvable = SolveSudoku(sudoku);
+    if (issolvable == NULL) return 0;
     return 1;
-    
-
-    /* /
-    u8 len = sudoku->rows*sudoku->cols;
-    u8 index = 0;
-    while (index < len){
-        if (!BoxCheck(sudoku, index)) return 0;
-        index++;
-    }
-
-    return 1;
-    */
 }
 
 /*  > IsSudokuSolved
@@ -298,18 +197,13 @@ int IsSudokuValid(const Sudoku* sudoku){
  *      - sudoku : Sudoku grid to check
  */
 int IsSudokuSolved(const Sudoku* sudoku){
-
-    // TODO
-    
-    //if (!IsSudokuValid) return 0;
-    u8 len = sudoku->cols * sudoku->rows;
     u8 index = 0;
 
-    while(index < len && 
+    while(index < sudoku->boardsize && 
              PossibleValues(sudoku, index) == 0) 
         index++;
     
-    return index == len;
+    return index == sudoku->boardsize;
     
 }
 
@@ -362,17 +256,19 @@ void clear (short n, short* flag){
  *      - index : index of box to find possibilities
  */
 short PossibleValues(const Sudoku* sudoku, u8 index){
+
     // possibilities are in binary representation and are power of 2 numbers
     //  ex : if 9 is possible : 2^9 is added to possibilities
-    u8 row = index / sudoku->rows;
-    u8 col = index % sudoku->cols;
+
+    u8 row = index / sudoku->boardedge;
+    u8 col = index % sudoku->boardedge;
     short possibilities = 0b111111111;
     size_t idx;
     u8 cell;
 
-    for(size_t i = 0; i < sudoku->rows; i++)
+    for(size_t i = 0; i < sudoku->boardedge; i++)
     {
-        idx = row * sudoku->rows + i;
+        idx = row * sudoku->boardedge + i;
         cell = sudoku->board[idx];
         if (cell != 0)
         {
@@ -381,9 +277,9 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
     }
     if (possibilities == 0) return possibilities;
 
-    for(size_t i = 0; i < sudoku->cols; i++)
+    for(size_t i = 0; i < sudoku->boardedge; i++)
     {
-        idx = i * sudoku->cols + col;
+        idx = i * sudoku->boardedge + col;
         cell = sudoku->board[idx];
         if (cell != 0)
         {
@@ -394,13 +290,13 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
     if (possibilities == 0) return possibilities;
 
      
-    size_t vgroups = sudoku->cols / 3;
-    size_t hgroups = sudoku->rows / 3;
+    size_t vgroups = sudoku->boardedge / 3;
+    size_t hgroups = sudoku->boardedge / 3;
     size_t init_row = (row/hgroups)*hgroups;
     size_t init_col = (col/vgroups)*vgroups;
     for (size_t i = 0; i < vgroups; i++){
         for (size_t j = 0; j < hgroups; j++){
-            idx = (init_row + i)  * sudoku->rows + (j + init_col) ;
+            idx = (init_row + i)  * sudoku->boardedge + (j + init_col) ;
             cell = sudoku->board[idx];
             if (cell != 0){
                 clear(cell, &possibilities);
@@ -419,28 +315,28 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
  *      - sudoku : sudoku pointer to modify
  */
 int Backtracking(Sudoku* sudoku, size_t i){
-    //u8 len = sudoku->cols * sudoku->rows; 
-    u8 len = 81;
     
-    // TODO: boucle while pour chercher
-    while (i < len && sudoku->board[i] != 0) i++;
-    if (i >= len)
+    while (i < sudoku->boardsize && sudoku->board[i] != 0) i++;
+    if (i >= sudoku->boardsize)
     {
         return 1;
     }
 
-
+    //  --- DEBUG  ---
     //printf("index: %lu", i);
+
     short possibilities = PossibleValues(sudoku, i);
     for (u8 possible_values = 1; possible_values <= 9; 
             possible_values++)
     {
+        //  ---  DEBUG  ---
         //printf("is %hhu valid -> %i\n", possible_values, 
         //        (verify(possible_values, possibilities)));
         
         if (verify(possible_values, possibilities)){
             sudoku->board[i] = possible_values; 
 
+            //   ---  DEBUG  ---
             //printf("\e[1;1H\e[2J");           
             //PrintBoard(sudoku);
             //sleep(1);
@@ -455,30 +351,6 @@ int Backtracking(Sudoku* sudoku, size_t i){
     }    
 
     return 0;
-
-    /*
-    while (index < len){
-        // TODO if 0 :
-        if (sudoku->board[index] != 0){
-            possibilities = PossibleValues(sudoku);
-            while (possibilities < 1 && !found_solution){
-                
-                sudoku->board[index] = possibilities >> 1; // TODO check if correct
-                found_solution = Backtracking(sudoku);
-                                
-                if (found_solution) return 1;
-                else{
-                    sudoku->board[index] = 0; // TODO check if necessary
-                }
-            }
-        }
-        if (found_solution) {
-            index--;
-        }
-        else index++;
-        // if another number
-    }
-    */
 }
 
 /*  > SolveSudoku
@@ -486,9 +358,7 @@ int Backtracking(Sudoku* sudoku, size_t i){
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
  *      - sudoku : Sudoku grid to solve
  */
-Sudoku* SolveSudoku(Sudoku* sudoku){ // TODO return int ?? const ????
-    //Sudoku* sudoku_solved; // TODO : use createsudoku function
-
+Sudoku* SolveSudoku(Sudoku* sudoku){ 
     int is_solved = Backtracking(sudoku,0);
     if (is_solved)
         return sudoku;
@@ -502,19 +372,19 @@ Sudoku* SolveSudoku(Sudoku* sudoku){ // TODO return int ?? const ????
  */
 void PrintBoard(const Sudoku* sudoku){
     if (sudoku == NULL) return;
-    // print first edge of square
-    for (size_t col = 0; col < sudoku->cols; col++){
+    
+    for (size_t col = 0; col < sudoku->boardedge; col++){
             printf(" ---");
     }
     printf("\n");
 
-    for (size_t row = 0; row < sudoku->rows; row++){
+    for (size_t row = 0; row < sudoku->boardedge; row++){
         printf("|");
-        for (size_t col = 0; col < sudoku->cols; col++){
-            printf(" %hhu |", sudoku->board[row*sudoku->rows + col]);
+        for (size_t col = 0; col < sudoku->boardedge; col++){
+            printf(" %hhu |", sudoku->board[row*sudoku->boardedge + col]);
         }
         printf("\n");
-        for (size_t col = 0; col < sudoku->cols; col++){
+        for (size_t col = 0; col < sudoku->boardedge; col++){
             printf(" ---");
         }
         printf("\n");

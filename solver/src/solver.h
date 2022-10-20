@@ -9,8 +9,8 @@ typedef unsigned char u8;
  */
 typedef struct Sudoku {
     u8* board;
-    u8 cols;
-    u8 rows;
+    u8 boardedge;
+    u8 boardsize;
 } Sudoku;
 
 /*  > CreateSudoku
@@ -20,7 +20,7 @@ typedef struct Sudoku {
  *      - cols : Number of cols of Sudoku board
  *      - cols : Number of rows of Sudoku board
  */
-Sudoku* CreateSudoku(u8* array, u8 cols, u8 rows);
+Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 boardsize);
 
 /*  > DestroySudoku
  * Destroys of the provided Sudoku board.
@@ -51,7 +51,7 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file);
  * > Returns 0 (false) if the board is not valid, else 1 (true)
  *      - sudoku : Sudoku grid to check
  */
-int IsSudokuValid(const Sudoku* sudoku);
+int IsSudokuValid(Sudoku* sudoku);
 
 /*  > IsSudokuSolved
  * Check if "sudoku" grid is solved (if the grid is filled of numbers != 0)

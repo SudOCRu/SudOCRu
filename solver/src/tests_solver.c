@@ -106,6 +106,19 @@ unsigned char board6[] =  {
     0, 0, 0, 0, 0, 0, 0, 4, 0,
 };
 
+unsigned char hardest_board[] =
+{
+    9, 0, 0, 8, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 5, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 2, 0, 0, 1, 0, 0, 0, 3,
+    0, 1, 0, 0, 0, 0, 0, 6, 0,
+    0, 0, 0, 4, 0, 0, 0, 7, 0,
+    7, 0, 8, 6, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 3, 0, 1, 0, 0,
+    4, 0, 0, 0, 0, 0, 2, 0, 0
+};
+
 // ================= SOLUTIONS =====================
 
 unsigned char board1_s[] =  {
@@ -207,9 +220,27 @@ int main()
     SaveSudoku(imported, "lasolution.result");
     DestroySudoku(imported);
 
-    Sudoku* false_sudoku = CreateSudoku(board1_false, 9, 9);
-    printf("IsSudokuValid (false) : %i\n", IsSudokuValid(false_sudoku));
-    DestroySudoku(false_sudoku);
+    // HARDEST SUDOKU
+
+    /*  
+    Sudoku* hardest = CreateSudoku(hardest_board, 9, 9);
+    PrintBoard(hardest);
+    printf("\n");
+
+    SolveSudoku(hardest);
+
+    printf("IsSudokuSolved : %i\n", IsSudokuSolved(hardest));
+    PrintBoard(hardest);
+    printf("\n");
+
+    SaveSudoku(hardest, "leplusdur.result");
+    DestroySudoku(hardest);
+    */
+
+
+    //Sudoku* false_sudoku = CreateSudoku(board1_false, 9, 9);
+    //printf("IsSudokuValid (false) : %i\n", IsSudokuValid(false_sudoku));
+    //DestroySudoku(false_sudoku);
 
 
     /* 
