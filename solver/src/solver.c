@@ -5,9 +5,9 @@
  *
  *    Description: Functions used to solve Sudokus 
  *
- *        Version:  0.5
+ *        Version:  0.5.1
  *        Created:  10/01/22 16:12:22
- *       Revision:  finished optimizing and began error management
+ *       Revision:  ultra opti finished and began error management
  *       Compiler:  gcc
  *
  *         Author:  Kevin JAMET, 
@@ -179,7 +179,7 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file){
 // ===========================================================================
 
 short PossibleValues(const Sudoku* sudoku, u8 index);
-void clear (short n, short* flag);
+int clear (short n, short* flag);
 
 /*  > IsSudokuValid
  * Check if "sudoku" grid is valid (if it's solvable)
@@ -200,8 +200,7 @@ int IsSudokuValid(Sudoku* sudoku){
 int IsSudokuSolved(const Sudoku* sudoku){
     u8 index = 0;
 
-    while(index < sudoku->boardsize && 
-             PossibleValues(sudoku, index) == 0) 
+    while(index < sudoku->boardsize && PossibleValues(sudoku, index) == 0) 
         index++;
     
     return index == sudoku->boardsize;
@@ -239,9 +238,10 @@ short set (short n, short flag){
  *      - n : number to set
  *      - flag : all possibilities
  */
-void clear (short n, short* flag){
+int clear (short n, short* flag){
     short mark = 1 << (n-1);
     *flag = *flag & ~mark;
+    return *flag == 0;
 }
 
 
@@ -267,41 +267,34 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
     size_t idx;
     u8 cell;
 
-    for(size_t i = 0; i < sudoku->boardedge; i++)
-    {
-        idx = row * sudoku->boardedge + i;
-        cell = sudoku->board[idx];
-        if (cell != 0)
-        {
-            clear(cell, &possibilities);
-        }
-    }
-    if (possibilities == 0) return possibilities;
+    u8 init_row = (row/sudoku->nbsquares)*sudoku->nbsquares;
+    u8 init_col = (col/sudoku->nbsquares)*sudoku->nbsquares;
 
     for(size_t i = 0; i < sudoku->boardedge; i++)
     {
+        /// horizontal
+        idx = row * sudoku->boardedge + i;
+        cell = sudoku->board[idx];
+        if (cell != 0 && clear(cell, &possibilities)) {
+            return 0;
+        }
+
+        // vertical
         idx = i * sudoku->boardedge + col;
         cell = sudoku->board[idx];
-        if (cell != 0)
-        {
-            clear(cell, &possibilities);
+        if (cell != 0 && clear(cell, &possibilities)) {
+            return 0;
+        }
+
+        // groups
+        idx = (init_row + (i / sudoku->nbsquares)) * sudoku->boardedge
+            + ((i % sudoku->nbsquares) + init_col);
+        cell = sudoku->board[idx];
+        if (cell != 0 && clear(cell, &possibilities)) {
+            return 0;
         }
     }
-    if (possibilities == 0) return possibilities;
-    
-    //size_t vgroups = sudoku->boardedge / 3;
-    //size_t hgroups = sudoku->boardedge / 3;
-    size_t init_row = (row/sudoku->nbsquares)*sudoku->nbsquares;
-    size_t init_col = (col/sudoku->nbsquares)*sudoku->nbsquares;
-    for (size_t i = 0; i < sudoku->nbsquares; i++){
-        for (size_t j = 0; j < sudoku->nbsquares; j++){
-            idx = (init_row + i)  * sudoku->boardedge + (j + init_col) ;
-            cell = sudoku->board[idx];
-            if (cell != 0){
-                clear(cell, &possibilities);
-            }
-        }
-    }
+
     
     return possibilities;
 }
@@ -325,15 +318,15 @@ int Backtracking(Sudoku* sudoku, size_t i){
     //printf("index: %lu", i);
 
     short possibilities = PossibleValues(sudoku, i);
-    for (u8 possible_values = 1; possible_values <= 9; 
-            possible_values++)
+    for (u8 n = 1; n <= 9; n++)
     {
         //  ---  DEBUG  ---
         //printf("is %hhu valid -> %i\n", possible_values, 
         //        (verify(possible_values, possibilities)));
         
-        if (verify(possible_values, possibilities)){
-            sudoku->board[i] = possible_values; 
+        //printf("[%lu] Testing: %hhu -> %i\n", i, n, f & 1);
+        if (verify(n, possibilities)){
+            sudoku->board[i] = n;
 
             //   ---  DEBUG  ---
             //printf("\e[1;1H\e[2J");           
