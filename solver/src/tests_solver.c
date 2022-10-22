@@ -203,6 +203,30 @@ int is_solution(const unsigned char* board, const Sudoku* sudoku){
 
 int main()
 {
+    /* 
+    Sudoku* sudoku6_save = CreateSudoku(board6, 9, 81, 3);
+    SaveSudoku(sudoku6_save, "grid_06");
+
+    Sudoku* sudoku6 = ImportSudoku("grid_06");
+
+    //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
+    printf("IsSudokuSolved : %i\n", IsSudokuSolved(sudoku6));
+    PrintBoard(sudoku6);
+    printf("\n");
+
+    SolveSudoku(sudoku6);
+    
+    //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
+    printf("IsSudokuSolved : %i\n", IsSudokuSolved(sudoku6));
+    PrintBoard(sudoku6);
+    printf("\n");
+
+    SaveSudoku(sudoku6, "lasolution.result");
+    DestroySudoku(sudoku6);
+    */
+
+
+    
     Sudoku* imported = ImportSudoku("grid_00");
 
     //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
@@ -219,12 +243,12 @@ int main()
 
     SaveSudoku(imported, "lasolution.result");
     DestroySudoku(imported);
-    /*
+    
     
 
     // HARDEST SUDOKU
 
-    
+    /*  
     Sudoku* hardest = CreateSudoku(hardest_board, 9, 81, 3);
     PrintBoard(hardest);
     printf("\n");
@@ -237,13 +261,13 @@ int main()
 
     SaveSudoku(hardest, "leplusdur.result");
     //DestroySudoku(hardest);
-    
+    */
 
 
     //Sudoku* false_sudoku = CreateSudoku(board1_false, 9, 9);
     //printf("IsSudokuValid (false) : %i\n", IsSudokuValid(false_sudoku));
     //DestroySudoku(false_sudoku);
-    */
+    
 
     /* 
     Sudoku* imported_solved = ImportSudoku("grid_00.result");

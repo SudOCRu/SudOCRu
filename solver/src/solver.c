@@ -5,9 +5,9 @@
  *
  *    Description: Functions used to solve Sudokus 
  *
- *        Version:  0.5.1
+ *        Version:  0.5.2
  *        Created:  10/01/22 16:12:22
- *       Revision:  ultra opti finished and began error management
+ *       Revision:  problems in sudoku saving debugged
  *       Compiler:  gcc
  *
  *         Author:  Kevin JAMET, 
@@ -99,7 +99,9 @@ Sudoku* ImportSudoku(char* in_file){
         // SUDOKU FILLING 
         if (array == NULL) {
             while (line[len] != '\n') len++;
-            len = (len == 12? 9 : 16); 
+            // ---  DEBUG  ---
+            //printf("%u\n", (unsigned char) len);
+            len = (len <= 12? 9 : 16); 
             array = calloc(len * len, sizeof(u8));
         }
         for (ssize_t i = 0; i < line_reader; i++){
@@ -162,10 +164,14 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file){
     while (index < sudoku->boardsize){
         if (index != 0 && index % sudoku->boardedge == 0) fprintf(file, "\n");
         else if (index != 0 && index % 3 == 0) fprintf(file, " ");
-        fprintf(file, "%hhu", sudoku->board[index]);
+        if (sudoku->board[index] != 0){
+            fprintf(file, "%hhu", sudoku->board[index]);
+        }
+        else fprintf(file, ".");
+
         index++;
     }
-    fprintf(file, "\n ");
+    //fprintf(file, "\n ");
 
     fclose(file);
 
