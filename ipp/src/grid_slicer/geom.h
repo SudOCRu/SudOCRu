@@ -44,6 +44,10 @@ typedef struct Rect {
     float squareness;
 } Rect;
 
+/*
+ * BBox or Bounding Box stores the intersection points of the lines that form
+ * the corresponding quad.
+*/
 typedef struct BBox {
     unsigned int x1;
     unsigned int y1;
@@ -51,6 +55,13 @@ typedef struct BBox {
     unsigned int y2;
 } BBox;
 
+/*
+ * BBox* NewBB(Rect* rectangle) -> BBox*
+ *
+ * Returns the bounding box of the corresponding rectangle by calculating the
+ * intersections of the its four lines. Note that the input rectangle must not
+ * be NULL.
+*/
 BBox* NewBB(Rect* r);
 
 /*

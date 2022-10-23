@@ -46,6 +46,8 @@ BBox* NewBB(Rect* r)
     LineIntersection(l2, l4, &p4_x, &p4_y);
 
     BBox* bb = malloc(sizeof(BBox*));
+    if (bb == NULL)
+        return NULL;
     bb->x1 = min4(p1_x, p2_x, p3_x, p4_x);
     bb->y1 = min4(p1_y, p2_y, p3_y, p4_y);
     bb->x2 = max4(p1_x, p2_x, p3_x, p4_x);
