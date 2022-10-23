@@ -5,9 +5,9 @@
  *
  *    Description: Functions used to solve Sudokus 
  *
- *        Version:  0.5.2
+ *        Version:  0.6.0
  *        Created:  10/01/22 16:12:22
- *       Revision:  problems in sudoku saving debugged
+ *       Revision:  error codes implemented
  *       Compiler:  gcc
  *
  *         Author:  Kevin JAMET, 
@@ -26,6 +26,33 @@
 // ===========================================================================
 // -----------------------      Sudoku Treatment        ---------------------- 
 // ===========================================================================
+
+enum SudokuError{
+    // Sudoku = 0
+    Exit_Success = 0,
+    Operation_Successed = 1,
+
+    //SolverError = 10
+    Sudoku_Not_Solvable = 11,
+    Sudoku_Not_Solved = 12,
+
+    //CreateSudoku = 10
+    
+    //ImportSudoku = 20
+    File_Do_Not_Exists = 21,
+    Empty_File = 22,
+    Sudoku_Format_Invalid = 23,
+    Invalid_Character = 24,
+    
+    //SaveSudoku = 30
+    Cant_Save_Sudoku = 31,
+
+    //DestroyError = 40
+    Sudoku_Null = 41,
+
+    //Print = 
+    Cant_Print_Null_Sudoku
+};
 
 
 /*  > CreateSudoku
@@ -59,9 +86,13 @@ Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 boardsize, u8 nbsquares){
  */
 void DestroySudoku(Sudoku* sudoku){
 
-    if (sudoku == NULL) return;
+    if (sudoku == NULL) 
+        errx(Sudoku_Null, "DestroySudoku: Can't destroy null Sudoku");
 
     free(sudoku->board);
+    //free(sudoku->boardedge);
+    //free(sudoku->boardsize);
+    //free(sudoku->nbsquares);
     free(sudoku);        
 }
 
@@ -88,7 +119,9 @@ Sudoku* ImportSudoku(char* in_file){
 
     // CHECK IF FILE EXISTS
     file = fopen(in_file, "r");
-    if (file == NULL) return NULL;
+    if (file == NULL) 
+        errx(File_Do_Not_Exists, 
+                "ImportSudoku: File do not exists named as %s", in_file);
 
     // COUNT THE NUMBER OF ROWS/COLS
     // FILL THE SUDOKU
@@ -101,7 +134,15 @@ Sudoku* ImportSudoku(char* in_file){
             while (line[len] != '\n') len++;
             // ---  DEBUG  ---
             //printf("%u\n", (unsigned char) len);
-            len = (len <= 12? 9 : 16); 
+            if (len == 11 || len == 12) // Sudoku
+                len = 9;
+            else if (len == 19 || len == 20) // HexaSudoku
+                len = 16;
+            else
+                errx(Sudoku_Format_Invalid, 
+                        "ImportSudoku: Sudoku Format Invalid \
+                        (length of line should be 11 or 19 but was %u", 
+                        (unsigned char) len);
             array = calloc(len * len, sizeof(u8));
         }
         for (ssize_t i = 0; i < line_reader; i++){
@@ -127,7 +168,9 @@ Sudoku* ImportSudoku(char* in_file){
 
                     //  --- DEBUG  ---
                     //printf("invalid char at index: %lu => '%c'\n", i, line[i]);
-                    return NULL;
+                    errx(Invalid_Character, 
+                            "ImportSudoku: Invalid char at \
+                            index: %lu => '%c'\n", i, line[i]);
                 }
             }
         }    
@@ -136,7 +179,8 @@ Sudoku* ImportSudoku(char* in_file){
     fclose(file);
     if (line) free(line);
 
-    if (array == NULL) return NULL;
+    if (array == NULL)
+        errx(Empty_File, "ImportSudoku: Empty file named %s", in_file);
     Sudoku* imported_sodoku = CreateSudoku(array, len, len*len, len/3);
 
     return imported_sodoku;
@@ -159,7 +203,11 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file){
 
     // CHECK IF FILE EXISTS
     file = fopen(out_file, "w");
-    if (file == NULL) return 0;
+    if (file == NULL) {
+        errx(Cant_Save_Sudoku, 
+                "SaveSudoku: Can't save Sudoku at location %s", out_file);
+        return Cant_Save_Sudoku;
+    }
 
     while (index < sudoku->boardsize){
         if (index != 0 && index % sudoku->boardedge == 0) fprintf(file, "\n");
@@ -175,7 +223,7 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file){
 
     fclose(file);
 
-    return 1;
+    return Operation_Successed;
 }
 
 
@@ -194,8 +242,12 @@ int clear (short n, short* flag);
  */
 int IsSudokuValid(Sudoku* sudoku){
     Sudoku* issolvable = SolveSudoku(sudoku);
-    if (issolvable == NULL) return 0;
-    return 1;
+    if (issolvable == NULL){
+        errx(Sudoku_Not_Solvable, 
+                "IsSudokuValid: Sudoku not solvable (no solutions available)");
+        return Sudoku_Not_Solvable;
+    }
+    return Operation_Successed;
 }
 
 /*  > IsSudokuSolved
@@ -317,7 +369,7 @@ int Backtracking(Sudoku* sudoku, size_t i){
     while (i < sudoku->boardsize && sudoku->board[i] != 0) i++;
     if (i >= sudoku->boardsize)
     {
-        return 1;
+        return Operation_Successed;
     }
 
     //  --- DEBUG  ---
@@ -339,16 +391,16 @@ int Backtracking(Sudoku* sudoku, size_t i){
             //PrintBoard(sudoku);
             //sleep(1);
 
-            if(Backtracking(sudoku, i))
+            if(Backtracking(sudoku, i) == Operation_Successed)
             { 
-                return 1;
+                return Operation_Successed;
             }
             sudoku->board[i] = 0;
         }   
         
     }    
 
-    return 0;
+    return Sudoku_Not_Solved;
 }
 
 /*  > SolveSudoku
@@ -358,8 +410,10 @@ int Backtracking(Sudoku* sudoku, size_t i){
  */
 Sudoku* SolveSudoku(Sudoku* sudoku){ 
     int is_solved = Backtracking(sudoku,0);
-    if (is_solved)
+    if (is_solved == Operation_Successed)
         return sudoku;
+    errx(Sudoku_Not_Solved, 
+            "SolveSudoku: Sudoku not solved, no solutions found");
     return NULL;
 }
 
@@ -369,7 +423,8 @@ Sudoku* SolveSudoku(Sudoku* sudoku){
  *      - sudoku : Sudoku grid to print
  */
 void PrintBoard(const Sudoku* sudoku){
-    if (sudoku == NULL) return;
+    if (sudoku == NULL) 
+        errx(Cant_Print_Null_Sudoku, "PrintBoard: Can't print null Sudoku");
     
     for (size_t col = 0; col < sudoku->boardedge; col++){
             printf(" ---");
