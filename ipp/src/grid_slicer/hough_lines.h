@@ -3,7 +3,7 @@
 #include "geom.h"
 
 #define MAX_LINES 4096
-#define THETA_STEPS 480
+#define THETA_STEPS 180
 #define BLACK_EDGE 0
 #define WHITE_EDGE 1
 

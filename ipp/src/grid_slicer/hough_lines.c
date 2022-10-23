@@ -1,5 +1,6 @@
-#include "hough_lines.h"
+#include <err.h>
 #include <math.h>
+#include "hough_lines.h"
 #include "renderer.h"
 #define DEBUG_VIEW
 
@@ -23,7 +24,7 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
     size_t w = img->width, h = img->height;
     int hsp_height = (int)ceil(sqrt(w*w + h*h));
     int h_d2 = hsp_height / 2;
-    float dtheta = M_PI/180;
+    float dtheta = M_PI / theta_steps;
     int hsp_width = M_PI / dtheta; // M_PI / dtheta
     float max_angle = 0;
 
@@ -40,7 +41,8 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
     Image* accumulator = CreateImage(0, hsp_width, hsp_height, NULL);
     if (accumulator == NULL)
     {
-        printf("Not enough memory for acc (%ix%i) \n", hsp_width, hsp_height);
+        errx(EXIT_FAILURE, "Not enough memory for Hough Space (%ix%i) \n",
+                hsp_width, hsp_height);
         return NULL;
     }
     const unsigned int* pixels = img->pixels;
@@ -128,13 +130,13 @@ Line** AverageLines(Line** lines, size_t len, size_t* out_len)
             if (fabs(candidate->theta - other->theta) < deltaT
                     && fabs(candidate->rho - other->rho) < deltaR)
             {
-                other->val = (candidate->val + other->val) / 2;
-                other->rho = (candidate->rho + other->rho) / 2;
+                other->val   = (candidate->val   + other->val)   / 2;
+                other->rho   = (candidate->rho   + other->rho)   / 2;
                 other->theta = (candidate->theta + other->theta) / 2;
-                other->x1 = (candidate->x1 + other->x1) / 2;
-                other->y1 = (candidate->y1 + other->y1) / 2;
-                other->x2 = (candidate->x2 + other->x2) / 2;
-                other->y2 = (candidate->y2 + other->y2) / 2;
+                other->x1    = (candidate->x1    + other->x1)    / 2;
+                other->y1    = (candidate->y1    + other->y1)    / 2;
+                other->x2    = (candidate->x2    + other->x2)    / 2;
+                other->y2    = (candidate->y2    + other->y2)    / 2;
                 add = 0;
                 break;
             }
