@@ -37,9 +37,14 @@ Image* CreateImage(unsigned int col, size_t w, size_t h,
  * */
 Image* LoadImageFile(const char* path, ImageStatus* out_status);
 
+/* Creates an SDL Surface from the `src` image. If the operation fails this
+ * function returns the NULl pointer.
+ */
+SDL_Surface* ImageAsSurface(const Image* src);
+
 /* Saves the `src` image to the `dest` file using SDL. The dest string must be
  * a valid string. If the operation fails this function returns 0 (false), 1
- * otherwise (true). 
+ * otherwise (true). This function uses the ImageAsSurface function.
  */
 int SaveImageFile(const Image* src, const char* dest);
 
@@ -65,7 +70,7 @@ Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h,
 
 /* Rotate the given image by `angle` rads and fills the missing pixels by
  * the `fill` color */
-void RotateImage(Image* image, double angle, int fill);
+void RotateImage(Image* image, float angle, unsigned int fill);
 
 /* Destroys (free the memory) the loaded Image.
  * It is safe to pass NULL to this function. */

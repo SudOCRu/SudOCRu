@@ -25,7 +25,6 @@ int main(int argc, char** argv)
         // load succeeded
         printf("Loaded image successfully (%lux%lu)\n",img->width,img->height);
 
-
         printf("Running edge detection (HT)...\n");
         int white_edge = argc >= 3 ? argv[2][0] == '1' : WHITE_EDGE;
         int threshold = argc >= 4 ? strtol(argv[3], NULL, 10) : -50;
