@@ -25,20 +25,13 @@ int main(int argc, char** argv)
         // load succeeded
         printf("Loaded image successfully (%lux%lu)\n",img->width,img->height);
 
-        size_t len = 0;
 
         printf("Running edge detection (HT)...\n");
         int white_edge = argc >= 3 ? argv[2][0] == '1' : WHITE_EDGE;
         int threshold = argc >= 4 ? strtol(argv[3], NULL, 10) : -50;
+
+        size_t len = 0;
         Line** lines = HoughLines(img, &len, white_edge,THETA_STEPS, threshold);
-        /*
-        for(size_t i = 0; i < len; i++)
-        {
-            Line* l = lines[i];
-            printf("%lu: theta = %f; rho = %f => y = %fx + %f\n",
-                    i, l->theta, l->rho, l->a, l->b);
-        }
-        */
         //RenderLines(img, 0x0000FF, lines, len);
         size_t fil_len = 0;
         Line** filtered = AverageLines(lines, len, &fil_len);
@@ -47,18 +40,36 @@ int main(int argc, char** argv)
 
         size_t rect_count = 0;
         Rect** rects = FindRects(img, filtered, fil_len, &rect_count);
-        //Rect** rects = FindRects(img, lines, len, &rect_count);
         //RenderRects(img, rects, rect_count);
+        Rect** best = GetBestRects(rects, rect_count, 5);
 
-        Rect* candidate = FindSudokuBoard(rects, rect_count);
+        printf("Results:\n");
+        printf("-------------------------------------------------\n");
+        printf("|  i |  color |     area | squareness |   angle |\n");
+        printf("-------------------------------------------------\n");
+        int colors[5] = {0x00FF00, 0xFFAA00, 0xAA00FF, 0xFF00AA, 0x00FFFF};
+        char* names[5] = { "green", "orange", "purple", "pink", "cyan" };
+        for(size_t i = 5; i > 0; i--)
+        {
+            Rect* r = best[i - 1];
+            if (r == NULL) continue;
+            printf("| %lu. | %6s | %8u | %10f | %3.2f° |\n", i, names[i - 1],
+                    r->area, r->squareness, (r->ep1->alpha) * 180 / M_PI);
+            printf("-------------------------------------------------\n");
+            RenderRect(img, colors[i - 1], r);
+        }
+
+        /*
+        Rect* candidate = FindSudokuBoard(img, rects, rect_count);
         if (candidate != NULL)
         {
             printf("=> Found rect:\n");
             printf("   > angle = %f°\n", (candidate->ep1->alpha) * 180 / M_PI);
             printf("   > squareness = %f\n", candidate->squareness);
-            printf("   > area = %f pix*pix\n", candidate->area);
+            printf("   > area = %u pix*pix\n", candidate->area);
+            printf("   > perim = %u pix\n", candidate->perim);
             RenderRect(img, 0x00FF00, candidate);
-        }
+        }*/
 
         FreeRects(rects, rect_count);
         FreeLines(lines, len);

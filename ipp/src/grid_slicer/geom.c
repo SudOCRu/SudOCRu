@@ -14,6 +14,45 @@ int LineIntersection(const Line* l1, const Line* l2, int *x, int *y) {
     return 0;
 }
 
+int min4(int a, int b, int c, int d) {
+    int m1 = a < b ? a : b;
+    int m2 = c < d ? c : d;
+    return m1 < m2 ? m1 : m2;
+}
+
+int max4(int a, int b, int c, int d) {
+    int m1 = a > b ? a : b;
+    int m2 = c > d ? c : d;
+    return m1 > m2 ? m1 : m2;
+}
+
+BBox* NewBB(Rect* r)
+{
+    const Line* l1 = r->ep1->l1;
+    const Line* l2 = r->ep1->l2;
+    const Line* l3 = r->ep2->l1;
+    const Line* l4 = r->ep2->l2;
+
+    int p1_x = 0, p1_y = 0;
+    LineIntersection(l1, l3, &p1_x, &p1_y);
+
+    int p2_x = 0, p2_y = 0;
+    LineIntersection(l2, l3, &p2_x, &p2_y);
+
+    int p3_x = 0, p3_y = 0;
+    LineIntersection(l1, l4, &p3_x, &p3_y);
+
+    int p4_x = 0, p4_y = 0;
+    LineIntersection(l2, l4, &p4_x, &p4_y);
+
+    BBox* bb = malloc(sizeof(BBox*));
+    bb->x1 = min4(p1_x, p2_x, p3_x, p4_x);
+    bb->y1 = min4(p1_y, p2_y, p3_y, p4_y);
+    bb->x2 = max4(p1_x, p2_x, p3_x, p4_x);
+    bb->y2 = max4(p1_y, p2_y, p3_y, p4_y);
+    return bb;
+}
+
 void FreeLine(Line* line)
 {
     free(line);

@@ -18,4 +18,5 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
 Line** AverageLines(Line** lines, size_t len, size_t* out_len);
 
 Rect** FindRects(Image* image, Line** lines, size_t len, size_t* found_count);
-Rect* FindSudokuBoard(Rect** rects, size_t rect_count);
+Rect* FindSudokuBoard(Image* image, Rect** rects, size_t rect_count);
+Rect** GetBestRects(Rect** rects, size_t len, size_t keep);

@@ -27,8 +27,8 @@ typedef struct Line {
 typedef struct PSet {
     const Line* l1;
     const Line* l2;
-    double alpha;
-    double epsilon;
+    float alpha;
+    float epsilon;
 } PSet;
 
 /*
@@ -40,9 +40,18 @@ typedef struct PSet {
 typedef struct Rect {
     PSet* ep1;
     PSet* ep2;
-    double squareness;
-    double area;
+    unsigned int area;
+    float squareness;
 } Rect;
+
+typedef struct BBox {
+    unsigned int x1;
+    unsigned int y1;
+    unsigned int x2;
+    unsigned int y2;
+} BBox;
+
+BBox* NewBB(Rect* r);
 
 /*
  * LineIntersection(const Line* l1, const Line* l2, float *x, float *y) -> bool
