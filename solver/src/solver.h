@@ -21,7 +21,7 @@ typedef struct Sudoku {
  *      - cols : Number of cols of Sudoku board
  *      - cols : Number of rows of Sudoku board
  */
-Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 boardsize, u8 nbsquares);
+Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 nbsquares);
 
 /*  > DestroySudoku
  * Destroys of the provided Sudoku board.

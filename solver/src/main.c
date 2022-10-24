@@ -14,9 +14,8 @@ size_t mystrlen(char *s)
 int main(int argc, char** argv)
 {
     // --- Check nb arguments ---
-    if (argc > 4) 
-        errx(EXIT_FAILURE, 
-                "Error: Too many arguments (check man by \
+    if (argc > 4)
+        errx(EXIT_FAILURE, "Error: Too many arguments (check man by \
 using './solver'");
     
     // ------- Sudoku Man -------
@@ -48,8 +47,8 @@ returns an error\n\n\n\
 \n\n");
     }
     //---------------------------
-    
-    else{
+
+    else {
         // --- OPTIONS ---
         int p = 0;
         int i = 0;
@@ -71,17 +70,17 @@ returns an error\n\n\n\
                 }
             }
             else errx(EXIT_FAILURE, "Parser: Bad arguments (check man by \
-using './solver')");       
+using './solver')");
         }
         if (argc == 3 && o == 1) 
             errx(EXIT_FAILURE, "Parser: Bad arguments, missing output file \
-name (check man by using './solver')");  
-        
+name (check man by using './solver')");
+
         // ---------------------------------------
 
 
         // --- Import sudoku ---
-        
+
         if (d == 1) printf("\n-> Importing Sudoku...\n\n");
         sudoku = ImportSudoku(argv[1]);
         if (d == 1) printf("===== SUDOKU IMPORTED =====\n\n");
@@ -89,7 +88,7 @@ name (check man by using './solver')");
         // ---------------------
 
         // Solve and print sudoku
-        
+
         if (p == 1) PrintBoard(sudoku);
         if (d == 1) printf("-> Try to Solve Sudoku...\n\n");
         Sudoku* solved = SolveSudoku(sudoku, i);
