@@ -226,7 +226,7 @@ int main2()
     */
 
 
-    
+    /*  
     Sudoku* imported = ImportSudoku("grid_00");
 
     //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
@@ -243,7 +243,7 @@ int main2()
 
     SaveSudoku(imported, "lasolution.result");
     DestroySudoku(imported);
-    
+    */
     
 
     // HARDEST SUDOKU

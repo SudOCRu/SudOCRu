@@ -89,8 +89,7 @@ name (check man by using './solver')");
         
         if (p == 1) PrintBoard(sudoku);
         if (d == 1) printf("-> Try to Solve Sudoku...\n\n");
-        if (i == 0) SolveSudoku(sudoku);
-        else printf("Interactive Mode");
+        SolveSudoku(sudoku, i);
         if (d == 1) printf("=====  SUDOKU SOLVED  =====\n\n");
         if (p == 1) PrintBoard(sudoku);
 

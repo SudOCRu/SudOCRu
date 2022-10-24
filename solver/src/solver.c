@@ -5,9 +5,9 @@
  *
  *    Description: Functions used to solve Sudokus 
  *
- *        Version:  0.6.0
+ *        Version:  1.0.0
  *        Created:  10/01/22 16:12:22
- *       Revision:  error codes implemented
+ *       Revision:  Official Release of Sudoku Solver from SudOCRu
  *       Compiler:  gcc
  *
  *         Author:  Kevin JAMET, 
@@ -241,7 +241,7 @@ int clear (short n, short* flag);
  *      - sudoku : Sudoku grid to check
  */
 int IsSudokuValid(Sudoku* sudoku){
-    Sudoku* issolvable = SolveSudoku(sudoku);
+    Sudoku* issolvable = SolveSudoku(sudoku, 0);
     if (issolvable == NULL){
         errx(Sudoku_Not_Solvable, 
                 "IsSudokuValid: Sudoku not solvable (no solutions available)");
@@ -364,7 +364,7 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
  * > Returns 0 (false) if it was not able to find a solution, else 1 (true)
  *      - sudoku : sudoku pointer to modify
  */
-int Backtracking(Sudoku* sudoku, size_t i){
+int Backtracking(Sudoku* sudoku, size_t i, int interactive_mode){
     
     while (i < sudoku->boardsize && sudoku->board[i] != 0) i++;
     if (i >= sudoku->boardsize)
@@ -386,16 +386,30 @@ int Backtracking(Sudoku* sudoku, size_t i){
         if (verify(n, possibilities)){
             sudoku->board[i] = n;
 
+            // --- INTERACTIVE MODE ---
+            if (interactive_mode){
+                PrintBoard(sudoku);
+                printf("    -> Placed | %hhu | at position (%lu,%lu)\n\n", 
+                        n, i / sudoku->boardedge, i % sudoku->boardedge);
+            }
+
             //   ---  DEBUG  ---
             //printf("\e[1;1H\e[2J");           
             //PrintBoard(sudoku);
             //sleep(1);
 
-            if(Backtracking(sudoku, i) == Operation_Successed)
+            if(Backtracking(sudoku, i, interactive_mode) == Operation_Successed)
             { 
                 return Operation_Successed;
             }
             sudoku->board[i] = 0;
+
+            // --- INTERACTIVE MODE ---
+            if (interactive_mode){
+                PrintBoard(sudoku);
+                printf("    (-) Deleted | %hhu | at position (%lu,%lu)\n\n", 
+                        n, i / sudoku->boardedge, i % sudoku->boardedge);
+            }
         }   
         
     }    
@@ -408,8 +422,8 @@ int Backtracking(Sudoku* sudoku, size_t i){
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
  *      - sudoku : Sudoku grid to solve
  */
-Sudoku* SolveSudoku(Sudoku* sudoku){ 
-    int is_solved = Backtracking(sudoku,0);
+Sudoku* SolveSudoku(Sudoku* sudoku, int interactive_mode){ 
+    int is_solved = Backtracking(sudoku,0, interactive_mode);
     if (is_solved == Operation_Successed)
         return sudoku;
     errx(Sudoku_Not_Solved, 
