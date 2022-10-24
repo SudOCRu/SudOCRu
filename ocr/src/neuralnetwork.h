@@ -16,7 +16,7 @@ typedef struct LayerLearnData {
 } LayerLearnData;
 
 typedef struct NetworkLearnData {
-    LayerLearnData* layerData;
+    LayerLearnData** layerData;
     int layerDataLength;
 } NetworkLearnData;
 
@@ -31,18 +31,18 @@ typedef struct Layer {
 
 typedef struct NeuralNetwork {
     int arrayLayerLength;
-    Layer* layers;
+    Layer** layers;
     int arrayBatchLearnDataLength;
-    NetworkLearnData* batchLearnData;
+    NetworkLearnData** batchLearnData;
 } NeuralNetwork;
 
 Layer* CreateLayer(int numNodesIn, int numNodesOut);
 
 NeuralNetwork* CreateNeuralNetwork(int layerSizes[], int arrayLength);
 
-NetworkLearnData* CreateNetworkLearnData(Layer layers[], int arrayLength);
+NetworkLearnData* CreateNetworkLearnData(Layer **layers, int arrayLength);
 
-LayerLearnData* CreateLayerLearnData(Layer layer);
+LayerLearnData* CreateLayerLearnData(Layer *layer);
 
 void DestroyLayer(Layer* layer);
 
@@ -55,7 +55,7 @@ void DestroyLayerLearnData(LayerLearnData* learnData);
 
 //NeuralNetwork methods
 
-void Learn(NeuralNetwork* neuralNetwork, DataPoint trainingData[], int trainingDataLength, double learnRate);
+void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData, int trainingDataLength, double learnRate);
 
 void LearnGradients(NeuralNetwork* neuralNetwork, DataPoint* data, NetworkLearnData* learnData);
 

@@ -34,7 +34,7 @@ void DestroyLayer(Layer *layer){
     free(layer->costGradientB);
     free(layer->costGradientW);
     free(layer->weights);
-    //free(layer);
+    free(layer);
 }
 
 double Activate(double x){

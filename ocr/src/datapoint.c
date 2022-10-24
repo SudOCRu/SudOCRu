@@ -9,5 +9,7 @@ DataPoint* CreateDatapoint(double inputs[], double expectedOutputs[]){
 }
 
 void DestroyDatapoint(DataPoint *datapoint){
+    free(datapoint->inputs);
+    free(datapoint->expectedOutputs);
     free(datapoint);
 }
