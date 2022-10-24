@@ -66,14 +66,14 @@ int IsSudokuSolved(const Sudoku* sudoku);
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
  *      - sudoku : Sudoku grid to solve
  */
-Sudoku* SolveSudoku(Sudoku* sudoku, int interactive_mode);
+Sudoku* SolveSudoku(Sudoku* sudoku, int interactive);
 
 /*  > InteractiveSolveSudoku
  * Solve Sudoku using back-tracking algorithm and print each step
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
  *      - sudoku : Sudoku grid to solve
  */
-//Sudoku* InteractiveSolveSudoku(Sudoku* sudoku);
+int IntBacktracking(Sudoku* orginal, Sudoku* sudoku, size_t i);
 
 /*  > PrintSudoku
  * Print the sudoku board
@@ -81,3 +81,11 @@ Sudoku* SolveSudoku(Sudoku* sudoku, int interactive_mode);
  *      - sudoku : Sudoku grid to print
  */
 void PrintBoard(const Sudoku* sudoku);
+
+/*  > PrintBoardCol
+ * Print the sudoku board with colors
+ * > Returns *anything*
+ *      - org : Original sudoku grid
+ *      - sudoku : Sudoku grid to print
+ */
+void PrintBoardCol(const Sudoku* org, const Sudoku* sudoku);
