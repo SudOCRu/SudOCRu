@@ -14,9 +14,8 @@ size_t mystrlen(char *s)
 int main(int argc, char** argv)
 {
     // --- Check nb arguments ---
-    if (argc > 4) 
-        errx(EXIT_FAILURE, 
-                "Error: Too many arguments (check man by \
+    if (argc > 4)
+        errx(EXIT_FAILURE, "Error: Too many arguments (check man by \
 using './solver'");
     
     // ------- Sudoku Man -------
@@ -30,8 +29,11 @@ using './solver'");
 file named 'inputfile'.result (if a solution exists) \n\n\
     -> $./solver inputfile -d\n\
             - Same as previous but in debugging mode (show steps)\n\n\
+    -> $./solver inputfile -s\n\
+            - Same as previous but in step by step mode (show solver \
+possibilities)\n\n\
     -> $./solver inputfile -i\n\
-            - Same as previous but in interactive mode (show solver \
+            - Same as previous but in (interactive) live mode (show solver \
 possibilities)\n\n\
     -> $./solver inputfile -p \n\
             - Same as previous but print the sudoku board before solving it \
@@ -45,8 +47,8 @@ returns an error\n\n\n\
 \n\n");
     }
     //---------------------------
-    
-    else{
+
+    else {
         // --- OPTIONS ---
         int p = 0;
         int i = 0;
@@ -68,17 +70,17 @@ returns an error\n\n\n\
                 }
             }
             else errx(EXIT_FAILURE, "Parser: Bad arguments (check man by \
-using './solver')");       
+using './solver')");
         }
         if (argc == 3 && o == 1) 
             errx(EXIT_FAILURE, "Parser: Bad arguments, missing output file \
-name (check man by using './solver')");  
-        
+name (check man by using './solver')");
+
         // ---------------------------------------
 
 
         // --- Import sudoku ---
-        
+
         if (d == 1) printf("\n-> Importing Sudoku...\n\n");
         sudoku = ImportSudoku(argv[1]);
         if (d == 1) printf("===== SUDOKU IMPORTED =====\n\n");
@@ -86,12 +88,12 @@ name (check man by using './solver')");
         // ---------------------
 
         // Solve and print sudoku
-        
+
         if (p == 1) PrintBoard(sudoku);
         if (d == 1) printf("-> Try to Solve Sudoku...\n\n");
-        SolveSudoku(sudoku, i);
+        Sudoku* solved = SolveSudoku(sudoku, i);
         if (d == 1) printf("=====  SUDOKU SOLVED  =====\n\n");
-        if (p == 1) PrintBoard(sudoku);
+        if (p == 1) PrintBoardCol(sudoku, solved);
 
         // ---------------------
 
@@ -99,95 +101,19 @@ name (check man by using './solver')");
 
         if (d == 1) printf("-> Saving Sudoku...\n\n");
 
-        if (o == 1){
-            SaveSudoku(sudoku, argv[3]);
+        if (o == 1) {
+            SaveSudoku(solved, argv[3]);
         }
-        else{
+        else {
             size_t len = mystrlen(argv[1]) + 8;
             char finalstring[len];
 
             snprintf(finalstring, len, "%s%s", argv[1], ".result");
-            SaveSudoku(sudoku, finalstring);
+            SaveSudoku(solved, finalstring);
         }
         if (d == 1) printf("=====   SUDOKU SAVED   =====\n\n");
         DestroySudoku(sudoku);
-
-        // ---------------------
-
-        /* 
-        for (; ind < argc; ind++){
-            if (ind == 1){
-                printf("\n-> Importing Sudoku...\n\n");
-                sudoku = ImportSudoku(argv[1]);
-                printf("===== SUDOKU IMPORTED =====\n\n");
-            }
-            else if (ind == 2){
-                // shifting for options
-                // do actions 1 by 1
-                if (argv[2][0] == '-'){
-                    for (int index = 1; argv[index] != 0; index++){
-                        if (argv[2][index] == 'p') p = 1;
-                        else if (argv[2][index] == 'i') i = 1;
-                        else if (argv[2][index] == 'o') o = 1;
-                    }
-                    if (p == 1) PrintBoard(sudoku);
-                    printf("-> Try to Solve Sudoku...\n\n");
-                    SolveSudoku(sudoku);
-                    printf("=====  SUDOKU SOLVED  =====\n\n");
-                    if (p == 1) PrintBoard(sudoku);
-                }
-                else errx(EXIT_FAILURE, "Parser: Bad arguments (check man by \
-using './solver')");
-            }
-            else if (ind == 3 && o == 1){
-                printf("-> Saving Sudoku...\n\n");
-                SaveSudoku(sudoku, argv[3]);
-                printf("=====   SUDOKU SAVED   =====\n\n");
-            }
-            else 
-              errx(EXIT_FAILURE, 
-                "Error: Too many and/or bad arguments (check man by \
-using './solver'");
-        }
-        
-        if (ind == 2){
-            if (p == 1) PrintBoard(sudoku);
-            printf("-> Try to Solve Sudoku...\n\n");
-            SolveSudoku(sudoku);
-            printf("=====  SUDOKU SOLVED  =====\n\n");
-            if (p == 1) PrintBoard(sudoku);
-            printf("-> Saving Sudoku...\n\n");
-
-            size_t len = mystrlen(argv[1]) + 8;
-            char finalstring[len];
-
-            snprintf(finalstring, len, "%s%s", argv[1], ".result");
-            SaveSudoku(sudoku, finalstring);
-            printf("=====   SUDOKU SAVED   =====\n\n");
-        }
-        */
-        //  ---  DEBUG  ---
-        //PrintBoard(sudoku);
-
-        /*  
-        if (sudoku == NULL) 
-            errx(EXIT_FAILURE, "Error: Sudoku can't be loaded");
-        if (!IsSudokuValid(sudoku)) 
-            errx(EXIT_FAILURE, "Error: Sudoku can't be loaded (not solvable)");
-
-        Sudoku* sudoku_solved = 
-            (!IsSudokuSolved(sudoku) ? SolveSudoku(sudoku) : sudoku);
-        
-        // Check if Sudoku is solved
-        if (sudoku_solved == NULL) // TODO in SolveSudoku
-            errx(EXIT_FAILURE, "SudokuSolver : NOT SOLVED\n");
-        else
-            printf("SudokuSolver : Successfully Solved\n");
-            
-        // Save Sudoku into file
-        if (!SaveSudoku(sudoku, "SudokuSolved"))
-            errx(EXIT_FAILURE, "Error: Sudoku can't be saved");
-        */
+        DestroySudoku(solved);
     }
 
     return 0;

@@ -17,20 +17,23 @@
  */
 
 #define _GNU_SOURCE
-#include <stdlib.h>
-#include <err.h>
-#include "solver.h"
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <err.h>
+#include <time.h>
+#include <string.h>
+
+#include "solver.h"
 
 // ===========================================================================
 // -----------------------      Sudoku Treatment        ---------------------- 
 // ===========================================================================
 
-enum SudokuError{
+enum SudokuError {
     // Sudoku = 0
     Exit_Success = 0,
-    Operation_Successed = 1,
+    Operation_Succeeded = 1,
 
     //SolverError = 10
     Sudoku_Not_Solvable = 11,
@@ -62,20 +65,17 @@ enum SudokuError{
  *      - cols : Number of cols of Sudoku board
  *      - cols : Number of rows of Sudoku board
  */
-Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 boardsize, u8 nbsquares){
-
+Sudoku* CreateSudoku(u8* array, u8 side, u8 nbsquares){
     Sudoku* sudoku = malloc(sizeof(Sudoku));
-    sudoku->board = array; 
-    sudoku->boardedge = boardedge;
-    sudoku->boardsize = boardsize;
+
+    size_t size = side * side * sizeof(u8);
+    u8* board = malloc(size);
+    memcpy(board, array, size);
+
+    sudoku->board = board;
+    sudoku->boardedge = side;
+    sudoku->boardsize = side * side;
     sudoku->nbsquares = nbsquares;
-
-    u8 index = 0;
-
-    while (index < sudoku->boardsize){
-        sudoku->board[index] = array[index];
-        index++;
-    }
 
     return sudoku;
 }
@@ -85,15 +85,11 @@ Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 boardsize, u8 nbsquares){
  *      - board : Board to destroy
  */
 void DestroySudoku(Sudoku* sudoku){
-
-    if (sudoku == NULL) 
-        errx(Sudoku_Null, "DestroySudoku: Can't destroy null Sudoku");
+    if (sudoku == NULL)
+        return;
 
     free(sudoku->board);
-    //free(sudoku->boardedge);
-    //free(sudoku->boardsize);
-    //free(sudoku->nbsquares);
-    free(sudoku);        
+    free(sudoku);
 }
 
 /*  > ImportSudoku
@@ -104,10 +100,6 @@ void DestroySudoku(Sudoku* sudoku){
  *      - in_file : Path of file to create the new Sudoku grid
  */
 Sudoku* ImportSudoku(char* in_file){
-
-    //in_file++;
-    //Sudoku* sudoku;
-
     // INDEXES
     size_t index = 0;
 
@@ -157,33 +149,28 @@ Sudoku* ImportSudoku(char* in_file){
                     array[index] = line[i] - '0';
                     //printf("placed at index %lu, %c\n", index, line[i]);
                     index++;
-                }    
-                else{
-
-                    //  --- DEBUG  ---
-                    //printf("invalid char at index: %lu => '%hhu'\n", i, line[i]);
+                }
+                else {
+                    // invalid char at index: %lu => '%hhu'\n", i, line[i]
                     fclose(file);
                     if (line) free(line);
                     free(array);
 
-                    //  --- DEBUG  ---
-                    //printf("invalid char at index: %lu => '%c'\n", i, line[i]);
                     errx(Invalid_Character, 
                             "ImportSudoku: Invalid char at \
                             index: %lu => '%c'\n", i, line[i]);
                 }
             }
-        }    
+        }
     }
 
-    fclose(file);
     if (line) free(line);
+    fclose(file);
 
     if (array == NULL)
         errx(Empty_File, "ImportSudoku: Empty file named %s", in_file);
-    Sudoku* imported_sodoku = CreateSudoku(array, len, len*len, len/3);
 
-    return imported_sodoku;
+    return CreateSudoku(array, len, len/3);
 }
 
 /*  > SaveSudoku
@@ -219,11 +206,10 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file){
 
         index++;
     }
-    //fprintf(file, "\n ");
+    fprintf(file, "\n");
 
     fclose(file);
-
-    return Operation_Successed;
+    return Operation_Succeeded;
 }
 
 
@@ -233,7 +219,36 @@ int SaveSudoku(const Sudoku* sudoku, char* out_file){
 // ===========================================================================
 
 short PossibleValues(const Sudoku* sudoku, u8 index);
-int clear (short n, short* flag);
+
+/*  > IsSudokuValid > vset
+ * Sets the bit `n` to one. If the bit was already set, this function returns 1,
+ * 0 otherwise.
+ *      - n : Cell value
+ *      - flag : possibilities bit mask
+ */
+int vset(short n, short* flag){
+    short mark = 1 << (n-1);
+    if ((*flag & mark) != 0) return 1;
+    *flag = *flag | mark;
+    return 0;
+}
+
+/*  > IsSudokuValid > PrintError
+ * Prints the error description and position to stdout
+ *      - org : Original Sudoku grid
+ *      - type : Check identifier
+ *      - i : Error position
+ *      - flag : possibilities bit mask
+ */
+void PrintError(const Sudoku* org, char* type, size_t i, short flag)
+{
+    printf("%s check failed: Invalid cell at index %lu, cell %hi is already "
+           "placed (state: %hi)\n", type, i, org->board[i], flag);
+    // Error Locator
+    Sudoku* erl = CreateSudoku(org->board, org->boardedge, org->nbsquares);
+    erl->board[i] = 0;
+    PrintBoardCol(erl, org);
+}
 
 /*  > IsSudokuValid
  * Check if "sudoku" grid is valid (if it's solvable)
@@ -241,28 +256,63 @@ int clear (short n, short* flag);
  *      - sudoku : Sudoku grid to check
  */
 int IsSudokuValid(Sudoku* sudoku){
-    Sudoku* issolvable = SolveSudoku(sudoku, 0);
-    if (issolvable == NULL){
-        errx(Sudoku_Not_Solvable, 
-                "IsSudokuValid: Sudoku not solvable (no solutions available)");
-        return Sudoku_Not_Solvable;
+    u8 idx, cell, row, col, init_row, init_col;
+    short possibilities;
+
+    for(u8 gy = 0; gy < sudoku->nbsquares; gy++)
+    {
+        init_row = gy * sudoku->nbsquares;
+
+        for(u8 gx = 0; gx < sudoku->nbsquares; gx++)
+        {
+            init_col = gx * sudoku->nbsquares;
+
+            possibilities = 0b000000000;
+            for(u8 i = 0; i < sudoku->boardedge; i++)
+            {
+                idx = (init_row + (i / sudoku->nbsquares)) * sudoku->boardedge
+                    + ((i % sudoku->nbsquares) + init_col);
+                cell = sudoku->board[idx];
+                if (cell != 0 && vset(cell, &possibilities)) {
+                    PrintError(sudoku, "Group", idx, possibilities);
+                    return Sudoku_Not_Solvable;
+                }
+            }
+        }
     }
-    return Operation_Successed;
-}
 
-/*  > IsSudokuSolved
- * Check if "sudoku" grid is solved (if the grid is filled of numbers != 0)
- * > Returns 0 (false) if the board not solved, else 1 (true)
- *      - sudoku : Sudoku grid to check
- */
-int IsSudokuSolved(const Sudoku* sudoku){
-    u8 index = 0;
+    for (u8 index = 0; index < sudoku->boardsize; index++)
+    {
+        row = index / sudoku->boardedge;
+        col = index % sudoku->boardedge;
+        possibilities = 0b000000000;
 
-    while(index < sudoku->boardsize && PossibleValues(sudoku, index) == 0) 
-        index++;
-    
-    return index == sudoku->boardsize;
-    
+        // horizontal
+        possibilities = 0b000000000;
+        for(u8 i = 0; i < sudoku->boardedge; i++)
+        {
+            idx = row * sudoku->boardedge + i;
+            cell = sudoku->board[idx];
+            if (cell != 0 && vset(cell, &possibilities)) {
+                PrintError(sudoku, "Horizontal", idx, possibilities);
+                return Sudoku_Not_Solvable;
+            }
+        }
+
+        // vertical
+        possibilities = 0b000000000;
+        for(u8 i = 0; i < sudoku->boardedge; i++)
+        {
+            idx = i * sudoku->boardedge + col;
+            cell = sudoku->board[idx];
+            if (cell != 0 && vset(cell, &possibilities)) {
+                PrintError(sudoku, "Vertical", idx, possibilities);
+                return Sudoku_Not_Solvable;
+            }
+        }
+    }
+
+    return Operation_Succeeded;
 }
 
 /*  > verify
@@ -302,6 +352,19 @@ int clear (short n, short* flag){
     return *flag == 0;
 }
 
+/*  > IsSudokuSolved
+ * Check if "sudoku" grid is solved (if the grid is filled of numbers != 0)
+ * > Returns 0 (false) if the board not solved, else 1 (true)
+ *      - sudoku : Sudoku grid to check
+ */
+int IsSudokuSolved(const Sudoku* sudoku){
+    u8 index = 0;
+
+    while(index < sudoku->boardsize && PossibleValues(sudoku, index) == 0) 
+        index++;
+
+    return index == sudoku->boardsize;
+}
 
 // ===========================================================================
 // ----------------------------      SOLVE        ---------------------------- 
@@ -353,7 +416,6 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
         }
     }
 
-    
     return possibilities;
 }
 
@@ -364,55 +426,71 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
  * > Returns 0 (false) if it was not able to find a solution, else 1 (true)
  *      - sudoku : sudoku pointer to modify
  */
-int Backtracking(Sudoku* sudoku, size_t i, int interactive_mode){
-    
+int Backtracking(Sudoku* sudoku, size_t i){
+    // Get next position
     while (i < sudoku->boardsize && sudoku->board[i] != 0) i++;
     if (i >= sudoku->boardsize)
-    {
-        return Operation_Successed;
-    }
-
-    //  --- DEBUG  ---
-    //printf("index: %lu", i);
+        return Operation_Succeeded;
 
     short possibilities = PossibleValues(sudoku, i);
     for (u8 n = 1; n <= 9; n++)
     {
-        //  ---  DEBUG  ---
-        //printf("is %hhu valid -> %i\n", possible_values, 
-        //        (verify(possible_values, possibilities)));
-        
-        //printf("[%lu] Testing: %hhu -> %i\n", i, n, f & 1);
-        if (verify(n, possibilities)){
+        if (verify(n, possibilities))
+        {
             sudoku->board[i] = n;
 
-            // --- INTERACTIVE MODE ---
-            if (interactive_mode){
-                PrintBoard(sudoku);
-                printf("    -> Placed | %hhu | at position (%lu,%lu)\n\n", 
-                        n, i / sudoku->boardedge, i % sudoku->boardedge);
+            if(Backtracking(sudoku, i) == Operation_Succeeded)
+            { 
+                return Operation_Succeeded;
             }
 
-            //   ---  DEBUG  ---
-            //printf("\e[1;1H\e[2J");           
-            //PrintBoard(sudoku);
-            //sleep(1);
+            sudoku->board[i] = 0;
+        }
+    }
 
-            if(Backtracking(sudoku, i, interactive_mode) == Operation_Successed)
+    return Sudoku_Not_Solved;
+}
+
+int msleep(unsigned long msec)
+{
+    struct timespec period;
+    period.tv_sec = msec / 1000;
+    period.tv_nsec = (msec % 1000) * 1000000;
+
+    int res;
+    do {
+        res = nanosleep(&period, &period);
+    } while (res && errno == EINTR);
+
+    return res;
+}
+
+int IntBacktracking(Sudoku* org, Sudoku* sudoku, size_t i){
+    // Get next position
+    while (i < sudoku->boardsize && sudoku->board[i] != 0) i++;
+    if (i >= sudoku->boardsize)
+        return Operation_Succeeded;
+
+    u8 len = 2 * sudoku->boardedge + 1;
+    short possibilities = PossibleValues(sudoku, i);
+    for (u8 n = 1; n <= 9; n++)
+    {
+        if (verify(n, possibilities))
+        {
+            sudoku->board[i] = n;
+
+            PrintBoardCol(org, sudoku);
+            printf("\033[%hhuA", len);
+            fflush(stdout);
+            msleep(15);
+
+            if(IntBacktracking(org, sudoku, i) == Operation_Succeeded)
             { 
-                return Operation_Successed;
+                return Operation_Succeeded;
             }
             sudoku->board[i] = 0;
-
-            // --- INTERACTIVE MODE ---
-            if (interactive_mode){
-                PrintBoard(sudoku);
-                printf("    (-) Deleted | %hhu | at position (%lu,%lu)\n\n", 
-                        n, i / sudoku->boardedge, i % sudoku->boardedge);
-            }
-        }   
-        
-    }    
+        }
+    }
 
     return Sudoku_Not_Solved;
 }
@@ -422,12 +500,24 @@ int Backtracking(Sudoku* sudoku, size_t i, int interactive_mode){
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
  *      - sudoku : Sudoku grid to solve
  */
-Sudoku* SolveSudoku(Sudoku* sudoku, int interactive_mode){ 
-    int is_solved = Backtracking(sudoku,0, interactive_mode);
-    if (is_solved == Operation_Successed)
-        return sudoku;
-    errx(Sudoku_Not_Solved, 
-            "SolveSudoku: Sudoku not solved, no solutions found");
+Sudoku* SolveSudoku(Sudoku* sudoku, int interactive){ 
+    if (IsSudokuValid(sudoku) != Operation_Succeeded)
+    {
+        errx(Sudoku_Not_Solved, "SolveSudoku: The board is not a valid sudoku");
+        return NULL;
+    }
+
+    Sudoku* copy = CreateSudoku(sudoku->board, sudoku->boardedge,
+            sudoku->nbsquares);
+
+    int is_solved = interactive ? IntBacktracking(sudoku, copy, 0) :
+        Backtracking(copy, 0);
+
+    if (is_solved == Operation_Succeeded)
+        return copy;
+
+    DestroySudoku(copy);
+    errx(Sudoku_Not_Solved, "SolveSudoku: No solutions were found");
     return NULL;
 }
 
@@ -438,10 +528,10 @@ Sudoku* SolveSudoku(Sudoku* sudoku, int interactive_mode){
  */
 void PrintBoard(const Sudoku* sudoku){
     if (sudoku == NULL) 
-        errx(Cant_Print_Null_Sudoku, "PrintBoard: Can't print null Sudoku");
-    
+        return;
+
     for (size_t col = 0; col < sudoku->boardedge; col++){
-            printf(" ---");
+        printf(" ---");
     }
     printf("\n");
 
@@ -450,6 +540,34 @@ void PrintBoard(const Sudoku* sudoku){
         for (size_t col = 0; col < sudoku->boardedge; col++){
             if (sudoku->board[row*sudoku->boardedge + col] != 0)
                 printf(" %hhu |", sudoku->board[row*sudoku->boardedge + col]);
+            else
+                printf("   |");
+        }
+        printf("\n");
+        for (size_t col = 0; col < sudoku->boardedge; col++){
+            printf(" ---");
+        }
+        printf("\n");
+    }
+}
+
+void PrintBoardCol(const Sudoku* org, const Sudoku* sudoku){
+    if (sudoku == NULL) 
+        return;
+
+    for (size_t col = 0; col < sudoku->boardedge; col++){
+        printf(" ---");
+    }
+    printf("\n");
+
+    for (size_t row = 0; row < sudoku->boardedge; row++){
+        printf("|");
+        for (size_t col = 0; col < sudoku->boardedge; col++){
+            size_t i = row*sudoku->boardedge + col;
+            if (sudoku->board[i] != org->board[i])
+                printf(" \x1b[31m%hhu\x1b[0m |", sudoku->board[i]);
+            else if (sudoku->board[i] != 0)
+                printf(" %hhu |", sudoku->board[i]);
             else
                 printf("   |");
         }
