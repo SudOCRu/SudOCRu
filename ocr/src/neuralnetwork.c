@@ -121,8 +121,8 @@ void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData, int trainingD
         }
     }
 
-    pthread_t threads[trainingDataLength];
-    int rc;
+    //pthread_t threads[trainingDataLength];
+    //int rc;
     
     for (int i = 0; i < trainingDataLength; i++){
         /*GradientData *gradientData = malloc(sizeof(GradientData));

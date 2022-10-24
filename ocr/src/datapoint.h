@@ -5,6 +5,6 @@ typedef struct DataPoint {
     double* expectedOutputs;
 } DataPoint;
 
-DataPoint* CreateDatapoint(double inputs[], double expectedOutputs[]);
+DataPoint* CreateDatapoint(double *inputs, double *expectedOutputs);
 
 void DestroyDatapoint(DataPoint* datapoint);

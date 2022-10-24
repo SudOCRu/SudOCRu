@@ -97,15 +97,22 @@ void ReadNetwork(NeuralNetwork *network);
 int main()
 {
     srand(time(NULL));
-    int layerStructure[] = {2, 2, 1};
+    int layerStructure[] = {2, 2, 2};
     DataPoint **sample = GenerateXorData();
     NeuralNetwork *network = CreateNeuralNetwork(layerStructure, 3);
-    Train(network, sample, 4);
+    Train(network, sample, 4, 1);
 
     printf("Training completed.\n");
+    
+    /*double inputs[] = {0, 0};
+    double *results = ProcessOutputs(network, inputs);
+    printf("result=%lf\n",results[0]);
+    printf("result=%lf\n",results[1]);
+*/
     DestroyNeuralNetwork(network);
     for (size_t i = 0; i < 4; i++){
         DestroyDatapoint(sample[i]);
+        free(sample[i]);
     }
     free(sample);
     return 0;

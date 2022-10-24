@@ -11,7 +11,7 @@
 #define IMAGE_FILE "./train-images.idx3-ubyte"
 #define IMAGE_SIZE 28
 #define TRAIN_COUNT 10000
-#define LEARN_ITERATION 1000000
+#define LEARN_ITERATION 10000
 
 void Convert(unsigned int *value){
     unsigned int b0,b1,b2,b3;
@@ -157,10 +157,19 @@ void ReadNetwork(NeuralNetwork *network){
 
 DataPoint **GenerateXorData(){
     DataPoint **sample = calloc(4, sizeof(DataPoint));
-    double *True = malloc(sizeof(double));
-    double *False = malloc(sizeof(double));
-    True[0] = 1;
-    False[0] = 0;
+    double *True1 = malloc(2*sizeof(double));
+    double *True2 = malloc(2*sizeof(double));
+    double *False1 = malloc(2*sizeof(double));
+    double *False2 = malloc(2*sizeof(double));
+    True1[0] = 1;
+    True1[1] = 0;
+    False1[0] = 0;
+    False1[1] = 1;
+    
+    True2[0] = 1;
+    True2[1] = 0;
+    False2[0] = 0;
+    False2[1] = 1;
     
     double *t1 = calloc(2, sizeof(double));
     t1[0] = 0;
@@ -176,10 +185,10 @@ DataPoint **GenerateXorData(){
     t4[1] = 1;
 
     
-    DataPoint *data1 = CreateDatapoint(t1, False);
-    DataPoint *data2 = CreateDatapoint(t2, True);
-    DataPoint *data3 = CreateDatapoint(t3, True);
-    DataPoint *data4 = CreateDatapoint(t4, False);
+    DataPoint *data1 = CreateDatapoint(t1, False1);
+    DataPoint *data2 = CreateDatapoint(t2, True1);
+    DataPoint *data3 = CreateDatapoint(t3, True2);
+    DataPoint *data4 = CreateDatapoint(t4, False2);
 
     sample[0] = data1;
     sample[1] = data2;
@@ -189,9 +198,9 @@ DataPoint **GenerateXorData(){
     return sample;
 }
 
-void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize){
+void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize, double learnRate){
     for (size_t i = 0; i < LEARN_ITERATION; i++){
-        Learn(network, trainingSample, trainingSize, 1);
+        Learn(network, trainingSample, trainingSize, learnRate);
     }
 
     FILE *file;
