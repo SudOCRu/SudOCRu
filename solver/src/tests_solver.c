@@ -201,7 +201,7 @@ int is_solution(const unsigned char* board, const Sudoku* sudoku){
     return 0;
 }
 
-int main()
+int main2()
 {
     /* 
     Sudoku* sudoku6_save = CreateSudoku(board6, 9, 81, 3);
@@ -358,4 +358,5 @@ int main()
         printf("SudokuSolver : Successfully Solved\n"); 
     return 0;
     */
+    return 0;
 }
