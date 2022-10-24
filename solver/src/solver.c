@@ -471,6 +471,7 @@ int IntBacktracking(Sudoku* org, Sudoku* sudoku, size_t i){
     if (i >= sudoku->boardsize)
         return Operation_Succeeded;
 
+    u8 len = 2 * sudoku->boardedge + 1;
     short possibilities = PossibleValues(sudoku, i);
     for (u8 n = 1; n <= 9; n++)
     {
@@ -478,8 +479,9 @@ int IntBacktracking(Sudoku* org, Sudoku* sudoku, size_t i){
         {
             sudoku->board[i] = n;
 
-            printf("\e[1;1H\e[2J");
             PrintBoardCol(org, sudoku);
+            printf("\033[%hhuA", len);
+            fflush(stdout);
             msleep(15);
 
             if(IntBacktracking(org, sudoku, i) == Operation_Succeeded)
