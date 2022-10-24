@@ -413,7 +413,7 @@ int IntBacktracking(Sudoku* org, Sudoku* sudoku, size_t i){
 
             printf("\e[1;1H\e[2J");
             PrintBoardCol(org, sudoku);
-            msleep(5);
+            msleep(15);
 
             if(IntBacktracking(org, sudoku, i) == Operation_Successed)
             { 
