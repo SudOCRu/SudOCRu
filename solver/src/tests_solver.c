@@ -204,9 +204,27 @@ int is_solution(const unsigned char* board, const Sudoku* sudoku){
 int main2()
 {
     /* 
-    Sudoku* sudoku6_save = CreateSudoku(board6, 9, 81, 3);
-    SaveSudoku(sudoku6_save, "grid_06");
+    Sudoku* hardest = CreateSudoku(hardest_board, 9, 81, 3);
+    SaveSudoku(hardest, "grid_xx");
+    */
+    /* 
+    Sudoku* sudoku5_save = CreateSudoku(board6, 9, 81, 3);
+    SaveSudoku(sudoku5_save, "grid_05");
 
+    Sudoku* sudoku4_save = CreateSudoku(board4, 9, 81, 3);
+    SaveSudoku(sudoku4_save, "grid_04");
+
+    Sudoku* sudoku3_save = CreateSudoku(board3, 9, 81, 3);
+    SaveSudoku(sudoku3_save, "grid_03");
+
+    Sudoku* sudoku2_save = CreateSudoku(board2, 9, 81, 3);
+    SaveSudoku(sudoku2_save, "grid_02");
+
+    Sudoku* sudoku1_save = CreateSudoku(board1, 9, 81, 3);
+    SaveSudoku(sudoku1_save, "grid_01");
+    */
+
+    /*  
     Sudoku* sudoku6 = ImportSudoku("grid_06");
 
     //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
