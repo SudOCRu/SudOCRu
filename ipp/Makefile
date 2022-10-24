@@ -14,7 +14,7 @@ ifneq ($(RELEASE), 0)
 	CFLAGS += -O3 -flto
 	LDFLAGS += -flto
 else
-	CFLAGS += -fsanitize=address,undefined
+	CFLAGS += -g -fsanitize=address,undefined
 	LDFLAGS += -fsanitize=address,undefined
 	CPPFLAGS += -DDEBUG
 endif

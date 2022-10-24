@@ -1,6 +1,34 @@
 #include "image.h"
 #include <err.h>
 
+Image* CreateImage(unsigned int col, size_t w, size_t h,
+        ImageStatus* out_status)
+{
+    size_t len = w * h;
+    size_t size = len * sizeof(unsigned int);
+    unsigned int* out_pixels = malloc(size);
+
+    if (out_pixels == NULL)
+    {
+        if (out_status != NULL) *out_status = AllocError;
+        return NULL;
+    }
+    memset(out_pixels, col, size);
+
+    Image* img = malloc(sizeof(Image));
+    if (img == NULL)
+    {
+        if (out_status != NULL) *out_status = AllocError;
+        return NULL;
+    }
+    img->width = w;
+    img->height = h;
+    img->pixels = out_pixels;
+
+    if (out_status != NULL) *out_status = ImageOk;
+    return img;
+}
+
 Image* LoadImageFile(const char* path, ImageStatus* out_status)
 {
     SDL_Surface* surf = IMG_Load(path);
@@ -50,7 +78,7 @@ Image* LoadImageFile(const char* path, ImageStatus* out_status)
     return img;
 }
 
-int SaveImageFile(const Image* src, const char* dest)
+SDL_Surface* ImageAsSurface(const Image* src)
 {
     SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, 
             src->width,
@@ -69,6 +97,14 @@ int SaveImageFile(const Image* src, const char* dest)
         pixels[i] = in_pixels[i];
     }
     SDL_UnlockSurface(surf);
+    return surf;
+}
+
+int SaveImageFile(const Image* src, const char* dest)
+{
+    SDL_Surface* surf = ImageAsSurface(src);
+    if (surf == NULL)
+        return 0;
 
     int result = IMG_SavePNG(surf, dest) == 0;
     SDL_FreeSurface(surf);
@@ -89,7 +125,7 @@ Image* LoadRawImage(unsigned int* rgb, size_t w, size_t h,
     img->pixels = rgb;
 
     if (out_status != NULL) *out_status = ImageOk;
-    return NULL;
+    return img;
 }
 
 Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h,
@@ -116,10 +152,10 @@ Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h,
     img->pixels = out_pixels;
 
     if (out_status != NULL) *out_status = ImageOk;
-    return NULL;
+    return img;
 }
 
-void RotateImage(Image* image, double angle, int fill)
+void RotateImage(Image* image, float angle, unsigned int fill)
 {
     // TODO
 }
