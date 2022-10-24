@@ -150,12 +150,10 @@ Line** AverageLines(Line** lines, size_t len, size_t* out_len)
     return out_lines;
 }
 
-Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
+PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len)
 {
-    float a90 = M_PI / 2; // 90°
-    float Ta = 8 * M_PI / 180; // max angle diff between two orhogonal lines
-    float Tt = 3 * M_PI / 180; // max angle diff between two lines
-    float Tl = 0.2; // threshold for line segements to have similar lengths
+    float Tt = 5 * M_PI / 180; // max angle diff between two lines
+    float Tl = 0.3; // threshold for line segements to have similar vote counts
 
     PSet** pairs = malloc(sizeof(PSet*) * len * len);
     size_t nb_pairs = 0;
@@ -168,8 +166,8 @@ Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
             if (i == j) continue;
             const Line* l2 = lines[j];
             float dT = fabs(l1->theta - l2->theta);
-            int dC = abs(l1->val - l2->val);
-            int mid = (l1->val + l2->val) / 2;
+            float dC = fabs((float)l1->val - (float)l2->val);
+            float mid = (l1->val + l2->val) / 2;
 
             if (dT < Tt && dC < Tl * mid)
             {
@@ -182,18 +180,21 @@ Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
             }
         }
     }
-    //printf("nb_pairs = %lu\n", nb_pairs);
-    //RenderPSets(img, pairs, nb_pairs);
+
+    *out_len = nb_pairs;
+    return pairs;
+}
+
+Rect** FindRects(Image* img, PSet** pairs, size_t nb_pairs, size_t* found_count)
+{
+    float a90 = M_PI / 2; // 90°
+    float Ta = 8 * M_PI / 180; // max angle diff between two orhogonal lines
 
     float Dmin = 10 * 81; // 10pix per cell minimum
-    float Ts = 1 - 0.1; // sides length diff
+    float Ts = 1 - 0.075; // sides length diff
     size_t alloc_size = nb_pairs * nb_pairs;
-    if (nb_pairs < len)
-    {
-        alloc_size = len;
-    }
-    Rect** rects = malloc(sizeof(Rect*) * alloc_size);
     size_t rect_count = 0;
+    Rect** rects = malloc(sizeof(Rect*) * alloc_size);
 
     for(size_t i = 0; i < nb_pairs; i++)
     {
@@ -207,19 +208,25 @@ Rect** FindRects(Image* img, Line** lines, size_t len, size_t* found_count)
 
             float dA = fabs(fabs(ep1->alpha - ep2->alpha) - a90);
             float squareness = a > b ? b / a : a / b;
+
             if (dA < Ta && squareness > Ts && a * b >= Dmin)
             {
                 Rect* rect = malloc(sizeof(Rect));
                 rect->ep1 = ep1;
                 rect->ep2 = ep2;
-                rect->area = (unsigned int)(a * b);
+                rect->area = round(a * b);
                 rect->squareness = squareness;
                 rects[rect_count++] = rect;
                 if (rect_count == alloc_size)
                 {
+                    size_t size = alloc_size + alloc_size/2;
+                    rects = realloc(rects, sizeof(Rect*) * size);
+                    alloc_size = size;
+                    /*
                     *found_count = rect_count;
                     printf("rect_count (max) = %lu\n", rect_count);
                     return rects;
+                    */
                 }
             }
         }
@@ -255,11 +262,12 @@ Rect* FindSudokuBoard(Image* img, Rect** rects, size_t rect_count)
     if (rect_count == 0) return NULL;
 
     Rect* max = rects[0];
-    float m_score = max->area;
+    float m_score = max->squareness * max->squareness * max->area;
     for (size_t i = 1; i < rect_count; i++)
     {
         Rect* rect = rects[i];
-        float score = rect->area;
+        if (rect == NULL) continue;
+        float score = rect->squareness * rect->squareness * rect->area;
         if (score > m_score)
         {
             m_score = score;
