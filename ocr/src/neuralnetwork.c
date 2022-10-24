@@ -125,20 +125,20 @@ void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData, int trainingD
     int rc;
     
     for (int i = 0; i < trainingDataLength; i++){
-        GradientData *gradientData = malloc(sizeof(GradientData));
+        /*GradientData *gradientData = malloc(sizeof(GradientData));
         gradientData->network = neuralNetwork;
         gradientData->trainingData = trainingData[i];
         gradientData->batchLearnData = neuralNetwork->batchLearnData[i];
         rc = pthread_create(&threads[i], NULL, ThreadGradient, gradientData);
         if (rc){
             printf("ERROR; return code from pthread_create() is %d\n",rc);
-        }
-        //LearnGradients(neuralNetwork, trainingData[i], neuralNetwork->batchLearnData[i]);
+        }*/
+        LearnGradients(neuralNetwork, trainingData[i], neuralNetwork->batchLearnData[i]);
     }
 
-    for (int i = 0; i < trainingDataLength; i++){
+    /*for (int i = 0; i < trainingDataLength; i++){
         pthread_join(threads[i], NULL);
-    }
+    }*/
 
     for (int i = 0; i < neuralNetwork->arrayLayerLength; i++){
         ApplyGradients(neuralNetwork->layers[i], learnRate / trainingDataLength);

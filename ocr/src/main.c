@@ -54,7 +54,7 @@ int GetMaxIndex(double* data, int size){
     return max;
 }
 
-DataPoint **GenerateXorData(){
+/*DataPoint **GenerateXorData(){
     DataPoint **sample = calloc(4, sizeof(DataPoint));
     double *T = malloc(sizeof(double));
     double *F = malloc(sizeof(double));
@@ -90,57 +90,23 @@ DataPoint **GenerateXorData(){
     sample[3] = data4;
 
     return sample;
-}
-
-void StartBrain(DataPoint **sample, int sampleSize, int layerStructure[], int size, int learnCount){
-    NeuralNetwork *network = CreateNeuralNetwork(layerStructure, size);
-    printf("Created neural network\n");
-    for (size_t i = 0; i < learnCount; i++){
-        Learn(network, sample, sampleSize-1, 1);
-    }
-    printf("Finished learning\n");
-    
-    for (int i = 0; i < sampleSize; i++){
-        double* result = ProcessOutputs(network, sample[i]->inputs);
-        int maxi = GetMaxIndex(result, sampleSize);
-        printf("Number=%i, proba=%f\n", maxi, result[maxi]);
-    }
-    
-    DestroyNeuralNetwork(network);
-    for (int i = 0; i < sampleSize; i++){
-        DestroyDatapoint(sample[i]);
-    }
-
-}
+}*/
 
 void ReadNetwork(NeuralNetwork *network);
 
 int main()
 {
-    /*char* test[25] = {"samples2/0.png", "samples2/1.png", "samples2/2.png", "samples2/3.png", "samples2/4.png", "samples2/5.png", "samples2/6.png", "samples2/7.png",
-                        "samples2/8.png", "samples2/9.png", "samples2/3Test.png"};
-    DataPoint **sample = GenerateSampleData(test, 11);
-    int layerStructure[] = {32*32, 100, 10};
-    
-    printf("testtest \n");
-
-    StartBrain(sample, 11, layerStructure, sizeof(layerStructure)/sizeof(int), 200);
-    //image(test);    
-    //xor();*/
-    
-    Train();
-
     srand(time(NULL));
+    int layerStructure[] = {2, 2, 1};
+    DataPoint **sample = GenerateXorData();
+    NeuralNetwork *network = CreateNeuralNetwork(layerStructure, 3);
+    Train(network, sample, 4);
 
-    printf("\n--------------------------------\n");
-
-    int layerStructure[] = {28*28, 100, 100, 10};
-
-    NeuralNetwork *network = CreateNeuralNetwork(layerStructure, 4);
-    ReadNetwork(network);
-
-    printf("layer size=%i\n",network->arrayLayerLength);
-
-    printf("finished\n");
+    printf("Training completed.\n");
+    DestroyNeuralNetwork(network);
+    for (size_t i = 0; i < 4; i++){
+        DestroyDatapoint(sample[i]);
+    }
+    free(sample);
     return 0;
 }

@@ -1,3 +1,7 @@
 #pragma once
+#include "datapoint.h"
+#include "neuralnetwork.h"
 
-void Train();
+DataPoint **GenerateXorData();
+
+void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize);

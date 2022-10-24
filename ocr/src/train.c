@@ -11,7 +11,7 @@
 #define IMAGE_FILE "./train-images.idx3-ubyte"
 #define IMAGE_SIZE 28
 #define TRAIN_COUNT 10000
-#define LEARN_ITERATION 10000
+#define LEARN_ITERATION 1000000
 
 void Convert(unsigned int *value){
     unsigned int b0,b1,b2,b3;
@@ -155,42 +155,44 @@ void ReadNetwork(NeuralNetwork *network){
     }
 }
 
-void Train(){
-    pthread_t threads[NUM_THREADS];
-
-    DataPoint **dataSet = MNISTData();
-
-    double inputs[28*28];
-    for (int i = 0; i < 28*28; i++){
-        inputs[i] = dataSet[0]->inputs[i];
-    }
+DataPoint **GenerateXorData(){
+    DataPoint **sample = calloc(4, sizeof(DataPoint));
+    double *True = malloc(sizeof(double));
+    double *False = malloc(sizeof(double));
+    True[0] = 1;
+    False[0] = 0;
     
-    int layerStructure[] = {IMAGE_SIZE*IMAGE_SIZE, 100, 100, 10};
+    double *t1 = calloc(2, sizeof(double));
+    t1[0] = 0;
+    t1[1] = 0;
+    double *t2 = calloc(2, sizeof(double));
+    t2[0] = 1;
+    t2[1] = 0;
+    double *t3 = calloc(2, sizeof(double));
+    t3[0] = 0;
+    t3[1] = 1;
+    double *t4 = calloc(2, sizeof(double));
+    t4[0] = 1;
+    t4[1] = 1;
 
-    NeuralNetwork *network = CreateNeuralNetwork(layerStructure, 4);
+    
+    DataPoint *data1 = CreateDatapoint(t1, False);
+    DataPoint *data2 = CreateDatapoint(t2, True);
+    DataPoint *data3 = CreateDatapoint(t3, True);
+    DataPoint *data4 = CreateDatapoint(t4, False);
 
-    ReadNetwork(network);
-    LearnData learnData;
-    learnData.network = network;
-    learnData.dataSet = dataSet;
-    learnData.dataLength = TRAIN_COUNT;
-    learnData.learnRate = 1;
-    int rc[LEARN_ITERATION];
+    sample[0] = data1;
+    sample[1] = data2;
+    sample[2] = data3;
+    sample[3] = data4;
+
+    return sample;
+}
+
+void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize){
     for (size_t i = 0; i < LEARN_ITERATION; i++){
-        /*rc[i] = pthread_create(&threads[i], NULL, LearnThread, &learnData);
-        if (rc[i]){
-            printf("ERROR; return code from pthread_create() is %d\n",rc[i]);
-            return;
-        }*/
-        Learn(network, dataSet, TRAIN_COUNT, 1);
-        printf("iteration=%zu/%i\n",i,LEARN_ITERATION);
+        Learn(network, trainingSample, trainingSize, 1);
     }
-
-    /*for (int i = 0; i < LEARN_ITERATION; i++){
-        pthread_join(threads[i], NULL);
-    }*/
-
-    //printf("weight example=%lf\n",network->layers[2]->biases[5]);
 
     FILE *file;
     if ((file = fopen("./network", "wb")) == NULL){
@@ -207,10 +209,4 @@ void Train(){
     }
 
     fclose(file);
-
-    DestroyNeuralNetwork(network);
-    for (size_t i = 0; i < TRAIN_COUNT; i++){
-        DestroyDatapoint(dataSet[i]);
-    }
-    free(dataSet);
 }
