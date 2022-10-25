@@ -3,6 +3,20 @@
 
 const char IND_LOAD[] = "..";
 const char IND_OK[] = "\033[32;1mOK\033[0m";
+const float GAUS_KERNEL_3[] =
+{
+    1/16.0f, 2/16.0f, 1/16.0f,
+    2/16.0f, 4/16.0f, 2/16.0f,
+    1/16.0f, 2/16.0f, 1/16.0f,
+};
+const float GAUS_KERNEL_5[] =
+{
+    1/273.0F, 4/273.0F, 7/273.0F, 4/273.0F, 1/273.0F,
+    4/273.0F, 16/273.0F, 26/273.0F, 16/273.0F, 4/273.0F,
+    7/273.0F, 26/273.0F, 41/273.0F, 26/273.0F, 7/273.0F,
+    4/273.0F, 16/273.0F, 26/273.0F, 16/273.0F, 4/273.0F,
+    1/273.0F, 4/273.0F, 7/273.0F, 4/273.0F, 1/273.0F,
+};
 
 size_t max(size_t a, size_t b)
 {
@@ -37,26 +51,31 @@ void PrintStage(u8 id, u8 total, char* stage, int ok)
 
 void FilterImage(Image* img)
 {
+    u8 s = 1;
     printf("Processing image...\n");
 
-    PrintStage(1, 4, "Grayscale filter", 0);
+    PrintStage(s, 5, "Grayscale filter", 0);
     u8 min = 255, max = 0;
     GrayscaleFilter(img, &min, &max);
-    PrintStage(1, 4, "Grayscale filter", 1);
+    PrintStage(s++, 5, "Grayscale filter", 1);
 
-    PrintStage(2, 4, "Contrast stretching", 0);
+    PrintStage(s, 5, "Contrast stretching", 0);
     StretchContrast(img, min, max);
-    PrintStage(2, 4, "Contrast stretching", 1);
+    PrintStage(s++, 5, "Contrast stretching", 1);
 
-    PrintStage(3, 4, "Median filter", 0);
+    PrintStage(s, 5, "Gaussian blur (3x3)", 0);
+    GaussianBlur(img, GAUS_KERNEL_3, 3);
+    PrintStage(s++, 5, "Gaussian blur (3x3)", 1);
+
     u32 histogram[256] = { 0, };
+    PrintStage(s, 5, "Median filter (3x3)", 0);
     MedianFilter(img, 3, histogram);
-    PrintStage(3, 4, "Median filter", 1);
+    PrintStage(s++, 5, "Median filter (3x3)", 1);
 
-    PrintStage(4, 4, "Thresholding (Otsu's method)", 0);
+    PrintStage(s, 5, "Thresholding (Otsu's method)", 0);
     u8 threshold = ComputeOtsuThreshold(img->width * img->height, histogram);
     ThresholdImage(img, threshold);
-    PrintStage(4, 4, "Thresholding (Otsu's method)", 1);
+    PrintStage(s++, 5, "Thresholding (Otsu's method)", 1);
 }
 
 void GrayscaleFilter(Image* image, u8* min, u8* max)
@@ -73,6 +92,28 @@ void GrayscaleFilter(Image* image, u8* min, u8* max)
         else if (g < *min) *min = g;
 
         image->pixels[i] = g | (g << 8) | (g << 16);
+    }
+}
+
+void EnhanceContrast(Image* image, u8 f, u8* min, u8* max)
+{
+    size_t len = image->width * image->height;
+    for (size_t i = 0; i < len; i++)
+    {
+        u32 c = image->pixels[i] & 0xFF;
+        for (size_t k = 1; k < f; k++)
+        {
+            if (c >= (k * 255) / f && c <= ((k + 1) * 255) / f)
+            {
+                c = ((k + 1) * 255) / f;
+                image->pixels[i] = c | (c << 8) | (c << 16);
+
+                // Prepapre for next stage: Contrast stretching
+                if (c > *max) *max = c;
+                else if (c < *min) *min = c;
+                break;
+            }
+        }
     }
 }
 
@@ -125,6 +166,56 @@ void MedianFilter(Image* img, size_t block, u32 histogram[256])
     free(vals);
 }
 
+void GaussianBlur(Image* img, const float* kernel, size_t r)
+{
+    size_t w = img->width, h = img->height;
+    size_t side = r / 2;
+    for (size_t y = side; y < h - side; y++)
+    {
+        for (size_t x = side; x < w - side; x++)
+        {
+            float sum = 0;
+            for (size_t dy = 0; dy < r; dy++)
+            {
+                for (size_t dx = 0; dx < r; dx++)
+                {
+                    u32 c = img->pixels[(y + dy - side) * w + (x + dx - side)];
+                    sum += (float)(c & 0xFF) * kernel[dy * r + dx];
+                }
+            }
+
+            u8 c = sum;
+            img->pixels[y * w + x] = (c << 16) | (c << 8) | c;
+        }
+    }
+}
+
+void GammaFilter(Image* img, float f)
+{
+    size_t len = img->width * img->height;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        float c = 255.0f * pow((float)(img->pixels[i] & 0xFF) / 255.0f, f);
+        u8 g = (c > 255 ? 255 : (c < 0 ? 0 : c));
+
+        img->pixels[i] = (g << 16) | (g << 8) | g;
+    }
+}
+
+void FillHistogram(const Image* image, u32 histogram[256])
+{
+    for (size_t i = 0; i < 256; i++)
+        histogram[i] = 0;
+    size_t len = image->width * image->height;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        u8 c = image->pixels[i] & 0xFF;
+        histogram[c]++;
+    }
+}
+
 u8 ComputeOtsuThreshold(size_t len, const u32 histogram[256])
 {
     u32 sum = 0, sumP = 0;
@@ -162,5 +253,32 @@ void ThresholdImage(Image* image, u8 threshold)
     {
         u32 c = image->pixels[i];
         image->pixels[i] = (c & 0xFF) > threshold ? 0 : 0xFFFFFF;
+    }
+}
+
+void AdapativeThresholding(Image* img, size_t r, float threshold)
+{
+    // FIXME: Not working as attended
+    size_t w = img->width, h = img->height;
+    size_t side = r / 2;
+    for (size_t y = side; y < h - side; y++)
+    {
+        for (size_t x = side; x < w - side; x++)
+        {
+            float sum = 0;
+            ssize_t endX = x + side;
+            ssize_t endY = y + side;
+            for (ssize_t dy = y - side; dy <= endY; dy++)
+            {
+                for (ssize_t dx = x - side; dx <= endX; dx++)
+                {
+                    if (dy >= 0 && dx >= 0 && dy < h && dx < w)
+                        sum += img->pixels[dy * w + dx] & 0xFF;
+                }
+            }
+            float m = (sum / (r * r));
+            img->pixels[y * w + x] = (img->pixels[y * w + x] & 0xFF)
+                >= m ? 0 : 0xFFFFFF;
+        }
     }
 }
