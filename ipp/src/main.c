@@ -3,7 +3,7 @@
 #include <err.h>
 
 #include "image.h"
-#include "image_filter.h"
+#include "filtering/image_filter.h"
 
 int main(int argc, char** argv)
 {
