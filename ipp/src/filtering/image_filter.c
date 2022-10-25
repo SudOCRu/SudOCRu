@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "image_filter.h"
 
+const char IND_LOAD[] = "..";
+const char IND_OK[] = "\033[32;1mOK\033[0m";
+
 size_t max(size_t a, size_t b)
 {
     return a > b ? a : b;
@@ -11,32 +14,49 @@ size_t min(size_t a, size_t b)
     return a < b ? a : b;
 }
 
+void array_insert(u8* begin, u8* end, u8 val)
+{
+    for(; end > begin && val < *(end - 1); end--)
+        *end = *(end - 1);
+    *end = val;
+}
+
+void PrintStage(u8 id, u8 total, char* stage, int ok)
+{
+    const char* indicator = ok ? IND_OK : IND_LOAD;
+    if (ok)
+    {
+        printf("\r%hhu/%hhu [%s] %s\n", id, total, indicator, stage);
+    }
+    else
+    {
+        printf("%hhu/%hhu [%s] %s", id, total, indicator, stage);
+        fflush(stdout);
+    }
+}
+
 void FilterImage(Image* img)
 {
     printf("Processing image...\n");
 
-    printf("[..] Grayscale filter");
-    fflush(stdout);
+    PrintStage(1, 4, "Grayscale filter", 0);
     u8 min = 255, max = 0;
     GrayscaleFilter(img, &min, &max);
-    printf("\r[\033[32;1mOK\033[0m] Grayscale filter\n");
+    PrintStage(1, 4, "Grayscale filter", 1);
 
-    printf("[..] Contrast stretching");
-    fflush(stdout);
+    PrintStage(2, 4, "Contrast stretching", 0);
     StretchContrast(img, min, max);
-    printf("\r[\033[32;1mOK\033[0m] Grayscale filter\n");
+    PrintStage(2, 4, "Contrast stretching", 1);
 
-    printf("[..] Median filter");
-    fflush(stdout);
+    PrintStage(3, 4, "Median filter", 0);
     u32 histogram[256] = { 0, };
     MedianFilter(img, 3, histogram);
-    printf("\r[\033[32;1mOK\033[0m] Median filter\n");
+    PrintStage(3, 4, "Median filter", 1);
 
-    printf("[..] Thresholding (Otsu's method)");
-    fflush(stdout);
+    PrintStage(4, 4, "Thresholding (Otsu's method)", 0);
     u8 threshold = ComputeOtsuThreshold(img->width * img->height, histogram);
     ThresholdImage(img, threshold);
-    printf("\r[\033[32;1mOK\033[0m] Thresholding (Otsu's method)\n");
+    PrintStage(4, 4, "Thresholding (Otsu's method)", 1);
 }
 
 void GrayscaleFilter(Image* image, u8* min, u8* max)
@@ -48,7 +68,7 @@ void GrayscaleFilter(Image* image, u8* min, u8* max)
         u8 red = (c >> 16) & 0xFF, green = (c >> 8) & 0xFF, blue = c & 0xFF;
         u8 g = 0.299F * red + 0.587F * green + 0.114F * blue;
 
-        // Prepapre for next stage
+        // Prepapre for next stage: Contrast stretching
         if (g > *max) *max = g;
         else if (g < *min) *min = g;
 
@@ -67,13 +87,6 @@ void StretchContrast(Image* img, u8 min, u8 max)
         col = ((col - min) * 255) / (max - min);
         img->pixels[i] = (col << 16) | (col << 8) | col;
     }
-}
-
-void array_insert(u8* begin, u8* end, u8 val)
-{
-    for(; end > begin && val < *(end - 1); end--)
-        *end = *(end - 1);
-    *end = val;
 }
 
 void MedianFilter(Image* img, size_t block, u32 histogram[256])
@@ -104,7 +117,7 @@ void MedianFilter(Image* img, size_t block, u32 histogram[256])
             u8 c = vals[i / 2];
             img->pixels[y * w + x] = (c << 16) | (c << 8) | c;
 
-            // Prepapre for next stage
+            // Prepapre for next stage: Otsu's method
             histogram[c]++;
         }
     }
