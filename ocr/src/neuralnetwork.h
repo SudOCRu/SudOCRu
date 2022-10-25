@@ -60,3 +60,7 @@ void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData, int trainingD
 void LearnGradients(NeuralNetwork* neuralNetwork, DataPoint* data, NetworkLearnData* learnData);
 
 double *ProcessOutputs(NeuralNetwork* neuralNetwork, double inputs[]);
+
+void SaveNetwork(NeuralNetwork *network, char *fileName);
+
+NeuralNetwork *ReadNetwork(char *fileName);

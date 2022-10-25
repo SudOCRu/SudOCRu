@@ -106,12 +106,12 @@ double *CalculateOutputs(Layer* layer, double* inputs){
         inputWeights[out] = inputWeight;
     }
     
-    double *activations = calloc(layer->numNodesOut, sizeof(double));
+    inputs = realloc(inputs, layer->numNodesOut * sizeof(double));
     for (int output = 0; output < layer->numNodesOut; output++){
-        activations[output] = Activate(inputWeights[output]);
+        inputs[output] = Activate(inputWeights[output]);
     }
 
-    return activations;
+    return inputs;
 }
 
 void UpdateGradients(Layer* layer, LayerLearnData* layerLearnData){

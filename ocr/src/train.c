@@ -127,33 +127,8 @@ void *LearnThread(void *data){
     pthread_exit(NULL);
 }
 
-void SaveNetwork(NeuralNetwork *network){
-
-}
-
 int GetMaxIndex(double *data, int size);
 
-void ReadNetwork(NeuralNetwork *network){
-    FILE *file;
-    if ((file = fopen("./network", "rb")) == NULL){
-        printf("Error ! Couldn't read file\n");
-        return;
-    }
-    for (size_t i = 0; i < network->arrayLayerLength; i++){
-        Layer *layer = network->layers[i];
-        double *weights = calloc(layer->numNodesIn*layer->numNodesOut, sizeof(double));
-        double *biases = calloc(layer->numNodesOut, sizeof(double));
-        printf("sizeof=%i\n", layer->numNodesIn*layer->numNodesOut);
-        int t = fread(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double), file);
-        t = fread(biases, layer->numNodesOut, sizeof(double), file);
-        for (size_t j = 0; j < layer->numNodesIn*layer->numNodesOut; j++){
-            layer->weights[j] = weights[j];
-        }
-        for (size_t j = 0; j < layer->numNodesOut; j++){
-            layer->biases[j] = biases[j];
-        }
-    }
-}
 
 DataPoint **GenerateXorData(){
     DataPoint **sample = calloc(4, sizeof(DataPoint));
@@ -203,7 +178,7 @@ void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize,
         Learn(network, trainingSample, trainingSize, learnRate);
     }
 
-    FILE *file;
+    /*FILE *file;
     if ((file = fopen("./network", "wb")) == NULL){
         printf("Error ! Couldn't read file\n");
         return;
@@ -217,5 +192,5 @@ void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize,
         fwrite(biases, layer->numNodesOut, sizeof(double), file);
     }
 
-    fclose(file);
+    fclose(file);*/
 }

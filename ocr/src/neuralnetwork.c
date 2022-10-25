@@ -33,6 +33,7 @@ NeuralNetwork* CreateNeuralNetwork(int layerSizes[], int arrayLength){
     NeuralNetwork* network = malloc(sizeof(NeuralNetwork));
     network->layers = calloc(arrayLength-1, sizeof(Layer));
     network->arrayLayerLength = arrayLength-1;
+    network->batchLearnData = NULL;
     for (int i = 0; i < arrayLength-1; i++){
         network->layers[i] = CreateLayer(layerSizes[i], layerSizes[i+1]);
     }
@@ -55,10 +56,12 @@ void DestroyNetworkLearnData(NetworkLearnData *learnData){
 }
 
 void DestroyNeuralNetwork(NeuralNetwork *network){
-    for (int i = 0; i < network->arrayBatchLearnDataLength; i++){
-        DestroyNetworkLearnData(network->batchLearnData[i]);
+    if (network->batchLearnData != NULL){
+        for (int i = 0; i < network->arrayBatchLearnDataLength; i++){
+            DestroyNetworkLearnData(network->batchLearnData[i]);
+        }
+        free(network->batchLearnData);
     }
-    free(network->batchLearnData);
     for (int i = 0; i < network->arrayLayerLength; i++){
         DestroyLayer(network->layers[i]);
     }
@@ -144,4 +147,60 @@ void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData, int trainingD
         ApplyGradients(neuralNetwork->layers[i], learnRate / trainingDataLength);
     }
 
+}
+
+void SaveNetwork(NeuralNetwork *network, char *fileName){
+    FILE *file;
+    if ((file = fopen(fileName, "wb")) == NULL){
+        printf("ERROR ! Coudln't write neural network.\n");
+        return;
+    }
+
+    int size = network->arrayLayerLength+1;
+    fwrite(&size, sizeof(int), 1, file);
+    for(int i = 0; i < network->arrayLayerLength; i++){
+        fwrite(&network->layers[i]->numNodesIn, sizeof(int), 1, file);
+    }
+    fwrite(&network->layers[network->arrayLayerLength-1]->numNodesOut, sizeof(int), 1,file);
+    
+    for (size_t i = 0; i < network->arrayLayerLength; i++){
+        Layer *layer = network->layers[i];
+        double *weights = layer->weights;
+        double *biases = layer->biases;
+        fwrite(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double), file);
+        fwrite(biases, layer->numNodesOut, sizeof(double), file);
+    }
+
+    fclose(file);
+}
+
+NeuralNetwork *ReadNetwork(char *fileName){
+    FILE *file;
+    if ((file = fopen(fileName, "rb")) == NULL){
+        printf("Error ! Couldn't read file\n");
+        return NULL;
+    }
+    int layerStructureSize;
+    int t = fread(&layerStructureSize, sizeof(int), 1, file);
+    int *layerStructure = calloc(layerStructureSize, sizeof(int));
+    t = fread(layerStructure, sizeof(int), layerStructureSize, file);
+    
+    NeuralNetwork *network = CreateNeuralNetwork(layerStructure, layerStructureSize);
+    free(layerStructure);
+    for (size_t i = 0; i < network->arrayLayerLength; i++){
+        Layer *layer = network->layers[i];
+        double *weights = calloc(layer->numNodesIn*layer->numNodesOut, sizeof(double));
+        double *biases = calloc(layer->numNodesOut, sizeof(double));
+        fread(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double), file);
+        t = fread(biases, layer->numNodesOut, sizeof(double), file);
+        for (size_t j = 0; j < layer->numNodesIn*layer->numNodesOut; j++){
+            layer->weights[j] = weights[j];
+        }
+        for (size_t j = 0; j < layer->numNodesOut; j++){
+            layer->biases[j] = biases[j];
+        }
+        free(weights);
+        free(biases);
+    }
+    return network;
 }
