@@ -26,4 +26,6 @@ u8 ComputeOtsuThreshold(size_t len, const u32 histogram[256]);
 void ThresholdImage(Image* image, u8 threshold);
 void AdapativeThresholding(Image* img, size_t r, float threshold);
 
+Image* CannyEdgeDetection(const Image* src);
+
 /* Add filters here */

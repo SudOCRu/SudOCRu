@@ -31,6 +31,13 @@ int main(int argc, char** argv)
         {
             printf("Successfully wrote out.png\n");
         }
+
+        Image* edges = CannyEdgeDetection(img);
+
+        if (SaveImageFile(edges, "edges.png"))
+        {
+            printf("Successfully wrote edges.png\n");
+        }
     } else {
         // load failed
         DestroyImage(img);

@@ -282,3 +282,62 @@ void AdapativeThresholding(Image* img, size_t r, float threshold)
         }
     }
 }
+
+void SobelOperator(const Image* img, u32* out, u32* max_mag)
+{
+    int Iy[9] = 
+    {
+        -1, 0, 1,
+        -2, 0, 2,
+        -1, 0, 1,
+    };
+    int Ix[9] = 
+    {
+         1,  2,  1,
+         0,  0,  0,
+        -1, -2, -1,
+    };
+    size_t w = img->width, h = img->height;
+    *max_mag = 0;
+    for (size_t y = 1; y < h - 1; y++)
+    {
+        for (size_t x = 1; x < w - 1; x++)
+        {
+            int gx = 0, gy = 0;
+            for (ssize_t dy = -1; dy <= 1; dy++)
+            {
+                for (ssize_t dx = -1; dx <= 1; dx++)
+                {
+                    gx += (img->pixels[(y + dy) * w + x + dx] & 0xFF)
+                        * Ix[(dy + 1) * 3 + dx + 1];
+                    gy += (img->pixels[(y + dy) * w + x + dx] & 0xFF)
+                        * Iy[(dy + 1) * 3 + dx + 1];
+                }
+            }
+            u32 mag = sqrt(gx * gx + gy * gy);
+            if (mag > *max_mag) *max_mag = mag;
+            out[y * w + x] = mag;
+        }
+    }
+}
+
+Image* CannyEdgeDetection(const Image* src)
+{
+    size_t len = src->width * src->height;
+    Image* out = CreateImage(0, src->width, src->height, NULL);
+    if (out == NULL) return NULL;
+
+    u32* mat = calloc(len, sizeof(u32));
+    u32 max = 0;
+    SobelOperator(src, buf, &max);
+
+    // Rendering
+    for (size_t i = 0; i < len; i++)
+    {
+        u8 c = (mat[i] * 255) / max;
+        out->pixels[i] = (c << 16) | (c << 8) | c;
+    }
+
+    free(mat);
+    return out;
+}
