@@ -28,31 +28,53 @@ int max4(int a, int b, int c, int d) {
 
 BBox* NewBB(Rect* r)
 {
+    BBox* bb = malloc(sizeof(BBox));
+    if (bb == NULL)
+        return NULL;
+
     const Line* l1 = r->ep1->l1;
     const Line* l2 = r->ep1->l2;
     const Line* l3 = r->ep2->l1;
     const Line* l4 = r->ep2->l2;
 
-    int p1_x = 0, p1_y = 0;
-    LineIntersection(l1, l3, &p1_x, &p1_y);
+    LineIntersection(l1, l3, &bb->x1, &bb->y1);
+    LineIntersection(l2, l3, &bb->x2, &bb->y2);
+    LineIntersection(l1, l4, &bb->x3, &bb->y3);
+    LineIntersection(l2, l4, &bb->x4, &bb->y4);
 
-    int p2_x = 0, p2_y = 0;
-    LineIntersection(l2, l3, &p2_x, &p2_y);
-
-    int p3_x = 0, p3_y = 0;
-    LineIntersection(l1, l4, &p3_x, &p3_y);
-
-    int p4_x = 0, p4_y = 0;
-    LineIntersection(l2, l4, &p4_x, &p4_y);
-
-    BBox* bb = malloc(sizeof(BBox*));
-    if (bb == NULL)
-        return NULL;
-    bb->x1 = min4(p1_x, p2_x, p3_x, p4_x);
-    bb->y1 = min4(p1_y, p2_y, p3_y, p4_y);
-    bb->x2 = max4(p1_x, p2_x, p3_x, p4_x);
-    bb->y2 = max4(p1_y, p2_y, p3_y, p4_y);
     return bb;
+}
+
+void GetCenterBB(BBox* bb, float* centerX, float* centerY)
+{
+    *centerX = (bb->x1 + bb->x2 + bb->x3 + bb->x4) / 4.0;
+    *centerY = (bb->y1 + bb->y2 + bb->y3 + bb->y4) / 4.0;
+}
+
+void RotateBB(BBox* bb, float angle, float centerX, float centerY)
+{
+    if (fabs(angle) < (M_PI/180)) return;
+    float sint = sin(-angle), cost = cos(-angle); 
+
+    bb->x1 = (bb->x1 - centerX) * cost - (bb->y1 - centerY) * sint + centerX;
+    bb->y1 = (bb->x1 - centerX) * cost + (bb->y1 - centerY) * sint + centerY;
+
+    bb->x2 = (bb->x2 - centerX) * cost - (bb->y2 - centerY) * sint + centerX;
+    bb->y2 = (bb->x2 - centerX) * cost + (bb->y2 - centerY) * sint + centerY;
+
+    bb->x3 = (bb->x3 - centerX) * cost - (bb->y3 - centerY) * sint + centerX;
+    bb->y3 = (bb->x3 - centerX) * cost + (bb->y3 - centerY) * sint + centerY;
+
+    bb->x4 = (bb->x4 - centerX) * cost - (bb->y4 - centerY) * sint + centerX;
+    bb->y4 = (bb->x4 - centerX) * cost + (bb->y4 - centerY) * sint + centerY;
+}
+
+void GetRectFromBB(BBox* bb, size_t* l, size_t* t, size_t* r, size_t* b)
+{
+    *l = min4(bb->x1, bb->x2, bb->x3, bb->x4);
+    *t = min4(bb->y1, bb->y2, bb->y3, bb->y4);
+    *r = max4(bb->x1, bb->x2, bb->x3, bb->x4);
+    *b = max4(bb->y1, bb->y2, bb->y3, bb->y4);
 }
 
 void FreeLine(Line* line)

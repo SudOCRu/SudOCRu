@@ -11,6 +11,6 @@
 
 #define SC_FLG_FIL ((SC_FLG_FLINES) | (SC_FLG_FRECTS) | (SC_FLG_PRESTL))
 
-Image* CropPerspective(Image* img, BBox* bounding_box);
-Image** ExtractSudokuCells(Image* img, size_t* out_count, int threshold,
-        int flags);
+Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags);
+Image** ExtractSudokuCells(Image* original, Image* img, size_t* out_count,
+        int threshold, int flags);

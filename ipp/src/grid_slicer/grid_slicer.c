@@ -3,8 +3,7 @@
 #include "renderer.h"
 #include "../utils.h"
 
-Image** ExtractSudokuCells(Image* img, size_t* out_count, int threshold,
-        int flags)
+Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
 {
     // Find all lines
     size_t len = 0;
@@ -37,10 +36,7 @@ Image** ExtractSudokuCells(Image* img, size_t* out_count, int threshold,
     PrintStage(4, 4, "Find Rectangles", 1);
 
     if (rect_count == 0)
-    {
-        *out_count = 0;
         return NULL;
-    }
 
     if((flags & SC_FLG_ARECTS) != 0)
         RenderRects(img, rects, rect_count);
@@ -69,19 +65,66 @@ Image** ExtractSudokuCells(Image* img, size_t* out_count, int threshold,
             RenderRect(img, colors[i - 1], r);
     }
 
+    Image* sudoku = NULL;
     Rect* candidate = FindSudokuBoard(img, best, 5);
     if (candidate != NULL)
     {
+        float angle = candidate->ep1->alpha;
+        if (angle / (M_PI / 2) < 0) angle += M_PI/2;
+        else if (angle / (M_PI / 2) > 0) angle -= M_PI/2;
         printf("=> Found rect:\n");
-        printf("   > angle = %f°\n", (candidate->ep1->alpha) * 180 / M_PI);
+        printf("   > angle = %f°\n", angle * 180 / M_PI);
         printf("   > squareness = %f\n", candidate->squareness);
         printf("   > area = %u pix*pix\n", candidate->area);
         RenderRect(img, 0x00ff00, candidate);
+
+        BBox* bb = NewBB(candidate);
+        float midX = 0, midY = 0;
+        GetCenterBB(bb, &midX, &midY);
+        RotateBB(bb, angle, midX, midY);
+
+        size_t l, t, r, b;
+        GetRectFromBB(bb, &l, &t, &r, &b);
+        printf("   > left=%lu, top=%lu, right=%lu, bottom=%lu\n", l, t, r, b);
+        sudoku = CropRotateImage(original, -angle, midX, midY, l, t, r, b);
+        if (SaveImageFile(sudoku, "sudoku.png"))
+            printf("Successfuly saved sudoku.png\n");
+
+        free(bb);
     }
 
     FreeRects(rects, rect_count);
     FreePSets(psets, nb_psets);
     FreeLines(lines, len);
+    return sudoku;
+}
+
+Image** ExtractSudokuCells(Image* original, Image* img, size_t* out_count,
+        int threshold, int flags)
+{
     *out_count = 0;
-    return NULL;
+    Image* sudoku = ExtractSudoku(original, img, threshold, flags);
+    if (sudoku == NULL)
+        return NULL;
+
+    size_t vcells = 9;
+    size_t hcells = 9;
+    Image** cells = malloc(vcells * hcells * sizeof(Image*));
+    if (cells == NULL)
+        return NULL;
+
+    size_t stepX = sudoku->width / hcells;
+    size_t stepY = sudoku->height / vcells;
+
+    for (size_t i = 0; i < vcells; i++)
+    {
+        for (size_t j = 0; j < hcells; j++)
+        {
+            cells[i * hcells + j] = CropImage(sudoku, j * stepX, i * stepY,
+                    (j + 1) * stepX, (i + 1) * stepY);
+        }
+    }
+    *out_count = vcells * hcells;
+
+    return cells;
 }

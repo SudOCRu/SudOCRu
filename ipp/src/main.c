@@ -41,24 +41,31 @@ int main(int argc, char** argv)
 
         printf("Extracting cells...\n");
         size_t len = 0;
-        Image** cells = ExtractSudokuCells(edges, &len, -50, SC_FLG_FIL);
+        Image** cells = ExtractSudokuCells(img, edges, &len, -50, SC_FLG_FIL);
 
-        if (SaveImageFile(edges, "grid.png"))
+        if (SaveImageFile(edges, "detected.png"))
         {
             printf("Successfully wrote grid.png\n");
         }
 
         char name[18];
+        printf("Extracting cell 0/%lu", len);
         for(size_t i = 0; i < len; i++)
         {
+            printf("\rExtracting cell %lu/%lu", i + 1, len);
+            fflush(stdout);
+
             Image* cell = cells[i];
             sprintf(name, "cells/cell_%lu.png", i);
-            if (SaveImageFile(cell, name))
+            if (!SaveImageFile(cell, name))
             {
-                printf("Successfully wrote %s\n", name);
+                printf("\nError: Could not save %s\n", name);
             }
             DestroyImage(cell);
         }
+        printf("\n");
+
+        free(cells);
     } else {
         // load failed
         DestroyImage(img);

@@ -49,10 +49,14 @@ typedef struct Rect {
  * the corresponding quad.
 */
 typedef struct BBox {
-    unsigned int x1;
-    unsigned int y1;
-    unsigned int x2;
-    unsigned int y2;
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+    int x3;
+    int y3;
+    int x4;
+    int y4;
 } BBox;
 
 /*
@@ -63,6 +67,10 @@ typedef struct BBox {
  * be NULL.
 */
 BBox* NewBB(Rect* r);
+
+void RotateBB(BBox* bb, float angle, float centerX, float centerY);
+void GetCenterBB(BBox* bb, float* centerX, float* centerY);
+void GetRectFromBB(BBox* bb, size_t* l, size_t* t, size_t* r, size_t* b);
 
 /*
  * LineIntersection(const Line* l1, const Line* l2, float *x, float *y) -> bool

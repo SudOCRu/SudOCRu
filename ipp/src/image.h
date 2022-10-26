@@ -72,6 +72,16 @@ Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h,
  * the `fill` color */
 void RotateImage(Image* image, float angle, unsigned int fill);
 
+/* Crop the given image by the specified bounds (left, top, right, bottom) */
+Image* CropImage(const Image* src, size_t l, size_t t, size_t r, size_t b);
+
+/* Rotate the given image by `angle` rads, fills the missing pixels in black
+ * and crops the result image according to the specified bounds (left, top,
+ * right, bottom).
+ */
+Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
+        size_t l, size_t t, size_t r, size_t b);
+
 /* Destroys (free the memory) the loaded Image.
  * It is safe to pass NULL to this function. */
 void DestroyImage(Image* image);
