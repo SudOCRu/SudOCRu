@@ -114,32 +114,30 @@ void surface_to_grayscale(SDL_Surface* surface)
 }
 */
 
-void rotate(SDL_Surface* surface, SDL_Surface* rotated, double angle){
-
+void rotate(SDL_Surface* surface, SDL_Surface* rotated, double angle)
+{
     if (SDL_LockSurface(surface) != 0) 
         errx(EXIT_FAILURE, "Rotate: %s", SDL_GetError());
 
-    int middle_width = surface->w / 2;
-    int middle_height = surface->h / 2;
-    double sinus = sin(angle);
-    double cosinus = cos(angle); 
+    size_t w = surface->w, h = surface->h;
+    float middle_width = w / 2.0f;
+    float middle_height = h / 2.0f;
+    float sinus = sin(-angle);
+    float cosinus = cos(-angle); 
+    float nx = 0, ny = 0;
+    float x = 0, y = 0;
 
-    //angle = angle % 180;
-
-    int x = 0;
-    int y = 0;
-
-    for (int i = 0; i < surface->w; i++){
-        for (int j = 0; j < surface->h; j++){         
-            x = (int) round((i - middle_width) * cosinus - (j - middle_height)
-                * sinus + middle_width);
-            y = (int) round((i - middle_width) * sinus + (j - middle_height)
-                    * cosinus + middle_height);
-            if (0 <= x && x < surface->w && 
-                    0 <= y && y < surface->h){
-                Uint32 le_pixel = getpixel(surface, i, j);
-                putpixel(rotated, x, y, le_pixel);
+    for (size_t i = 0; i < w; i++){
+        for (size_t j = 0; j < h; j++){
+            nx = i - middle_width;
+            ny = j - middle_height;
+            x = nx * cosinus - ny * sinus   + middle_width;
+            y = nx * sinus   + ny * cosinus + middle_height;
+            Uint32 c = 0;
+            if (x >= 0 && x < w && y >= 0 && y < h){
+                c = getpixel(surface, round(x), round(y));
             }
+            putpixel(rotated, i, j, c);
         }
     }
     SDL_UnlockSurface(surface);
@@ -147,7 +145,11 @@ void rotate(SDL_Surface* surface, SDL_Surface* rotated, double angle){
 
 int main(int argc, char *argv[])
 {
-    if (argc == 0) printf("caca\n");
+    if (argc != 3)
+    {
+        printf("Usage: %s <image> <angle>\n", argv[0]);
+        return 1;
+    }
 
     SDL_Surface* lasurface = load_image(argv[1]);
     
@@ -155,12 +157,10 @@ int main(int argc, char *argv[])
             lasurface->h, 32, 0, 0, 0, 0);
 
     char* pointer;
-    double angle = strtod(argv[2], &pointer) * (M_PI)/180;
+    double angle = (strtod(argv[2], &pointer)) * (M_PI)/180;
 
     rotate(lasurface, rotated_surface, angle);
 
     SDL_SaveBMP(rotated_surface, "test_rotation.bmp");
-    
-
     return 0;
 }
