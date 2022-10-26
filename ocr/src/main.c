@@ -28,7 +28,8 @@ void xor(){
     //DataPoint sample[] = {*data1, *data2, *data3, *data4};
     
     int neuralCount[] = {2, 2, 1};
-    NeuralNetwork *network = CreateNeuralNetwork(neuralCount, sizeof(neuralCount)/sizeof(int));
+    NeuralNetwork *network = CreateNeuralNetwork(neuralCount,
+            sizeof(neuralCount)/sizeof(int));
     for (size_t i = 0; i < 10000; i++){
         Learn(network, sample, 4, 2);
     }
@@ -114,10 +115,12 @@ int TrainCmd(int argc, char **argv){
             if (stat(filename, &buffer) == 0){
                 network = ReadNetwork(filename);
             } else {
-                printf("Neural network file doesn't exist. Creating a new one.\n");
+                printf("Neural network file doesn't exist."
+                       " Creating a new one.\n");
             }
             if (argc != 6){
-                printf("You have to specify learn iterations and learn rate.\n");
+                printf("You have to specify learn iterations and learn rate"
+                        "\n");
                 return 1;
             }
             iCount = argv[4];
@@ -141,14 +144,22 @@ int TrainCmd(int argc, char **argv){
         srand(time(NULL));
         network = CreateNeuralNetwork(layerStructure, 3);
     }
-    
+
+    printf("Using XOR truth table as training data\n");
+    printf("Layers: (2x inputs) -> (2x hidden) -> (2x outputs)\n");
+
     DataPoint **sample = GenerateXorData();
+    printf("Training... 0/%li", learnTimes);
+    fflush(stdout);
     for (long i = 0; i < learnTimes; i++){
         Learn(network, sample, 4, learnRate);
+        printf("\rTraining... %li/%li", i + 1, learnTimes);
+        fflush(stdout);
     }
+    printf("\n");
     SaveNetwork(network, (filename == NULL) ? "network" : filename);
-    printf("Neural network saved in:\"%s\"\n",(filename == NULL) ? "network" : filename);
-    
+    printf("Neural network saved in: \"%s\"\n",
+            (filename == NULL) ? "network" : filename);
 
     DestroyNeuralNetwork(network);
     for (int i = 0; i < 4; i++){
@@ -170,7 +181,8 @@ int EvalCmd(int argc, char **argv){
     }
 
     double *output = ProcessOutputs(network, inputs);
-    for (int i = 0; i < network->layers[network->arrayLayerLength-1]->numNodesOut; i++){
+    for (int i = 0; i < network->layers[network->arrayLayerLength-1]
+            ->numNodesOut; i++){
         printf("Output%i = %lf\n", i, output[i]);
     }
 
