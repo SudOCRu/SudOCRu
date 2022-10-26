@@ -1,5 +1,6 @@
 BUILD := bin
 TARGET := ipp
+GENERATED_FILES := edges.png out.png acc.png detected.png sudoku.png cells/
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
@@ -49,7 +50,7 @@ $(BUILD)/%.o: %.c
 	$(call printtask,Compiling,$<)
 
 clean:
-	rm -rf $(BUILD) $(TARGET)
+	rm -rf $(BUILD) $(TARGET) $(GENERATED_FILES)
 
 .PHONY: all clean
 
