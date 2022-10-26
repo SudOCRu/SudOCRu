@@ -58,10 +58,13 @@ double GetWeight(Layer* layer, int in, int out){
     return layer->weights[GetFlatIndex(layer, in, out)];
 }
 
-void CalculateOutputLayerNodeValues(LayerLearnData* layerLearnData, double expectedOutputs[]){
+void CalculateOutputLayerNodeValues(LayerLearnData* layerLearnData,
+        double expectedOutputs[]){
     for (int i = 0; i < layerLearnData->nodeValuesLength; i++){
-        double costDerivative = CostDerivative(layerLearnData->activations[i], expectedOutputs[i]);
-        double activateDerivate = DerivativeActivate(layerLearnData->weights[i]);
+        double costDerivative = CostDerivative(layerLearnData->activations[i],
+                expectedOutputs[i]);
+        double activateDerivate = DerivativeActivate(layerLearnData
+                ->weights[i]);
         layerLearnData->nodeValues[i] = costDerivative * activateDerivate;
     }
 }
@@ -128,7 +131,8 @@ void UpdateGradients(Layer* layer, LayerLearnData* layerLearnData){
     }
 }
 
-void CalculateHiddenLayerNodeValues(Layer* layer, LayerLearnData* learnData, Layer* oldLayer, double oldNodeValues[], int oldNodeValuesLength){
+void CalculateHiddenLayerNodeValues(Layer* layer, LayerLearnData* learnData,
+        Layer* oldLayer, double oldNodeValues[], int oldNodeValuesLength){
     for (int i = 0; i < layer->numNodesOut; i++){
         double newValue = 0;
         for (int old = 0; old < oldNodeValuesLength; old++){

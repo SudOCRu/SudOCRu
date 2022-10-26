@@ -77,11 +77,13 @@ double *ProcessOutputs(NeuralNetwork* neuralNetwork, double inputs[]){
     return inputs;
 }
 
-void LearnGradients(NeuralNetwork* neuralNetwork, DataPoint* data, NetworkLearnData* learnData){
+void LearnGradients(NeuralNetwork* neuralNetwork, DataPoint* data,
+        NetworkLearnData* learnData){
     double *inputsToNextLayer = data->inputs;
 
     for (int i = 0; i < neuralNetwork->arrayLayerLength; i++){
-        inputsToNextLayer = LearnOutputs(neuralNetwork->layers[i], inputsToNextLayer, learnData->layerData[i]);
+        inputsToNextLayer = LearnOutputs(neuralNetwork->layers[i],
+                inputsToNextLayer, learnData->layerData[i]);
     }
 
     int outputLayerIndex = neuralNetwork->arrayLayerLength - 1;
@@ -96,7 +98,8 @@ void LearnGradients(NeuralNetwork* neuralNetwork, DataPoint* data, NetworkLearnD
         Layer *hiddenLayer = neuralNetwork->layers[i];
 
         CalculateHiddenLayerNodeValues(hiddenLayer, layerLearnData,
-                neuralNetwork->layers[i+1], learnData->layerData[i+1]->nodeValues,
+                neuralNetwork->layers[i+1],
+                learnData->layerData[i+1]->nodeValues,
                 learnData->layerData[i+1]->nodeValuesLength);
         UpdateGradients(hiddenLayer, layerLearnData);
     }
@@ -110,17 +113,22 @@ typedef struct GradientData{
 
 void *ThreadGradient(void *data){
     GradientData *gradientData = (GradientData*)data;
-    LearnGradients(gradientData->network, gradientData->trainingData, gradientData->batchLearnData);
+    LearnGradients(gradientData->network, gradientData->trainingData,
+            gradientData->batchLearnData);
     pthread_exit(NULL);
 }
 
-void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData, int trainingDataLength, double learnRate){
+void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData,
+        int trainingDataLength, double learnRate){
     if (!neuralNetwork->batchLearnData ||
             neuralNetwork->arrayBatchLearnDataLength != trainingDataLength){
-        neuralNetwork->batchLearnData = calloc(trainingDataLength, sizeof(DataPoint));
+        neuralNetwork->batchLearnData = calloc(trainingDataLength,
+                sizeof(DataPoint));
         neuralNetwork->arrayBatchLearnDataLength = trainingDataLength;
         for (int i = 0; i < trainingDataLength; i++){
-            neuralNetwork->batchLearnData[i] = CreateNetworkLearnData(neuralNetwork->layers, neuralNetwork->arrayLayerLength);
+            neuralNetwork->batchLearnData[i] =
+                CreateNetworkLearnData(neuralNetwork->layers,
+                        neuralNetwork->arrayLayerLength);
         }
     }
 
@@ -136,7 +144,8 @@ void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData, int trainingD
         if (rc){
             printf("ERROR; return code from pthread_create() is %d\n",rc);
         }*/
-        LearnGradients(neuralNetwork, trainingData[i], neuralNetwork->batchLearnData[i]);
+        LearnGradients(neuralNetwork, trainingData[i],
+                neuralNetwork->batchLearnData[i]);
     }
 
     /*for (int i = 0; i < trainingDataLength; i++){
@@ -144,7 +153,7 @@ void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData, int trainingD
     }*/
 
     for (int i = 0; i < neuralNetwork->arrayLayerLength; i++){
-        ApplyGradients(neuralNetwork->layers[i], learnRate / trainingDataLength);
+        ApplyGradients(neuralNetwork->layers[i], learnRate/trainingDataLength);
     }
 
 }
@@ -161,13 +170,15 @@ void SaveNetwork(NeuralNetwork *network, char *fileName){
     for(int i = 0; i < network->arrayLayerLength; i++){
         fwrite(&network->layers[i]->numNodesIn, sizeof(int), 1, file);
     }
-    fwrite(&network->layers[network->arrayLayerLength-1]->numNodesOut, sizeof(int), 1,file);
-    
+    fwrite(&network->layers[network->arrayLayerLength-1]->numNodesOut,
+            sizeof(int), 1, file);
+
     for (size_t i = 0; i < network->arrayLayerLength; i++){
         Layer *layer = network->layers[i];
         double *weights = layer->weights;
         double *biases = layer->biases;
-        fwrite(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double), file);
+        fwrite(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double),
+                file);
         fwrite(biases, layer->numNodesOut, sizeof(double), file);
     }
 
@@ -185,13 +196,16 @@ NeuralNetwork *ReadNetwork(char *fileName){
     int *layerStructure = calloc(layerStructureSize, sizeof(int));
     t = fread(layerStructure, sizeof(int), layerStructureSize, file);
     
-    NeuralNetwork *network = CreateNeuralNetwork(layerStructure, layerStructureSize);
+    NeuralNetwork *network = CreateNeuralNetwork(layerStructure,
+            layerStructureSize);
     free(layerStructure);
     for (size_t i = 0; i < network->arrayLayerLength; i++){
         Layer *layer = network->layers[i];
-        double *weights = calloc(layer->numNodesIn*layer->numNodesOut, sizeof(double));
+        double *weights = calloc(layer->numNodesIn*layer->numNodesOut,
+                sizeof(double));
         double *biases = calloc(layer->numNodesOut, sizeof(double));
-        fread(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double), file);
+        fread(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double),
+                file);
         t = fread(biases, layer->numNodesOut, sizeof(double), file);
         for (size_t j = 0; j < layer->numNodesIn*layer->numNodesOut; j++){
             layer->weights[j] = weights[j];
