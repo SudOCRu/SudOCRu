@@ -122,13 +122,13 @@ typedef struct LearnData{
 
 void *LearnThread(void *data){
     LearnData *learnData = (LearnData*)data;
-    Learn(learnData->network, learnData->dataSet, learnData->dataLength, learnData->learnRate);
+    Learn(learnData->network, learnData->dataSet, learnData->dataLength,
+            learnData->learnRate);
     printf("finished learning\n");
     pthread_exit(NULL);
 }
 
 int GetMaxIndex(double *data, int size);
-
 
 DataPoint **GenerateXorData(){
     DataPoint **sample = calloc(4, sizeof(DataPoint));
@@ -173,7 +173,8 @@ DataPoint **GenerateXorData(){
     return sample;
 }
 
-void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize, double learnRate){
+void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize,
+        double learnRate){
     for (size_t i = 0; i < LEARN_ITERATION; i++){
         Learn(network, trainingSample, trainingSize, learnRate);
     }
@@ -188,7 +189,8 @@ void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize,
         Layer *layer = network->layers[i];
         double *weights = layer->weights;
         double *biases = layer->biases;
-        fwrite(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double), file);
+        fwrite(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double),
+        file);
         fwrite(biases, layer->numNodesOut, sizeof(double), file);
     }
 
