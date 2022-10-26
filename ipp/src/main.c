@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 
         if (SaveImageFile(edges, "grid.png"))
         {
-            printf("[DEBUG] Successfully wrote out.png\n");
+            printf("Successfully wrote grid.png\n");
         }
 
         char name[18];

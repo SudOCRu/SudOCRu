@@ -104,7 +104,7 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
     }
 
 #ifdef DEBUG_VIEW
-    printf("[DEBUG_VIEW] Hough Lines accumulator saved as acc.png\n");
+    //printf("[DEBUG_VIEW] Hough Lines accumulator saved as acc.png\n");
     SaveImageFile(accumulator, "acc.png");
 #endif
     DestroyImage(accumulator);

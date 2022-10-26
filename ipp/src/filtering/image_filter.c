@@ -1,8 +1,6 @@
-#include <stdio.h>
 #include "image_filter.h"
+#include "../utils.h"
 
-const char IND_LOAD[] = "..";
-const char IND_OK[] = "\033[32;1mOK\033[0m";
 const float GAUS_KERNEL_3[] =
 {
     1/16.0f, 2/16.0f, 1/16.0f,
@@ -41,20 +39,6 @@ void array_insert(u8* begin, u8* end, u8 val)
     for(; end > begin && val < *(end - 1); end--)
         *end = *(end - 1);
     *end = val;
-}
-
-void PrintStage(u8 id, u8 total, char* stage, int ok)
-{
-    const char* indicator = ok ? IND_OK : IND_LOAD;
-    if (ok)
-    {
-        printf("\r%hhu/%hhu [%s] %s\n", id, total, indicator, stage);
-    }
-    else
-    {
-        printf("%hhu/%hhu [%s] %s", id, total, indicator, stage);
-        fflush(stdout);
-    }
 }
 
 void FilterImage(Image* img)

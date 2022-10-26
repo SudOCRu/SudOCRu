@@ -1,31 +1,40 @@
 #include "grid_slicer.h"
 #include "hough_lines.h"
 #include "renderer.h"
+#include "../utils.h"
 
 Image** ExtractSudokuCells(Image* img, size_t* out_count, int threshold,
         int flags)
 {
     // Find all lines
     size_t len = 0;
-    printf("Running edge detection (HT)...\n");
+    PrintStage(1, 4, "Hough Transform", 0);
     Line** lines = HoughLines(img, &len, WHITE_EDGE, THETA_STEPS, threshold);
     if((flags & SC_FLG_ALINES) != 0)
         RenderLines(img, 0x0000FF, lines, len);
+    PrintStage(1, 4, "Hough Transform", 1);
 
     // Merge similar lines
+    PrintStage(2, 4, "Merge similar lines", 0);
     size_t fil_len = 0;
     Line** filtered = AverageLines(lines, len, &fil_len);
-    printf("Filtered lines, %lu -> %lu\n", len, fil_len);
+    printf(" --> %lu -> %lu", len, fil_len);
+    PrintStage(2, 4, "Merge similar lines", 1);
     if((flags & SC_FLG_FLINES) != 0)
         RenderLines(img, 0xFF0000, filtered, fil_len);
 
     // Group parallel lines
+    PrintStage(3, 4, "Group Parallel Lines", 0);
     size_t nb_psets = 0;
     PSet** psets = GroupParallelLines(filtered, fil_len, &nb_psets);
+    printf(" --> %lu", nb_psets);
+    PrintStage(3, 4, "Group Parallel Lines", 1);
 
+    PrintStage(4, 4, "Find Rectangles", 0);
     size_t rect_count = 0;
     Rect** rects = FindRects(img, psets, nb_psets, &rect_count);
-    printf("Detected %lu rects\n", rect_count);
+    printf(" --> Detected %lu rects", rect_count);
+    PrintStage(4, 4, "Find Rectangles", 1);
 
     if (rect_count == 0)
     {
