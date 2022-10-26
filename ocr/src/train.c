@@ -11,7 +11,7 @@
 #define IMAGE_FILE "./train-images.idx3-ubyte"
 #define IMAGE_SIZE 28
 #define TRAIN_COUNT 10000
-#define LEARN_ITERATION 1000000
+#define LEARN_ITERATION 10000
 
 void Convert(unsigned int *value){
     unsigned int b0,b1,b2,b3;
@@ -127,40 +127,24 @@ void *LearnThread(void *data){
     pthread_exit(NULL);
 }
 
-void SaveNetwork(NeuralNetwork *network){
-
-}
-
 int GetMaxIndex(double *data, int size);
 
-void ReadNetwork(NeuralNetwork *network){
-    FILE *file;
-    if ((file = fopen("./network", "rb")) == NULL){
-        printf("Error ! Couldn't read file\n");
-        return;
-    }
-    for (size_t i = 0; i < network->arrayLayerLength; i++){
-        Layer *layer = network->layers[i];
-        double *weights = calloc(layer->numNodesIn*layer->numNodesOut, sizeof(double));
-        double *biases = calloc(layer->numNodesOut, sizeof(double));
-        printf("sizeof=%i\n", layer->numNodesIn*layer->numNodesOut);
-        int t = fread(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double), file);
-        t = fread(biases, layer->numNodesOut, sizeof(double), file);
-        for (size_t j = 0; j < layer->numNodesIn*layer->numNodesOut; j++){
-            layer->weights[j] = weights[j];
-        }
-        for (size_t j = 0; j < layer->numNodesOut; j++){
-            layer->biases[j] = biases[j];
-        }
-    }
-}
 
 DataPoint **GenerateXorData(){
     DataPoint **sample = calloc(4, sizeof(DataPoint));
-    double *True = malloc(sizeof(double));
-    double *False = malloc(sizeof(double));
-    True[0] = 1;
-    False[0] = 0;
+    double *True1 = malloc(2*sizeof(double));
+    double *True2 = malloc(2*sizeof(double));
+    double *False1 = malloc(2*sizeof(double));
+    double *False2 = malloc(2*sizeof(double));
+    True1[0] = 1;
+    True1[1] = 0;
+    False1[0] = 0;
+    False1[1] = 1;
+    
+    True2[0] = 1;
+    True2[1] = 0;
+    False2[0] = 0;
+    False2[1] = 1;
     
     double *t1 = calloc(2, sizeof(double));
     t1[0] = 0;
@@ -176,10 +160,10 @@ DataPoint **GenerateXorData(){
     t4[1] = 1;
 
     
-    DataPoint *data1 = CreateDatapoint(t1, False);
-    DataPoint *data2 = CreateDatapoint(t2, True);
-    DataPoint *data3 = CreateDatapoint(t3, True);
-    DataPoint *data4 = CreateDatapoint(t4, False);
+    DataPoint *data1 = CreateDatapoint(t1, False1);
+    DataPoint *data2 = CreateDatapoint(t2, True1);
+    DataPoint *data3 = CreateDatapoint(t3, True2);
+    DataPoint *data4 = CreateDatapoint(t4, False2);
 
     sample[0] = data1;
     sample[1] = data2;
@@ -189,12 +173,12 @@ DataPoint **GenerateXorData(){
     return sample;
 }
 
-void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize){
+void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize, double learnRate){
     for (size_t i = 0; i < LEARN_ITERATION; i++){
-        Learn(network, trainingSample, trainingSize, 1);
+        Learn(network, trainingSample, trainingSize, learnRate);
     }
 
-    FILE *file;
+    /*FILE *file;
     if ((file = fopen("./network", "wb")) == NULL){
         printf("Error ! Couldn't read file\n");
         return;
@@ -208,5 +192,5 @@ void Train(NeuralNetwork *network, DataPoint **trainingSample, int trainingSize)
         fwrite(biases, layer->numNodesOut, sizeof(double), file);
     }
 
-    fclose(file);
+    fclose(file);*/
 }
