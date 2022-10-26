@@ -26,6 +26,13 @@ Image** ExtractSudokuCells(Image* img, size_t* out_count, int threshold,
     size_t rect_count = 0;
     Rect** rects = FindRects(img, psets, nb_psets, &rect_count);
     printf("Detected %lu rects\n", rect_count);
+
+    if (rect_count == 0)
+    {
+        *out_count = 0;
+        return NULL;
+    }
+
     if((flags & SC_FLG_ARECTS) != 0)
         RenderRects(img, rects, rect_count);
     Rect** best = GetBestRects(rects, rect_count, 5);
@@ -37,7 +44,7 @@ Image** ExtractSudokuCells(Image* img, size_t* out_count, int threshold,
         printf("|  i |  color |     area | squareness |   angle |\n");
         printf("-------------------------------------------------\n");
     }
-    int colors[5] = { 0x00FF00, 0xFFAA00, 0xAA00FF, 0xFF00AA, 0x00FFFF };
+    int colors[5] = { 0x008800, 0xFFAA00, 0xAA00FF, 0xFF00AA, 0x00FFFF };
     char* names[5] = { "green", "orange", "purple", "pink", "cyan" };
     for(size_t i = 5; i > 0; i--)
     {
@@ -60,7 +67,7 @@ Image** ExtractSudokuCells(Image* img, size_t* out_count, int threshold,
         printf("   > angle = %f°\n", (candidate->ep1->alpha) * 180 / M_PI);
         printf("   > squareness = %f\n", candidate->squareness);
         printf("   > area = %u pix*pix\n", candidate->area);
-        RenderRect(img, 0x00FF00, candidate);
+        RenderRect(img, 0x00ff00, candidate);
     }
 
     FreeRects(rects, rect_count);

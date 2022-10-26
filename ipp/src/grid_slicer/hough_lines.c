@@ -85,8 +85,8 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
                 float p = ((float)y - h_d2) * hsp_height / h_d2;
                 float x0 = cos_t[x] * p;
                 float y0 = sin_t[x] * p;
-                float a = -1000*sin_t[x];
-                float b = 1000*cos_t[x];
+                float a = -10000*sin_t[x];
+                float b = 10000*cos_t[x];
                 out_lines[lines++] = LineFrom(acc[i], theta, p,
                         x0 + a, y0 + b, 
                         x0 - a, y0 - b);

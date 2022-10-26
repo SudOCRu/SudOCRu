@@ -4,6 +4,7 @@
 
 #include "image.h"
 #include "filtering/image_filter.h"
+#include "grid_slicer/grid_slicer.h"
 
 int main(int argc, char** argv)
 {
@@ -21,9 +22,7 @@ int main(int argc, char** argv)
     if (img != NULL && status == ImageOk)
     {
         // load succeeded
-        printf("Loaded image successfully\n");
-        printf("Width: %lu\n", img->width);
-        printf("Height: %lu\n", img->height);
+        printf("Processing image... (%lux%lu)\n",img->width,img->height);
 
         FilterImage(img);
 
@@ -32,11 +31,33 @@ int main(int argc, char** argv)
             printf("Successfully wrote out.png\n");
         }
 
+        printf("Detecting edges...\n");
         Image* edges = CannyEdgeDetection(img);
 
         if (SaveImageFile(edges, "edges.png"))
         {
             printf("Successfully wrote edges.png\n");
+        }
+
+        printf("Extracting cells...\n");
+        size_t len = 0;
+        Image** cells = ExtractSudokuCells(edges, &len, -50, SC_FLG_FIL);
+
+        if (SaveImageFile(edges, "grid.png"))
+        {
+            printf("[DEBUG] Successfully wrote out.png\n");
+        }
+
+        char name[18];
+        for(size_t i = 0; i < len; i++)
+        {
+            Image* cell = cells[i];
+            sprintf(name, "cells/cell_%lu.png", i);
+            if (SaveImageFile(cell, name))
+            {
+                printf("Successfully wrote %s\n", name);
+            }
+            DestroyImage(cell);
         }
     } else {
         // load failed
