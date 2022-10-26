@@ -135,7 +135,7 @@ void rotate(SDL_Surface* surface, SDL_Surface* rotated, double angle)
             y = nx * sinus   + ny * cosinus + middle_height;
             Uint32 c = 0;
             if (x >= 0 && x < w && y >= 0 && y < h){
-                c = getpixel(surface, round(x), round(y));
+                c = getpixel(surface, (size_t) x, (size_t) y);
             }
             putpixel(rotated, i, j, c);
         }
