@@ -72,6 +72,7 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
         float angle = candidate->ep1->alpha;
         if (angle / (M_PI / 2) < 0) angle += M_PI/2;
         else if (angle / (M_PI / 2) > 0) angle -= M_PI/2;
+
         printf("=> Found rect:\n");
         printf("   > angle = %f°\n", angle * 180 / M_PI);
         printf("   > squareness = %f\n", candidate->squareness);
@@ -81,16 +82,16 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
         BBox* bb = NewBB(candidate);
         float midX = 0, midY = 0;
         GetCenterBB(bb, &midX, &midY);
-        RotateBB(bb, angle, midX, midY);
-
+        RotateBB(bb, -angle, midX, midY);
         size_t l, t, r, b;
         GetRectFromBB(bb, &l, &t, &r, &b);
         printf("   > left=%lu, top=%lu, right=%lu, bottom=%lu\n", l, t, r, b);
+
         sudoku = CropRotateImage(original, -angle, midX, midY, l, t, r, b);
         if (SaveImageFile(sudoku, "sudoku.png"))
-            printf("Successfuly saved sudoku.png\n");
+            printf("Successfully wrote sudoku.png\n");
 
-        free(bb);
+        FreeBB(bb);
     }
 
     FreeRects(rects, rect_count);
@@ -107,8 +108,7 @@ Image** ExtractSudokuCells(Image* original, Image* img, size_t* out_count,
     if (sudoku == NULL)
         return NULL;
 
-    size_t vcells = 9;
-    size_t hcells = 9;
+    size_t vcells = 9, hcells = 9;
     Image** cells = malloc(vcells * hcells * sizeof(Image*));
     if (cells == NULL)
         return NULL;
@@ -120,8 +120,12 @@ Image** ExtractSudokuCells(Image* original, Image* img, size_t* out_count,
     {
         for (size_t j = 0; j < hcells; j++)
         {
-            cells[i * hcells + j] = CropImage(sudoku, j * stepX, i * stepY,
-                    (j + 1) * stepX, (i + 1) * stepY);
+            size_t r = (j + 1) * stepX;
+            if (r >= sudoku->width) r = sudoku->width - 1;
+            size_t b = (i + 1) * stepY;
+            if (b >= sudoku->height) b = sudoku->height - 1;
+            cells[i * hcells + j] =
+                CropImage(sudoku, j * stepX, i * stepY, r, b);
         }
     }
     *out_count = vcells * hcells;

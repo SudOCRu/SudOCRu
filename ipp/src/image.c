@@ -188,12 +188,18 @@ void RotateImage(Image* img, float angle, unsigned int fill)
 Image* CropImage(const Image* src, size_t l, size_t t, size_t r, size_t b)
 {
     if (r <= l || b <= t || r >= src->width || b >= src->height)
+    {
+        printf("CropImage: out of bounds, l=%lu,t=%lu,r=%lu,b=%lu\n", l,t,r,b);
         return NULL;
+    }
 
     size_t w = r - l, h = b - t;
     Image* dst = CreateImage(0, w, h, NULL);
     if (dst == NULL)
+    {
+        printf("CropImage: Not enough memory, width=%lu, height=%lu\n", w, h);
         return NULL;
+    }
 
     for (size_t i = 0; i < h; i++)
     {
@@ -232,7 +238,7 @@ Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
             float x = nx * cost - ny * sint + midX;
             float y = nx * sint + ny * cost + midY;
             if (x >= 0 && x < w && y >= 0 && y < h)
-                dst->pixels[i * nw + j] = src->pixels[(size_t)y * w +(size_t)x];
+                dst->pixels[i * nw + j] = src->pixels[(size_t)y*w+(size_t)x];
             else
                 dst->pixels[i * nw + j] = 0;
         }

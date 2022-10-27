@@ -1,6 +1,7 @@
 BUILD := bin
 TARGET := ipp
-GENERATED_FILES := edges.png out.png acc.png detected.png sudoku.png cells/
+GENERATED_FILES := grayscale.png median.png edges.png filtered.png acc.png \
+		   detected.png sudoku.png cells/
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)

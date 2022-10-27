@@ -55,10 +55,16 @@ void FilterImage(Image* img)
     StretchContrast(img, min, max);
     PrintStage(s++, t, "Contrast stretching", 1);
 
+    if (SaveImageFile(img, "grayscale.png"))
+        printf("Successfully saved grayscale.png\n");
+
     u32 histogram[256] = { 0, };
     PrintStage(s, t, "Median filter (3x3)", 0);
     MedianFilter(img, 3, histogram);
     PrintStage(s++, t, "Median filter (3x3)", 1);
+
+    if (SaveImageFile(img, "median.png"))
+        printf("Successfully saved median.png\n");
 
     PrintStage(s, t, "Thresholding (Otsu's method)", 0);
     u8 threshold = ComputeOtsuThreshold(img->width * img->height, histogram);
@@ -350,7 +356,8 @@ void NonMaximumSuppression(u32* mat, float* dirs, size_t w, size_t h)
                         mat[i] = 0;
                     break;
                 default:
-                    printf("Unknown ring pos: %hhi\n", ring_pos);
+                    printf("NonMaximumSuppression::Unrecheable:"
+                           " Unknown ring pos: %hhi\n", ring_pos);
                     break;
             }
         }
@@ -414,14 +421,14 @@ Image* CannyEdgeDetection(const Image* src)
 
     PrintStage(3, 3, "Edge thinning", 0);
     NonMaximumSuppression(mat, dirs, src->width, src->height);
-    //DoubleThresholding(mat, len, max, 0.05, 0.09, 50, 255);
-    //Hysteresis(mat, src->width, src->height, 50, 255);
+    DoubleThresholding(mat, len, max, 0.25, 0.10, 50, 255);
+    Hysteresis(mat, src->width, src->height, 50, 255);
     PrintStage(3, 3, "Edge thinning", 1);
 
     // Rendering
     for (size_t i = 0; i < len; i++)
     {
-        u8 c = mat[i] / 2;
+        u8 c = 2 * mat[i] / 3;
         out->pixels[i] = (c << 16) | (c << 8) | c;
     }
 

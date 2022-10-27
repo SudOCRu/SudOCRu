@@ -26,9 +26,9 @@ int main(int argc, char** argv)
 
         FilterImage(img);
 
-        if (SaveImageFile(img, "out.png"))
+        if (SaveImageFile(img, "filtered.png"))
         {
-            printf("Successfully wrote out.png\n");
+            printf("Successfully wrote filtered.png\n");
         }
 
         printf("Detecting edges...\n");
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 
         if (SaveImageFile(edges, "detected.png"))
         {
-            printf("Successfully wrote grid.png\n");
+            printf("Successfully wrote detected.png\n");
         }
 
         char name[18];

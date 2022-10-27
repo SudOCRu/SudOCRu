@@ -28,7 +28,7 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
     int hsp_width = M_PI / dtheta; // M_PI / dtheta
     float max_angle = 0;
 
-    // Pre-generate sin, cos, 1/sin tables for faster computation.
+    // Pre-generate sin, cos tables for faster computation.
     float sin_t[hsp_width];
     float cos_t[hsp_width];
     size_t col = 0;
@@ -153,7 +153,7 @@ Line** AverageLines(Line** lines, size_t len, size_t* out_len)
 PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len)
 {
     float Tt = 5 * M_PI / 180; // max angle diff between two lines
-    float Tl = 0.3; // threshold for line segements to have similar vote counts
+    float Tl = 0.4; // threshold for line segements to have similar vote counts
 
     PSet** pairs = malloc(sizeof(PSet*) * len * len);
     size_t nb_pairs = 0;

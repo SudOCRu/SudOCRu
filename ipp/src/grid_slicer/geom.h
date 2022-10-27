@@ -51,10 +51,13 @@ typedef struct Rect {
 typedef struct BBox {
     int x1;
     int y1;
+
     int x2;
     int y2;
+
     int x3;
     int y3;
+
     int x4;
     int y4;
 } BBox;
@@ -68,8 +71,35 @@ typedef struct BBox {
 */
 BBox* NewBB(Rect* r);
 
+/*
+ * RotateBB(BBox* bb, float angle, float centerX, float centerY) -> void
+ *
+ * Rotates the input bounding box by `angle` rads from the specified center.
+ */
 void RotateBB(BBox* bb, float angle, float centerX, float centerY);
+
+/*
+ * GetCenterBB(BBox* bb, float* centerX, float* centerY) -> void
+ *
+ * Returns the coordinates of the center of mass of the bounding box in centerX
+ * and centerY.
+ */
 void GetCenterBB(BBox* bb, float* centerX, float* centerY);
+
+/*
+ * GetRectFromBB(BBox* bb, size_t* l, size_t* t, size_t* r, size_t* b) -> void
+ *
+ * Returns the bounding box rectangle bounds to be used in cropping. Note that
+ * this function may not work as attended if the bounding box is not straight
+ * (angle mod 90), you may need to rotate it to make it straight before calling
+ * this function.
+ *
+ * Outputs:
+ * l: left (x1)
+ * t: top (y1)
+ * r: right (x2)
+ * b: bottom (y2)
+ */
 void GetRectFromBB(BBox* bb, size_t* l, size_t* t, size_t* r, size_t* b);
 
 /*
@@ -83,6 +113,15 @@ void GetRectFromBB(BBox* bb, size_t* l, size_t* t, size_t* r, size_t* b);
 int LineIntersection(const Line* l1, const Line* l2, int *x, int *y);
 
 /* ---------- MEMORY OPERATIONS ---------- */
+
+/*
+ * FreeBB(BBox* line) -> void
+ * Frees the memory allocated by the BBox struct. Note that is is safe to pass
+ * NULL to this function.
+ *
+ * The `bb` pointer must not be used after calling this function.
+ */
+void FreeBB(BBox* bb);
 
 /*
  * FreeLine(Line* line) -> void

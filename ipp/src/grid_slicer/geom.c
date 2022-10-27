@@ -54,7 +54,7 @@ void GetCenterBB(BBox* bb, float* centerX, float* centerY)
 void RotateBB(BBox* bb, float angle, float centerX, float centerY)
 {
     if (fabs(angle) < (M_PI/180)) return;
-    float sint = sin(-angle), cost = cos(-angle); 
+    float sint = sin(angle), cost = cos(angle);
 
     bb->x1 = (bb->x1 - centerX) * cost - (bb->y1 - centerY) * sint + centerX;
     bb->y1 = (bb->x1 - centerX) * cost + (bb->y1 - centerY) * sint + centerY;
@@ -75,6 +75,11 @@ void GetRectFromBB(BBox* bb, size_t* l, size_t* t, size_t* r, size_t* b)
     *t = min4(bb->y1, bb->y2, bb->y3, bb->y4);
     *r = max4(bb->x1, bb->x2, bb->x3, bb->x4);
     *b = max4(bb->y1, bb->y2, bb->y3, bb->y4);
+}
+
+void FreeBB(BBox* bb)
+{
+    free(bb);
 }
 
 void FreeLine(Line* line)
