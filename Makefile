@@ -21,7 +21,7 @@ bin/solver:
 
 bin/rotate:
 	make -C app/rotate/ RELEASE=1
-	cp app/rotate/rotimg bin/
+	mv app/rotate/rotimg bin/
 
 clean:
 	rm -rf bin $(GENERATED_FILES)
