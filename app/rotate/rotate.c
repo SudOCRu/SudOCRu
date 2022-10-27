@@ -145,9 +145,9 @@ void rotate(SDL_Surface* surface, SDL_Surface* rotated, double angle)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3)
+    if (argc != 3 && argc != 4)
     {
-        printf("Usage: %s <image> <angle>\n", argv[0]);
+        printf("Usage: %s <image> <angle> [output]\n", argv[0]);
         return 1;
     }
 
@@ -161,6 +161,9 @@ int main(int argc, char *argv[])
 
     rotate(lasurface, rotated_surface, angle);
 
-    SDL_SaveBMP(rotated_surface, "test_rotation.bmp");
+    if (argc == 4)
+        IMG_SavePNG(rotated_surface, argv[3]);
+    else
+        IMG_SavePNG(rotated_surface, "rotated.png");
     return 0;
 }

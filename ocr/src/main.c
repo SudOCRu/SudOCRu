@@ -194,7 +194,7 @@ int EvalCmd(int argc, char **argv){
 int main(int argc, char *argv[])
 {
     if (argc == 1){
-        printf("Please use an argument.\n");
+        printf("Usage: %s <train|eval> [parameters...]\n", argv[0]);
         return 1;
     }
 
