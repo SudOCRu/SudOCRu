@@ -1,3 +1,6 @@
+GENERATED_FILES := grayscale.png median.png edges.png filtered.png acc.png \
+		   detected.png sudoku.png cells/ *.result
+
 all: bin/ bin/ocr bin/ipp bin/solver
 
 bin/:
@@ -16,7 +19,7 @@ bin/solver:
 	cp solver/solver bin/
 
 clean:
-	rm -rf bin
+	rm -rf bin $(GENERATED_FILES)
 	make -C ocr/ clean
 	make -C ipp/ clean
 	make -C solver/ clean
