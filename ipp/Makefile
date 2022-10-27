@@ -1,5 +1,7 @@
 BUILD := bin
 TARGET := ipp
+GENERATED_FILES := grayscale.png median.png edges.png filtered.png acc.png \
+		   detected.png sudoku.png cells/
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
@@ -14,7 +16,7 @@ ifneq ($(RELEASE), 0)
 	CFLAGS += -O3 -flto
 	LDFLAGS += -flto
 else
-	CFLAGS += -fsanitize=address,undefined
+	CFLAGS += -g -fsanitize=address,undefined
 	LDFLAGS += -fsanitize=address,undefined
 	CPPFLAGS += -DDEBUG
 endif
@@ -39,6 +41,7 @@ SRCDIRS := $(shell find . -type d -not -path "*$(BUILD)*")
 $(shell mkdir -p $(SRCDIRS:%=$(BUILD)/%))
 
 all: $(TARGET)
+	mkdir cells
 
 $(TARGET): $(OFILES)
 	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
@@ -49,7 +52,7 @@ $(BUILD)/%.o: %.c
 	$(call printtask,Compiling,$<)
 
 clean:
-	rm -rf $(BUILD) $(TARGET)
+	rm -rf $(BUILD) $(TARGET) $(GENERATED_FILES)
 
 .PHONY: all clean
 
