@@ -60,7 +60,7 @@ void FilterImage(Image* img)
 
     u32 histogram[256] = { 0, };
     PrintStage(s, t, "Median filter (3x3)", 0);
-    MedianFilter(img, 3, histogram);
+    MedianFilter(img, 5, histogram);
     PrintStage(s++, t, "Median filter (3x3)", 1);
 
     if (SaveImageFile(img, "median.png"))
@@ -90,25 +90,16 @@ void GrayscaleFilter(Image* image, u8* min, u8* max)
     }
 }
 
-void EnhanceContrast(Image* image, u8 f, u8* min, u8* max)
+void EnhanceContrast(Image* img, u32 histogram[256])
 {
-    size_t len = image->width * image->height;
+    size_t len = img->width * img->height;
     for (size_t i = 0; i < len; i++)
     {
-        u32 c = image->pixels[i] & 0xFF;
-        for (size_t k = 1; k < f; k++)
-        {
-            if (c >= (k * 255) / f && c <= ((k + 1) * 255) / f)
-            {
-                c = ((k + 1) * 255) / f;
-                image->pixels[i] = c | (c << 8) | (c << 16);
-
-                // Prepapre for next stage: Contrast stretching
-                if (c > *max) *max = c;
-                else if (c < *min) *min = c;
-                break;
-            }
-        }
+        u8 col = img->pixels[i] & 0xFF;
+        float f = (float)histogram[col] / (float)len;
+        float v = (259.0f * (255.0f + f)) / (255.0f * (259.0f - f));
+        col = v * (col - 128.0f) + 128.0f;
+        img->pixels[i] = (col << 16) | (col << 8) | col;
     }
 }
 
@@ -127,8 +118,10 @@ void StretchContrast(Image* img, u8 min, u8 max)
 
 void MedianFilter(Image* img, size_t block, u32 histogram[256])
 {
+    memset(histogram, 0, 256 * sizeof(u32));
     size_t w = img->width, h = img->height;
     size_t side = block / 2;
+    u32* dst = calloc(w * h, sizeof(u32));
     u8* vals = calloc(block * block, sizeof(u8));
     for (size_t y = 0; y < h; y++)
     {
@@ -151,19 +144,23 @@ void MedianFilter(Image* img, size_t block, u32 histogram[256])
             }
 
             u8 c = vals[i / 2];
-            img->pixels[y * w + x] = (c << 16) | (c << 8) | c;
+            dst[y * w + x] = (c << 16) | (c << 8) | c;
 
             // Prepapre for next stage: Otsu's method
             histogram[c]++;
         }
     }
 
+
+    memcpy(img->pixels, dst, w * h * sizeof(unsigned int));
+    free(dst);
     free(vals);
 }
 
 void GaussianBlur(Image* img, const float* kernel, size_t r)
 {
     size_t w = img->width, h = img->height;
+    u32* dst = calloc(w * h, sizeof(u32));
     size_t side = r / 2;
     for (size_t y = side; y < h - side; y++)
     {
@@ -180,9 +177,12 @@ void GaussianBlur(Image* img, const float* kernel, size_t r)
             }
 
             u8 c = sum;
-            img->pixels[y * w + x] = (c << 16) | (c << 8) | c;
+            dst[y * w + x] = (c << 16) | (c << 8) | c;
         }
     }
+
+    memcpy(img->pixels, dst, w * h * sizeof(unsigned int));
+    free(dst);
 }
 
 void GammaFilter(Image* img, float f)
@@ -200,8 +200,7 @@ void GammaFilter(Image* img, float f)
 
 void FillHistogram(const Image* image, u32 histogram[256])
 {
-    for (size_t i = 0; i < 256; i++)
-        histogram[i] = 0;
+    memset(histogram, 0, 256 * sizeof(u32));
     size_t len = image->width * image->height;
 
     for (size_t i = 0; i < len; i++)
@@ -253,8 +252,8 @@ void ThresholdImage(Image* image, u8 threshold)
 
 void AdapativeThresholding(Image* img, size_t r, float threshold)
 {
-    // FIXME: Not working as attended
     size_t w = img->width, h = img->height;
+    u32* dst = calloc(w * h, sizeof(u32));
     size_t side = r / 2;
     for (size_t y = side; y < h - side; y++)
     {
@@ -271,11 +270,14 @@ void AdapativeThresholding(Image* img, size_t r, float threshold)
                         sum += img->pixels[dy * w + dx] & 0xFF;
                 }
             }
-            float m = (sum / (r * r));
-            img->pixels[y * w + x] = (img->pixels[y * w + x] & 0xFF)
-                >= m ? 0 : 0xFFFFFF;
+            float m = (sum / (r * r)) + threshold;
+            dst[y * w + x] = (img->pixels[y * w + x] & 0xFF)
+                >= m ?  0xFFFFFF : 0;
         }
     }
+
+    memcpy(img->pixels, dst, w * h * sizeof(unsigned int));
+    free(dst);
 }
 
 void SobelOperator(const Image* img, u32* out, float* dirs, u32* max_mag)

@@ -15,8 +15,7 @@ void StretchContrast(Image* img, u8 min, u8 max);
 void MedianFilter(Image* image, size_t block, u32 histogram[256]);
 void GaussianBlur(Image* img, const float* kernel, size_t r);
 
-void Dilate(Image* image, size_t block);
-void EnhanceContrast(Image* image, u8 f, u8* min, u8* max);
+void EnhanceContrast(Image* image, u32 histogram[256]);
 void GammaFilter(Image* image, float f);
 
 void FillHistogram(const Image* image, u32 histogram[256]);
