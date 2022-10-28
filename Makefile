@@ -11,7 +11,7 @@ bin/ocr:
 	cp ocr/ocr bin/
 
 bin/ipp:
-	mkdir cells
+	mkdir -p cells
 	make -C ipp/ RELEASE=1
 	cp ipp/ipp bin/
 

@@ -41,7 +41,7 @@ SRCDIRS := $(shell find . -type d -not -path "*$(BUILD)*")
 $(shell mkdir -p $(SRCDIRS:%=$(BUILD)/%))
 
 all: $(TARGET)
-	mkdir cells
+	mkdir -p cells
 
 $(TARGET): $(OFILES)
 	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
