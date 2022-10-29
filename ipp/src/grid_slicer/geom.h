@@ -7,7 +7,8 @@
  * y2)) in cartesian coordinates and by its total number of votes `val`.
  */
 typedef struct Line {
-    int val; // number of votes at position (rho, theta) in the hough image
+    // number of votes at position (rho, theta) in the hough image
+    unsigned int val;
     float rho;
     float theta;
 

@@ -69,9 +69,7 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
     Rect* candidate = FindSudokuBoard(img, best, 5);
     if (candidate != NULL)
     {
-        float angle = candidate->ep1->alpha;
-        if (angle / (M_PI / 2) < 0) angle += M_PI/2;
-        else if (angle / (M_PI / 2) > 0) angle -= M_PI/2;
+        float angle = fmod(candidate->ep1->alpha, M_PI/2);
 
         printf("=> Found rect:\n");
         printf("   > angle = %f°\n", angle * 180 / M_PI);
