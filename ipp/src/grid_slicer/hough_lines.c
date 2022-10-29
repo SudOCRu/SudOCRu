@@ -8,7 +8,7 @@ Line* LineFrom(unsigned int val, float theta, float rho, float x1,
         float y1, float x2, float y2)
 {
     Line* l = (Line*) malloc(sizeof(Line));
-    l->val = (int)val;
+    l->val = val;
     l->theta = theta;
     l->rho = rho;
     l->x1 = x1;
@@ -152,7 +152,7 @@ Line** AverageLines(Line** lines, size_t len, size_t* out_len)
 
 PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len)
 {
-    float Tt = 5 * M_PI / 180; // max angle diff between two lines
+    float Tt = 8 * M_PI / 180; // max angle diff between two lines
     float Tl = 0.4; // threshold for line segements to have similar vote counts
 
     PSet** pairs = malloc(sizeof(PSet*) * len * len);
@@ -166,16 +166,25 @@ PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len)
             if (i == j) continue;
             const Line* l2 = lines[j];
             float dT = fabs(l1->theta - l2->theta);
+            float dT2 = fabs(l1->theta - l2->theta - M_PI);
             float dC = fabs((float)l1->val - (float)l2->val);
             float mid = (l1->val + l2->val) / 2;
 
-            if (dT < Tt && dC < Tl * mid)
+            if ((dT < Tt || dT2 < Tt) && dC < Tl * mid)
             {
                 PSet* ep = malloc(sizeof(PSet));
                 ep->l1 = l1;
                 ep->l2 = l2;
-                ep->alpha = (l1->theta + l2->theta) / 2;
-                ep->epsilon = fabs(l1->rho - l2->rho) / 2;
+                if (dT2 < Tt)
+                {
+                    ep->alpha = (l1->theta + l2->theta - M_PI) / 2;
+                    ep->epsilon = fabs(l1->rho + l2->rho) / 2;
+                }
+                else
+                {
+                    ep->alpha = fabs(l1->theta + l2->theta) / 2;
+                    ep->epsilon = fabs(l1->rho - l2->rho) / 2;
+                }
                 pairs[nb_pairs++] = ep;
             }
         }

@@ -159,13 +159,11 @@ Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h,
     return img;
 }
 
-void RotateImage(Image* img, float angle, unsigned int fill)
+void RotateImage(Image* img, float angle, float midX, float midY)
 {
-    if (fabs(angle) < (M_PI/180)) return;
+    if (fabs(angle) < (M_PI/180)) return; // Less than 1°
     size_t w = img->width, h = img->height;
     unsigned int* dst = calloc(w * h, sizeof(unsigned int));
-
-    float midX = w / 2.0, midY = h / 2.0;
     float sint = sin(-angle), cost = cos(-angle); 
 
     for (size_t i = 0; i < h; i++){
@@ -176,8 +174,6 @@ void RotateImage(Image* img, float angle, unsigned int fill)
             float y = nx * sint + ny * cost + midY;
             if (x >= 0 && x < w && y >= 0 && y < h)
                 dst[i * w + j] = img->pixels[(size_t)y * w + (size_t)x];
-            else
-                dst[i * w + j] = fill;
         }
     }
 
@@ -213,9 +209,9 @@ Image* CropImage(const Image* src, size_t l, size_t t, size_t r, size_t b)
 }
 
 Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
-        size_t l, size_t t, size_t r, size_t b)
+        int l, int t, int r, int b)
 {
-    if (fabs(angle) < (M_PI/180))
+    if (fabs(angle) < (M_PI/180)) // Less than 1°
     {
         return CropImage(src, l, t, r, b);
     }
