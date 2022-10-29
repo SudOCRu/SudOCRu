@@ -9,7 +9,7 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
     size_t len = 0;
     PrintStage(1, 4, "Hough Transform", 0);
     Line** lines = HoughLines(img, &len, WHITE_EDGE, THETA_STEPS, threshold,
-            SC_FLG_DACC);
+            (flags & SC_FLG_DACC) != 0);
     if((flags & SC_FLG_ALINES) != 0)
         RenderLines(img, 0x0000FF, lines, len);
     PrintStage(1, 4, "Hough Transform", 1);
