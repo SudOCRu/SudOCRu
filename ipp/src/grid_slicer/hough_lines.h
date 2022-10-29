@@ -13,7 +13,7 @@ typedef struct SudokuGrid {
 } SudokuGrid;
 
 Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
-        size_t theta_steps, int threshold);
+        size_t theta_steps, int threshold, int save);
 
 Line** AverageLines(Line** lines, size_t len, size_t* out_len);
 

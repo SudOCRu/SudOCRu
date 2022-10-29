@@ -41,7 +41,7 @@ void array_insert(u8* begin, u8* end, u8 val)
     *end = val;
 }
 
-void FilterImage(Image* img)
+void FilterImage(Image* img, int flags)
 {
     u8 s = 1, t = 4;
 
@@ -55,7 +55,7 @@ void FilterImage(Image* img)
     StretchContrast(img, min, max);
     PrintStage(s++, t, "Contrast stretching", 1);
 
-    if (SaveImageFile(img, "grayscale.png"))
+    if ((flags & SC_FLG_DGRS) != 0 && SaveImageFile(img, "grayscale.png"))
         printf("Successfully saved grayscale.png\n");
 
     u32 histogram[256] = { 0, };
@@ -63,7 +63,7 @@ void FilterImage(Image* img)
     MedianFilter(img, 3, histogram);
     PrintStage(s++, t, "Median filter (3x3)", 1);
 
-    if (SaveImageFile(img, "median.png"))
+    if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "median.png"))
         printf("Successfully saved median.png\n");
 
     PrintStage(s, t, "Thresholding (Otsu's method)", 0);

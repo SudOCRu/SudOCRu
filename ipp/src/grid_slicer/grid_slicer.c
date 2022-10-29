@@ -8,7 +8,8 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
     // Find all lines
     size_t len = 0;
     PrintStage(1, 4, "Hough Transform", 0);
-    Line** lines = HoughLines(img, &len, WHITE_EDGE, THETA_STEPS, threshold);
+    Line** lines = HoughLines(img, &len, WHITE_EDGE, THETA_STEPS, threshold,
+            SC_FLG_DACC);
     if((flags & SC_FLG_ALINES) != 0)
         RenderLines(img, 0x0000FF, lines, len);
     PrintStage(1, 4, "Hough Transform", 1);
@@ -71,11 +72,13 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
     {
         float angle = fmod(candidate->ep1->alpha, M_PI/2);
 
-        printf("=> Found rect:\n");
+        printf("=> Found matching Bounding Box:\n");
         printf("   > angle = %f°\n", angle * 180 / M_PI);
         printf("   > squareness = %f\n", candidate->squareness);
         printf("   > area = %u pix*pix\n", candidate->area);
-        RenderRect(img, 0x00ff00, candidate);
+
+        if ((flags & SC_FLG_PRESTL) != 0)
+            RenderRect(img, 0x00ff00, candidate);
 
         BBox* bb = NewBB(candidate);
         float midX = 0, midY = 0;
@@ -85,12 +88,15 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
         GetRectFromBB(bb, &l, &t, &r, &b);
         printf("   > left=%i, top=%i, right=%i, bottom=%i\n", l, t, r, b);
 
-        Image* out = LoadBufImage(original->pixels, original->width,
-                original->height, NULL);
-        RotateImage(out, -angle, midX, midY);
-        if (SaveImageFile(out, "rotated.png"))
-            printf("Successfully wrote rotated.png\n");
-        DestroyImage(out);
+        if((flags & SC_FLG_DROT) != 0)
+        {
+            Image* out = LoadBufImage(original->pixels, original->width,
+                    original->height, NULL);
+            RotateImage(out, -angle, midX, midY);
+            if (SaveImageFile(out, "rotated.png"))
+                printf("Successfully wrote rotated.png\n");
+            DestroyImage(out);
+        }
 
         sudoku = CropRotateImage(original, -angle, midX, midY, l, t, r, b);
         if (SaveImageFile(sudoku, "sudoku.png"))

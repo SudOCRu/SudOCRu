@@ -2,7 +2,6 @@
 #include <math.h>
 #include "hough_lines.h"
 #include "renderer.h"
-#define DEBUG_VIEW
 
 Line* LineFrom(unsigned int val, float theta, float rho, float x1,
         float y1, float x2, float y2)
@@ -19,7 +18,7 @@ Line* LineFrom(unsigned int val, float theta, float rho, float x1,
 }
 
 Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
-        size_t theta_steps, int threshold)
+        size_t theta_steps, int threshold, int save)
 {
     size_t w = img->width, h = img->height;
     int hsp_height = (int)ceil(sqrt(w*w + h*h));
@@ -93,20 +92,20 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
                 if (lines == MAX_LINES)
                     break;
             }
-#ifdef DEBUG_VIEW
-            // better visualization in outpout image
-            unsigned int col = ((0xFF * acc[i]) / max) & 0xFF;
-            acc[i] = col << 16 | col << 8 | col; 
-#endif
+            if (save)
+            {
+                // better visualization in outpout image
+                unsigned int col = ((0xFF * acc[i]) / max) & 0xFF;
+                acc[i] = col << 16 | col << 8 | col; 
+            }
         }
         if (lines == MAX_LINES)
             break;
     }
 
-#ifdef DEBUG_VIEW
-    //printf("[DEBUG_VIEW] Hough Lines accumulator saved as acc.png\n");
-    SaveImageFile(accumulator, "acc.png");
-#endif
+    if (save && SaveImageFile(accumulator, "acc.png"))
+        printf("Successfully wrote acc.png (Hough Lines accumulator)\n");
+
     DestroyImage(accumulator);
 
     *found_count = lines;
