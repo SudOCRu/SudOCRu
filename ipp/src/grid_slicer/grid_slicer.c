@@ -81,9 +81,16 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
         float midX = 0, midY = 0;
         GetCenterBB(bb, &midX, &midY);
         RotateBB(bb, -angle, midX, midY);
-        size_t l, t, r, b;
+        int l = 0, t = 0, r = original->width - 1, b = original->height - 1;
         GetRectFromBB(bb, &l, &t, &r, &b);
-        printf("   > left=%lu, top=%lu, right=%lu, bottom=%lu\n", l, t, r, b);
+        printf("   > left=%i, top=%i, right=%i, bottom=%i\n", l, t, r, b);
+
+        Image* out = LoadBufImage(original->pixels, original->width,
+                original->height, NULL);
+        RotateImage(out, -angle, midX, midY);
+        if (SaveImageFile(out, "rotated.png"))
+            printf("Successfully wrote rotated.png\n");
+        DestroyImage(out);
 
         sudoku = CropRotateImage(original, -angle, midX, midY, l, t, r, b);
         if (SaveImageFile(sudoku, "sudoku.png"))

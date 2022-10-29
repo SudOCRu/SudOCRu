@@ -101,7 +101,7 @@ void GetCenterBB(BBox* bb, float* centerX, float* centerY);
  * r: right (x2)
  * b: bottom (y2)
  */
-void GetRectFromBB(BBox* bb, size_t* l, size_t* t, size_t* r, size_t* b);
+void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b);
 
 /*
  * LineIntersection(const Line* l1, const Line* l2, float *x, float *y) -> bool
