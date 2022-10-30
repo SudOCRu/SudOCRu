@@ -5,7 +5,7 @@ GENERATED_FILES := grayscale.png median.png edges.png filtered.png acc.png \
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
-CFLAGS = -Wall -Wextra `pkg-config --cflags sdl2 SDL2_image`
+CFLAGS = -Wall -Wextra -D__NO_INLINE__  `pkg-config --cflags sdl2 SDL2_image`
 LDFLAGS := `pkg-config --libs sdl2 SDL2_image`
 LDLIBS :=  $(addprefix -l,\
 	m \

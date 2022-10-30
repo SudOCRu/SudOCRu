@@ -69,7 +69,8 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
     }
 
     Line** out_lines = (Line**)malloc(MAX_LINES * sizeof(Line*));
-    unsigned int t = threshold < 0 ? (max * -threshold / 100) : threshold;
+    unsigned int t = threshold < 0 ? (max * -threshold / 100) :
+	    (unsigned int) threshold;
     for(size_t y = 0; y < hsp_height; y++)
     {
         for(size_t x = 0; x < hsp_width; x++)

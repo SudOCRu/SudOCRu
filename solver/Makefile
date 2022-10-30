@@ -3,7 +3,7 @@ TARGET := solver
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -D__NO_INLINE__
 LDFLAGS :=
 LDLIBS :=  $(addprefix -l,\
 	m \
