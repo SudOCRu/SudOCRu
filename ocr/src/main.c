@@ -170,6 +170,11 @@ int TrainCmd(int argc, char **argv){
 }
 
 int EvalCmd(int argc, char **argv){
+    if (argc != 4)
+    {
+        printf("Not enough arguments.\n");
+        return 1;
+    }
     char *file = argv[2];
     char *input = argv[3];
     NeuralNetwork *network = ReadNetwork(file);

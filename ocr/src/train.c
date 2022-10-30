@@ -34,6 +34,7 @@ unsigned char *readLabels(char *name){
 
     int re = fread(&magic, sizeof(unsigned int), 1, file);
     re = fread(&size, sizeof(unsigned int), 1, file);
+    re++;
 
     Convert(&magic);
     Convert(&size);
@@ -62,6 +63,7 @@ unsigned char *readImages(char *name){
     re = fread(&size, sizeof(unsigned int), 1, file);
     re = fread(&rows, sizeof(unsigned int), 1, file);
     re = fread(&columns, sizeof(unsigned int), 1, file);
+    re++;
 
     Convert(&magic);
     Convert(&size);
@@ -76,7 +78,7 @@ unsigned char *readImages(char *name){
 
     int bufferSize = rows*columns;
 
-    for (int j = 0; j < size/bufferSize; j++){
+    for (unsigned int j = 0; j < size/bufferSize; j++){
         unsigned char buffer[bufferSize];
         re = fread(buffer, sizeof(buffer), 1, file);
         for (int i = 0; i < bufferSize; i++){

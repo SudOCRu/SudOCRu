@@ -3,7 +3,7 @@ TARGET := ocr
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
-CFLAGS = -pthread
+CFLAGS = -Wall -Wextra -pthread
 LDFLAGS :=
 LDLIBS :=  $(addprefix -l,\
 	m \
