@@ -13,7 +13,7 @@ void DrawLine(unsigned int* pixels, unsigned int color, int w, int h,
     {
         if (y0 >= 0 && y0 < h && x0 >= 0 && x0 < w)
             pixels[y0 * w + x0] = color;
-        if (x0 == x1 && y0 == y1) 
+        if (x0 == x1 && y0 == y1)
             break;
         int e2 = 2 * error;
         if (e2 >= dy)

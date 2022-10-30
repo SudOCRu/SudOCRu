@@ -3,14 +3,14 @@
  *
  *       Filename:  tests_solver.c
  *
- *    Description: Tests for solver.c files 
+ *    Description: Tests for solver.c files
  *
  *        Version:  1.0
  *        Created:  10/08/22 08:34:11
  *       Revision:  added file to repo
  *       Compiler:  gcc
  *
- *         Author:  Kevin JAMET 
+ *         Author:  Kevin JAMET
  *   Organization:  SudOCRu
  *
  * ============================================================================
@@ -341,7 +341,7 @@ int main2()
     else
     {
         PrintBoard(sudoku_s);
-        printf("SudokuSolver : Successfully Solved\n"); 
+        printf("SudokuSolver : Successfully Solved\n");
     }
     return 0;
 
@@ -353,20 +353,20 @@ int main2()
     */
 
     /*
-    if (sudoku->board == NULL) 
+    if (sudoku->board == NULL)
         errx(EXIT_FAILURE, "Error: Sudoku can't be loaded");
 
     for (int i = 0; i < sudoku->cols*sudoku->rows; i++){
-        if (sudoku->board[i] != board1_s[i]) 
+        if (sudoku->board[i] != board1_s[i])
             printf("index : %i is different : should be %u8 but it is %u8\n",
                 i, board1_s[i], sudoku->board[i]);
     }
     */
 
-    //if (!IsSudokuValid(sudoku)) 
+    //if (!IsSudokuValid(sudoku))
     //    errx(EXIT_FAILURE, "Error: Sudoku can't be loaded (not solvable)");
 
-    //Sudoku* sudoku_solved = 
+    //Sudoku* sudoku_solved =
     //    (!IsSudokuSolved(sudoku) ? SolveSudoku(sudoku) : sudoku);
 
     // Check if Sudoku is solved
@@ -374,7 +374,7 @@ int main2()
     if (sudoku_solved == NULL) // TODO in SolveSudoku
         errx(EXIT_FAILURE, "SudokuSolver : NOT SOLVED\n");
     else
-        printf("SudokuSolver : Successfully Solved\n"); 
+        printf("SudokuSolver : Successfully Solved\n");
     return 0;
     */
     return 0;

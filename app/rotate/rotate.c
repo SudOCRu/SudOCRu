@@ -3,15 +3,15 @@
  *
  *       Filename:  rotate.c
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  10/26/22 10:29:53
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  YOUR NAME (), 
- *   Organization:  
+ *         Author:  YOUR NAME (),
+ *   Organization:
  *
  * ============================================================================
  */
@@ -27,7 +27,7 @@ SDL_Surface* load_image(const char* path)
     SDL_Surface* surface = IMG_Load(path);
     if (surface == NULL) errx(EXIT_FAILURE, "%s", SDL_GetError());
 
-    SDL_Surface* newsurface = SDL_ConvertSurfaceFormat(surface, 
+    SDL_Surface* newsurface = SDL_ConvertSurfaceFormat(surface,
             SDL_PIXELFORMAT_RGB888, 0);
     if(surface == NULL) errx(EXIT_FAILURE, "%s", SDL_GetError());
 
@@ -95,7 +95,7 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)  {
   }
 }
 
-/* 
+/*
 void surface_to_grayscale(SDL_Surface* surface)
 {
     if (surface == NULL) errx(EXIT_FAILURE, "%s", SDL_GetError());
@@ -116,14 +116,14 @@ void surface_to_grayscale(SDL_Surface* surface)
 
 void rotate(SDL_Surface* surface, SDL_Surface* rotated, double angle)
 {
-    if (SDL_LockSurface(surface) != 0) 
+    if (SDL_LockSurface(surface) != 0)
         errx(EXIT_FAILURE, "Rotate: %s", SDL_GetError());
 
     size_t w = surface->w, h = surface->h;
     float middle_width = w / 2.0f;
     float middle_height = h / 2.0f;
     float sinus = sin(-angle);
-    float cosinus = cos(-angle); 
+    float cosinus = cos(-angle);
     float nx = 0, ny = 0;
     float x = 0, y = 0;
 
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
     }
 
     SDL_Surface* lasurface = load_image(argv[1]);
-    
+
     SDL_Surface* rotated_surface = SDL_CreateRGBSurface(0, lasurface->w,
             lasurface->h, 32, 0, 0, 0, 0);
 

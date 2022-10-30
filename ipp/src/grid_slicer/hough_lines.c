@@ -84,7 +84,7 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
                 float a = -10000*sin_t[x];
                 float b = 10000*cos_t[x];
                 out_lines[lines++] = LineFrom(acc[i], theta, p,
-                        x0 + a, y0 + b, 
+                        x0 + a, y0 + b,
                         x0 - a, y0 - b);
                 if (lines == MAX_LINES)
                     break;
@@ -93,7 +93,7 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
             {
                 // better visualization in outpout image
                 unsigned int col = ((0xFF * acc[i]) / max) & 0xFF;
-                acc[i] = col << 16 | col << 8 | col; 
+                acc[i] = col << 16 | col << 8 | col;
             }
         }
         if (lines == MAX_LINES)

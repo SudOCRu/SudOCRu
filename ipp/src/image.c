@@ -82,7 +82,7 @@ SDL_Surface* ImageAsSurface(const Image* src)
 {
     if (src == NULL)
         return 0;
-    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, 
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0,
             src->width,
             src->height,
             32, SDL_PIXELFORMAT_RGB888);
@@ -164,7 +164,7 @@ void RotateImage(Image* img, float angle, float midX, float midY)
     if (fabs(angle) < (M_PI/180)) return; // Less than 1°
     size_t w = img->width, h = img->height;
     unsigned int* dst = calloc(w * h, sizeof(unsigned int));
-    float sint = sin(-angle), cost = cos(-angle); 
+    float sint = sin(-angle), cost = cos(-angle);
 
     for (size_t i = 0; i < h; i++){
         float ny = (float)i - midY;
@@ -225,7 +225,7 @@ Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
         return NULL;
 
     size_t w = src->width, h = src->height;
-    float sint = sin(-angle), cost = cos(-angle); 
+    float sint = sin(-angle), cost = cos(-angle);
 
     for (size_t i = 0; i < nh; i++){
         float ny = (float)(i + t) - midY;

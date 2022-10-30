@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
             free(cells);
         }
-        else 
+        else
         {
             printf("Oops... Looks like something went wrong"
                    ": No cells were detected :(\n");

@@ -142,12 +142,12 @@ DataPoint **GenerateXorData(){
     True1[1] = 0;
     False1[0] = 0;
     False1[1] = 1;
-    
+
     True2[0] = 1;
     True2[1] = 0;
     False2[0] = 0;
     False2[1] = 1;
-    
+
     double *t1 = calloc(2, sizeof(double));
     t1[0] = 0;
     t1[1] = 0;
@@ -161,7 +161,6 @@ DataPoint **GenerateXorData(){
     t4[0] = 1;
     t4[1] = 1;
 
-    
     DataPoint *data1 = CreateDatapoint(t1, False1);
     DataPoint *data2 = CreateDatapoint(t2, True1);
     DataPoint *data3 = CreateDatapoint(t3, True2);
