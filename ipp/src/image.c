@@ -216,7 +216,7 @@ Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
         return CropImage(src, l, t, r, b);
     }
 
-    if (r <= l || b <= t || r >= src->width || b >= src->height)
+    if (r <= l || b <= t || r >= (int)src->width || b >= (int)src->height)
         return NULL;
     size_t nw = r - l, nh = b - t;
 

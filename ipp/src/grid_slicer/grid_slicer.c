@@ -32,7 +32,7 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
 
     PrintStage(4, 4, "Find Rectangles", 0);
     size_t rect_count = 0;
-    Rect** rects = FindRects(img, psets, nb_psets, &rect_count);
+    Rect** rects = FindRects(psets, nb_psets, &rect_count);
     printf(" --> Detected %lu rects", rect_count);
     PrintStage(4, 4, "Find Rectangles", 1);
 
@@ -67,7 +67,7 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
     }
 
     Image* sudoku = NULL;
-    Rect* candidate = FindSudokuBoard(img, best, 5);
+    Rect* candidate = FindSudokuBoard(best, 5);
     if (candidate != NULL)
     {
         float angle = fmod(candidate->ep1->alpha, M_PI/2);

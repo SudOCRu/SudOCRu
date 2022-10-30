@@ -127,12 +127,12 @@ void StretchContrast(Image* img, u8 min, u8 max)
 
 void MedianFilter(Image* img, size_t block, u32 histogram[256])
 {
-    size_t w = img->width, h = img->height;
+    ssize_t w = img->width, h = img->height;
     size_t side = block / 2;
     u8* vals = calloc(block * block, sizeof(u8));
-    for (size_t y = 0; y < h; y++)
+    for (ssize_t y = 0; y < h; y++)
     {
-        for (size_t x = 0; x < w; x++)
+        for (ssize_t x = 0; x < w; x++)
         {
             size_t i = 0;
             ssize_t endX = x + side;
@@ -254,11 +254,11 @@ void ThresholdImage(Image* image, u8 threshold)
 void AdapativeThresholding(Image* img, size_t r, float threshold)
 {
     // FIXME: Not working as attended
-    size_t w = img->width, h = img->height;
-    size_t side = r / 2;
-    for (size_t y = side; y < h - side; y++)
+    ssize_t w = img->width, h = img->height;
+    ssize_t side = r / 2;
+    for (ssize_t y = side; y < h - side; y++)
     {
-        for (size_t x = side; x < w - side; x++)
+        for (ssize_t x = side; x < w - side; x++)
         {
             float sum = 0;
             ssize_t endX = x + side;
@@ -271,7 +271,7 @@ void AdapativeThresholding(Image* img, size_t r, float threshold)
                         sum += img->pixels[dy * w + dx] & 0xFF;
                 }
             }
-            float m = (sum / (r * r));
+            float m = (sum / (r * r)) - threshold;
             img->pixels[y * w + x] = (img->pixels[y * w + x] & 0xFF)
                 >= m ? 0 : 0xFFFFFF;
         }
@@ -292,11 +292,11 @@ void SobelOperator(const Image* img, u32* out, float* dirs, u32* max_mag)
          0,  0,  0,
         -1, -2, -1,
     };
-    size_t w = img->width, h = img->height;
+    ssize_t w = img->width, h = img->height;
     *max_mag = 0;
-    for (size_t y = 0; y < h; y++)
+    for (ssize_t y = 0; y < h; y++)
     {
-        for (size_t x = 0; x < w; x++)
+        for (ssize_t x = 0; x < w; x++)
         {
             int gx = 0, gy = 0;
             for (ssize_t dy = -1; dy <= 1; dy++)

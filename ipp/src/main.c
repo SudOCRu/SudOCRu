@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 int ParseFlags(int argc, char** argv)
 {
     int flags = SC_NO_FLG;
-    for (size_t i = 2; i < argc; i++)
+    for (int i = 2; i < argc; i++)
     {
         char* arg = argv[i];
         if (*(arg++) != '-')
