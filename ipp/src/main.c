@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     } else {
         // load failed
         DestroyImage(img);
-        errx(EXIT_FAILURE, "Could not load image: %d\n", status);
+        errx(EXIT_FAILURE, "Could not load image: %s", SDL_GetError());
         // unreachable
     }
 
