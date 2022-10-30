@@ -1,5 +1,5 @@
 /*
- * =====================================================================================
+ * ============================================================================
  *
  *       Filename:  tests_solver.c
  *
@@ -13,7 +13,7 @@
  *         Author:  Kevin JAMET 
  *   Organization:  SudOCRu
  *
- * =====================================================================================
+ * ============================================================================
  */
 #include <err.h>
 #include <stdlib.h>
@@ -203,11 +203,11 @@ int is_solution(const unsigned char* board, const Sudoku* sudoku){
 
 int main2()
 {
-    /* 
+    /*
     Sudoku* hardest = CreateSudoku(hardest_board, 9, 81, 3);
     SaveSudoku(hardest, "grid_xx");
     */
-    /* 
+    /*
     Sudoku* sudoku5_save = CreateSudoku(board6, 9, 81, 3);
     SaveSudoku(sudoku5_save, "grid_05");
 
@@ -224,7 +224,7 @@ int main2()
     SaveSudoku(sudoku1_save, "grid_01");
     */
 
-    /*  
+    /*
     Sudoku* sudoku6 = ImportSudoku("grid_06");
 
     //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
@@ -233,7 +233,7 @@ int main2()
     printf("\n");
 
     SolveSudoku(sudoku6);
-    
+
     //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
     printf("IsSudokuSolved : %i\n", IsSudokuSolved(sudoku6));
     PrintBoard(sudoku6);
@@ -244,7 +244,7 @@ int main2()
     */
 
 
-    /*  
+    /*
     Sudoku* imported = ImportSudoku("grid_00");
 
     //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
@@ -253,7 +253,7 @@ int main2()
     printf("\n");
 
     SolveSudoku(imported);
-    
+
     //printf("IsSudokuValid : %i\n", IsSudokuValid(imported));
     printf("IsSudokuSolved : %i\n", IsSudokuSolved(imported));
     PrintBoard(imported);
@@ -262,11 +262,11 @@ int main2()
     SaveSudoku(imported, "lasolution.result");
     DestroySudoku(imported);
     */
-    
+
 
     // HARDEST SUDOKU
 
-    /*  
+    /*
     Sudoku* hardest = CreateSudoku(hardest_board, 9, 81, 3);
     PrintBoard(hardest);
     printf("\n");
@@ -285,9 +285,9 @@ int main2()
     //Sudoku* false_sudoku = CreateSudoku(board1_false, 9, 9);
     //printf("IsSudokuValid (false) : %i\n", IsSudokuValid(false_sudoku));
     //DestroySudoku(false_sudoku);
-    
 
-    /* 
+
+    /*
     Sudoku* imported_solved = ImportSudoku("grid_00.result");
     PrintBoard(imported_solved);
     DestroySudoku(imported_solved);
@@ -327,7 +327,7 @@ int main2()
     printf("IsValid(sudoku_false) = %i\n", isvalid_false);
 
     // -------------------------------------------------------------
-    
+
     printf("======================================\n");
 
 
@@ -349,7 +349,7 @@ int main2()
 
     // Import Sudoku from file
     //Sodoku* sudoku = ImportSudoku(argv[1]);
-    
+
     */
 
     /*
@@ -358,7 +358,8 @@ int main2()
 
     for (int i = 0; i < sudoku->cols*sudoku->rows; i++){
         if (sudoku->board[i] != board1_s[i]) 
-            printf("index : %i is different : should be %u8 but it is %u8\n", i, board1_s[i], sudoku->board[i]);
+            printf("index : %i is different : should be %u8 but it is %u8\n",
+                i, board1_s[i], sudoku->board[i]);
     }
     */
 
@@ -367,9 +368,9 @@ int main2()
 
     //Sudoku* sudoku_solved = 
     //    (!IsSudokuSolved(sudoku) ? SolveSudoku(sudoku) : sudoku);
-    
+
     // Check if Sudoku is solved
-    /*  
+    /*
     if (sudoku_solved == NULL) // TODO in SolveSudoku
         errx(EXIT_FAILURE, "SudokuSolver : NOT SOLVED\n");
     else
