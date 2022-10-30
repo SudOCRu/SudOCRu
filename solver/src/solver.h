@@ -15,7 +15,7 @@ typedef struct Sudoku {
 } Sudoku;
 
 /*  > CreateSudoku
- * Initializes a new Sudoku board. 
+ * Initializes a new Sudoku board.
  * > Returns a new Sudoku (cols*rows) from array
  *      - array : Array to create Sudoku
  *      - cols : Number of cols of Sudoku board
@@ -39,8 +39,8 @@ void DestroySudoku(Sudoku* board);
 Sudoku* ImportSudoku(char* in_file);
 
 /*  > SaveSudoku
- * Save a Sudoku board to a given file using the EPITA format (9x9). This 
- * function returns 
+ * Save a Sudoku board to a given file using the EPITA format (9x9). This
+ * function returns
  * > Returns 0 (false) if the board couldn't be saved, else 1 (true)
  *      - sudoku : Sudoku to save into file
  *      - out_file : Name of saved file that contains Sudoku grid
