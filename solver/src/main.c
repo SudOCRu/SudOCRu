@@ -55,7 +55,6 @@ returns an error\n\n\n\
         int o = 0;
         int d = 0;
 
-        size_t ind = 1;
         Sudoku* sudoku = NULL;
 
         // --- Check options mentionned in args ---
