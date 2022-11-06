@@ -21,7 +21,7 @@ typedef struct Sudoku {
  *      - cols : Number of cols of Sudoku board
  *      - cols : Number of rows of Sudoku board
  */
-Sudoku* CreateSudoku(u8* array, u8 boardedge, u8 nbsquares);
+Sudoku* CreateSudoku(const u8* array, u8 boardedge, u8 nbsquares);
 
 /*  > DestroySudoku
  * Destroys of the provided Sudoku board.
@@ -36,7 +36,7 @@ void DestroySudoku(Sudoku* board);
  * > Returns a Sudoku board loaded from file "in_file"
  *      - in_file : Path of file to create the new Sudoku grid
  */
-Sudoku* ImportSudoku(char* in_file);
+Sudoku* ImportSudoku(const char* in_file);
 
 /*  > SaveSudoku
  * Save a Sudoku board to a given file using the EPITA format (9x9). This
@@ -45,14 +45,14 @@ Sudoku* ImportSudoku(char* in_file);
  *      - sudoku : Sudoku to save into file
  *      - out_file : Name of saved file that contains Sudoku grid
  */
-int SaveSudoku(const Sudoku* sudoku, char* out_file);
+int SaveSudoku(const Sudoku* sudoku, const char* out_file);
 
 /*  > IsSudokuValid
  * Check if "sudoku" grid is valid (if it's solvable)
  * > Returns 0 (false) if the board is not valid, else 1 (true)
  *      - sudoku : Sudoku grid to check
  */
-int IsSudokuValid(Sudoku* sudoku);
+int IsSudokuValid(const Sudoku* sudoku);
 
 /*  > IsSudokuSolved
  * Check if "sudoku" grid is solved (if the grid is filled of numbers != 0)
@@ -66,14 +66,14 @@ int IsSudokuSolved(const Sudoku* sudoku);
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
  *      - sudoku : Sudoku grid to solve
  */
-Sudoku* SolveSudoku(Sudoku* sudoku, int interactive);
+Sudoku* SolveSudoku(const Sudoku* sudoku, int interactive);
 
 /*  > InteractiveSolveSudoku
  * Solve Sudoku using back-tracking algorithm and print each step
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
  *      - sudoku : Sudoku grid to solve
  */
-int IntBacktracking(Sudoku* orginal, Sudoku* sudoku, size_t i);
+int IntBacktracking(const Sudoku* orginal, Sudoku* sudoku, size_t i);
 
 /*  > PrintSudoku
  * Print the sudoku board
