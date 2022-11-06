@@ -26,6 +26,30 @@ u8* make_sd_param(const u8* org)
     return m;
 }
 
+struct p_move {
+    u8* board;
+    size_t i;
+    short expected;
+};
+
+struct p_move* make_p_move(const u8* org, size_t i, short expected)
+{
+    struct p_move* pm = cr_malloc(sizeof(struct p_move));
+    pm->board = make_sd_param(org);
+    pm->i = i;
+    pm->expected = expected;
+    return pm;
+}
+
+void cleanup_p_moves(struct criterion_test_params *crp) {
+    for (size_t i = 0; i < crp->length; i++) {
+        struct p_move* pm = ((struct p_move**) crp->params)[i];
+        cr_free(pm->board);
+        cr_free(pm);
+    }
+    cr_free(crp->params);
+}
+
 Test(solver, create) {
     u8* arr = calloc(81, sizeof(u8));
     Sudoku* sd = CreateSudoku(arr, 9, 3);
@@ -43,6 +67,27 @@ Test(solver, boardNotValid, .init = redirect_io) {
     Sudoku* sd = CreateSudoku(TEST_INVALID, 9, 3);
     cr_assert(ne(i32, IsSudokuValid(sd), 1),
             "An invalid sudoku was marked valid");
+    DestroySudoku(sd);
+}
+
+ParameterizedTestParameters(solver, possibleMoves) {
+    const size_t size = 6;
+    struct p_move** params = cr_calloc(size, sizeof(struct p_move*));
+
+    params[0] = make_p_move(TEST_BOARD1,    7, 0b001000000); // 1 2 3 4 5 6 8 9
+    params[1] = make_p_move(TEST_BOARD2,   18, 0b000000011); // 3 4 5 6 7 8 9
+    params[2] = make_p_move(TEST_BOARD3,   55, 0b000111101); // 2 7 8 9
+    params[3] = make_p_move(TEST_BOARD4,   64, 0b000111010); // 1 3 7 8 9
+    params[4] = make_p_move(TEST_BOARD5,   34, 0b110001010); // 1 3 5 6 7
+    params[5] = make_p_move(TEST_BOARD6,   13, 0b101010100); // 1 2 4 6 8
+    params[6] = make_p_move(TEST_BOARD6_S, 60,           0);
+
+    return cr_make_param_array(struct p_move*, params, size, cleanup_p_moves);
+}
+
+ParameterizedTest(struct p_move** pm, solver, possibleMoves) {
+    Sudoku* sd = CreateSudoku((*pm)->board, 9, 3);
+    cr_assert(eq(i16, PossibleValues(sd, (*pm)->i), (*pm)->expected));
     DestroySudoku(sd);
 }
 

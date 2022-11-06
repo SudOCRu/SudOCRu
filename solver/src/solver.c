@@ -215,8 +215,6 @@ int SaveSudoku(const Sudoku* sudoku, const char* out_file){
 // ----------------------------      Checks        ---------------------------
 // ===========================================================================
 
-short PossibleValues(const Sudoku* sudoku, u8 index);
-
 /*  > IsSudokuValid > vset
  * Sets the bit `n` to one. If the bit was already set, this function returns 1,
  * 0 otherwise.

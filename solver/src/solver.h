@@ -61,6 +61,14 @@ int IsSudokuValid(const Sudoku* sudoku);
  */
 int IsSudokuSolved(const Sudoku* sudoku);
 
+/*  > PossibleValues
+ * Check all possible moves on a specific cell
+ * > Returns a bitmask of values than can be played
+ *      - sudoku : Sudoku grid to check
+ *      - index : Cell to run checks on
+ */
+short PossibleValues(const Sudoku* sudoku, u8 index);
+
 /*  > SolveSudoku
  * Solve Sudoku using back-tracking algorithm
  * > Returns NULL if the board is not solved, else a new Sudoku grid solved
