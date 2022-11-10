@@ -8,7 +8,8 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
     // Find all lines
     size_t len = 0;
     PrintStage(1, 4, "Hough Transform", 0);
-    Line** lines = HoughLines(img, &len, WHITE_EDGE, THETA_STEPS, threshold);
+    Line** lines = HoughLines(img, &len, WHITE_EDGE, THETA_STEPS, threshold,
+            (flags & SC_FLG_DACC) != 0);
     if((flags & SC_FLG_ALINES) != 0)
         RenderLines(img, 0x0000FF, lines, len);
     PrintStage(1, 4, "Hough Transform", 1);
@@ -31,7 +32,7 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
 
     PrintStage(4, 4, "Find Rectangles", 0);
     size_t rect_count = 0;
-    Rect** rects = FindRects(img, psets, nb_psets, &rect_count);
+    Rect** rects = FindRects(psets, nb_psets, &rect_count);
     printf(" --> Detected %lu rects", rect_count);
     PrintStage(4, 4, "Find Rectangles", 1);
 
@@ -66,26 +67,36 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
     }
 
     Image* sudoku = NULL;
-    Rect* candidate = FindSudokuBoard(img, best, 5);
+    Rect* candidate = FindSudokuBoard(best, 5);
     if (candidate != NULL)
     {
-        float angle = candidate->ep1->alpha;
-        if (angle / (M_PI / 2) < 0) angle += M_PI/2;
-        else if (angle / (M_PI / 2) > 0) angle -= M_PI/2;
+        float angle = fmod(candidate->ep1->alpha, M_PI/2);
 
-        printf("=> Found rect:\n");
+        printf("=> Found matching Bounding Box:\n");
         printf("   > angle = %f°\n", angle * 180 / M_PI);
         printf("   > squareness = %f\n", candidate->squareness);
         printf("   > area = %u pix*pix\n", candidate->area);
-        RenderRect(img, 0x00ff00, candidate);
+
+        if ((flags & SC_FLG_PRESTL) != 0)
+            RenderRect(img, 0x00ff00, candidate);
 
         BBox* bb = NewBB(candidate);
         float midX = 0, midY = 0;
         GetCenterBB(bb, &midX, &midY);
         RotateBB(bb, -angle, midX, midY);
-        size_t l, t, r, b;
+        int l = 0, t = 0, r = original->width - 1, b = original->height - 1;
         GetRectFromBB(bb, &l, &t, &r, &b);
-        printf("   > left=%lu, top=%lu, right=%lu, bottom=%lu\n", l, t, r, b);
+        printf("   > left=%i, top=%i, right=%i, bottom=%i\n", l, t, r, b);
+
+        if((flags & SC_FLG_DROT) != 0)
+        {
+            Image* out = LoadBufImage(original->pixels, original->width,
+                    original->height, NULL);
+            RotateImage(out, -angle, midX, midY);
+            if (SaveImageFile(out, "rotated.png"))
+                printf("Successfully wrote rotated.png\n");
+            DestroyImage(out);
+        }
 
         sudoku = CropRotateImage(original, -angle, midX, midY, l, t, r, b);
         if (SaveImageFile(sudoku, "sudoku.png"))

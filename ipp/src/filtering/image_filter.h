@@ -7,7 +7,7 @@ typedef unsigned char u8;
 #define GAMMA_FACTOR 0.45
 
 /* Apply all filters to the given image. The image must not be null. */
-void FilterImage(Image* image);
+void FilterImage(Image* image, int flags);
 
 /* Applys a grayscale filter to the image and fills the histogram array */
 void GrayscaleFilter(Image* image, u8* min, u8* max);

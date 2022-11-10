@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     if (argc > 4)
         errx(EXIT_FAILURE, "Error: Too many arguments (check man by \
 using './solver'");
-    
+
     // ------- Sudoku Man -------
 
     else if (argc == 1){
@@ -55,12 +55,11 @@ returns an error\n\n\n\
         int o = 0;
         int d = 0;
 
-        size_t ind = 1;
         Sudoku* sudoku = NULL;
 
         // --- Check options mentionned in args ---
 
-        if (argc > 2){ 
+        if (argc > 2){
             if (argv[2][0] == '-'){
                 for (int index = 1; argv[index] != 0; index++){
                     if (argv[2][index] == 'p') p = 1;
@@ -72,7 +71,7 @@ returns an error\n\n\n\
             else errx(EXIT_FAILURE, "Parser: Bad arguments (check man by \
 using './solver')");
         }
-        if (argc == 3 && o == 1) 
+        if (argc == 3 && o == 1)
             errx(EXIT_FAILURE, "Parser: Bad arguments, missing output file \
 name (check man by using './solver')");
 

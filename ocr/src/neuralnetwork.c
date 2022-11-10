@@ -134,7 +134,7 @@ void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData,
 
     //pthread_t threads[trainingDataLength];
     //int rc;
-    
+
     for (int i = 0; i < trainingDataLength; i++){
         /*GradientData *gradientData = malloc(sizeof(GradientData));
         gradientData->network = neuralNetwork;
@@ -173,7 +173,7 @@ void SaveNetwork(NeuralNetwork *network, char *fileName){
     fwrite(&network->layers[network->arrayLayerLength-1]->numNodesOut,
             sizeof(int), 1, file);
 
-    for (size_t i = 0; i < network->arrayLayerLength; i++){
+    for (int i = 0; i < network->arrayLayerLength; i++){
         Layer *layer = network->layers[i];
         double *weights = layer->weights;
         double *biases = layer->biases;
@@ -195,11 +195,12 @@ NeuralNetwork *ReadNetwork(char *fileName){
     int t = fread(&layerStructureSize, sizeof(int), 1, file);
     int *layerStructure = calloc(layerStructureSize, sizeof(int));
     t = fread(layerStructure, sizeof(int), layerStructureSize, file);
-    
+    t++;
+
     NeuralNetwork *network = CreateNeuralNetwork(layerStructure,
             layerStructureSize);
     free(layerStructure);
-    for (size_t i = 0; i < network->arrayLayerLength; i++){
+    for (int i = 0; i < network->arrayLayerLength; i++){
         Layer *layer = network->layers[i];
         double *weights = calloc(layer->numNodesIn*layer->numNodesOut,
                 sizeof(double));
@@ -207,10 +208,10 @@ NeuralNetwork *ReadNetwork(char *fileName){
         fread(weights, layer->numNodesIn*layer->numNodesOut, sizeof(double),
                 file);
         t = fread(biases, layer->numNodesOut, sizeof(double), file);
-        for (size_t j = 0; j < layer->numNodesIn*layer->numNodesOut; j++){
+        for (int j = 0; j < layer->numNodesIn*layer->numNodesOut; j++){
             layer->weights[j] = weights[j];
         }
-        for (size_t j = 0; j < layer->numNodesOut; j++){
+        for (int j = 0; j < layer->numNodesOut; j++){
             layer->biases[j] = biases[j];
         }
         free(weights);

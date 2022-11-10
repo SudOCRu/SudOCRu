@@ -29,7 +29,7 @@ Image* CreateImage(unsigned int col, size_t w, size_t h,
 
 /* Loads an image from a file using SDL and copies its surface pixels to a new
  * pixel array stored in the Image struct. Do not forgot to call DestroyImage
- * to free up the allocated memory. The path string must be a valid string. 
+ * to free up the allocated memory. The path string must be a valid string.
  * Returns NULL if an error occured.
  *
  * The variable out_status returns if the function succeded (ImageOk) or failed
@@ -48,29 +48,29 @@ SDL_Surface* ImageAsSurface(const Image* src);
  */
 int SaveImageFile(const Image* src, const char* dest);
 
-/* Loads an image from a RGB buffer without copying the pixels in a new 
- * buffer. Do not forgot to call DestroyImage to free up the allocated memory. 
+/* Loads an image from a RGB buffer without copying the pixels in a new
+ * buffer. Do not forgot to call DestroyImage to free up the allocated memory.
  * Returns NULL if an error occured.
  *
  * The variable out_status returns if the function succeded (ImageOk) or failed
  * (else), it is safe to pass NULl for no image status information.
  * */
-Image* LoadRawImage(unsigned int* rgb, size_t w, size_t h, 
+Image* LoadRawImage(unsigned int* rgb, size_t w, size_t h,
         ImageStatus* out_status);
 
-/* Loads an image from a RGB buffer and copies the pixels in a new 
- * buffer. Do not forgot to call DestroyImage to free up the allocated memory. 
+/* Loads an image from a RGB buffer and copies the pixels in a new
+ * buffer. Do not forgot to call DestroyImage to free up the allocated memory.
  * Returns NULL if an error occured.
  *
  * The variable out_status returns if the function succeded (ImageOk) or failed
  * (else), it is safe to pass NULl for no image status information.
  * */
-Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h, 
+Image* LoadBufImage(const unsigned int* rgb, size_t w, size_t h,
         ImageStatus* out_status);
 
 /* Rotate the given image by `angle` rads and fills the missing pixels by
  * the `fill` color */
-void RotateImage(Image* image, float angle, unsigned int fill);
+void RotateImage(Image* image, float angle, float midX, float midY);
 
 /* Crop the given image by the specified bounds (left, top, right, bottom) */
 Image* CropImage(const Image* src, size_t l, size_t t, size_t r, size_t b);
@@ -80,7 +80,7 @@ Image* CropImage(const Image* src, size_t l, size_t t, size_t r, size_t b);
  * right, bottom).
  */
 Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
-        size_t l, size_t t, size_t r, size_t b);
+        int l, int t, int r, int b);
 
 /* Destroys (free the memory) the loaded Image.
  * It is safe to pass NULL to this function. */

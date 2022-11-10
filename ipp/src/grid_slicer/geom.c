@@ -47,29 +47,29 @@ BBox* NewBB(Rect* r)
 
 void GetCenterBB(BBox* bb, float* centerX, float* centerY)
 {
-    *centerX = (bb->x1 + bb->x2 + bb->x3 + bb->x4) / 4.0;
-    *centerY = (bb->y1 + bb->y2 + bb->y3 + bb->y4) / 4.0;
+    *centerX = (bb->x1 + bb->x2 + bb->x3 + bb->x4) / 4.0f;
+    *centerY = (bb->y1 + bb->y2 + bb->y3 + bb->y4) / 4.0f;
+}
+
+void RotatePoint(int* x, int* y, float cx, float cy, float cost, float sint)
+{
+    float nx = cost * ((float)*x - cx) - sint * ((float)*y - cy) + cx;
+    float ny = sint * ((float)*x - cx) + cost * ((float)*y - cy) + cy;
+    *x = nx;
+    *y = ny;
 }
 
 void RotateBB(BBox* bb, float angle, float centerX, float centerY)
 {
-    if (fabs(angle) < (M_PI/180)) return;
-    float sint = sin(angle), cost = cos(angle);
-
-    bb->x1 = (bb->x1 - centerX) * cost - (bb->y1 - centerY) * sint + centerX;
-    bb->y1 = (bb->x1 - centerX) * cost + (bb->y1 - centerY) * sint + centerY;
-
-    bb->x2 = (bb->x2 - centerX) * cost - (bb->y2 - centerY) * sint + centerX;
-    bb->y2 = (bb->x2 - centerX) * cost + (bb->y2 - centerY) * sint + centerY;
-
-    bb->x3 = (bb->x3 - centerX) * cost - (bb->y3 - centerY) * sint + centerX;
-    bb->y3 = (bb->x3 - centerX) * cost + (bb->y3 - centerY) * sint + centerY;
-
-    bb->x4 = (bb->x4 - centerX) * cost - (bb->y4 - centerY) * sint + centerX;
-    bb->y4 = (bb->x4 - centerX) * cost + (bb->y4 - centerY) * sint + centerY;
+    if (fabs(angle) < (M_PI/180)) return; // Less than 1°
+    float cost = cos(angle), sint = sin(angle);
+    RotatePoint(&bb->x1, &bb->y1, centerX, centerY, cost, sint);
+    RotatePoint(&bb->x2, &bb->y2, centerX, centerY, cost, sint);
+    RotatePoint(&bb->x3, &bb->y3, centerX, centerY, cost, sint);
+    RotatePoint(&bb->x4, &bb->y4, centerX, centerY, cost, sint);
 }
 
-void GetRectFromBB(BBox* bb, size_t* l, size_t* t, size_t* r, size_t* b)
+void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b)
 {
     *l = min4(bb->x1, bb->x2, bb->x3, bb->x4);
     *t = min4(bb->y1, bb->y2, bb->y3, bb->y4);

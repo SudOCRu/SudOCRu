@@ -1,11 +1,14 @@
 BUILD := bin
 TARGET := ipp
+TEST_TARGET := $(BUILD)/$(TARGET)_tests
 GENERATED_FILES := grayscale.png median.png edges.png filtered.png acc.png \
-		   detected.png sudoku.png cells/
+		   detected.png rotated.png sudoku.png cells/
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
-CFLAGS = `pkg-config --cflags sdl2 SDL2_image`
+CFLAGS = -Wall -Wextra -D__NO_INLINE__  `pkg-config --cflags sdl2 SDL2_image`
+TESTFLAGS = -O2 -DCRIT_TEST `pkg-config --cflags criterion`
+TESTLD = `pkg-config --libs criterion`
 LDFLAGS := `pkg-config --libs sdl2 SDL2_image`
 LDLIBS :=  $(addprefix -l,\
 	m \
@@ -33,27 +36,39 @@ INDIRS := $(addprefix -I, \
 	src/utils \
 )
 
-CFILES := $(shell find . -name "*.c" $(TEST_FILES_OPTS))
+TESTFILES := $(shell find tests -name "*.c")
+TESTOFILES := $(TESTFILES:%.c=$(BUILD)/%.o)
+MAINS := $(BUILD)/src/main.o $(BUILD)/src/test[0_9]*.o
+
+CFILES := $(shell find src -name "*.c" $(TEST_FILES_OPTS))
 OFILES := $(CFILES:%.c=$(BUILD)/%.o)
+SRCFILES := $(filter-out $(MAINS),$(OFILES))
 DFILES := $(OFILES:%.o=%.d)
 
 SRCDIRS := $(shell find . -type d -not -path "*$(BUILD)*")
 $(shell mkdir -p $(SRCDIRS:%=$(BUILD)/%))
 
 all: $(TARGET)
-	mkdir cells
+	@mkdir -p cells
 
 $(TARGET): $(OFILES)
 	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-	$(call printtask,Linking,$@)
+
+$(BUILD)/tests/%.o: tests/%.c
+	$(V)$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) $(TESTFLAGS)
 
 $(BUILD)/%.o: %.c
 	$(V)$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
-	$(call printtask,Compiling,$<)
 
 clean:
 	rm -rf $(BUILD) $(TARGET) $(GENERATED_FILES)
 
-.PHONY: all clean
+$(TEST_TARGET): $(SRCFILES) $(TESTOFILES)
+	$(V)$(CC) -o $(TEST_TARGET) $^ $(LDFLAGS) $(LDLIBS) $(TESTLD)
+
+test: $(TEST_TARGET)
+	@./$(TEST_TARGET)
+
+.PHONY: all clean test
 
 -include $(DFILES)

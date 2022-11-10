@@ -1,7 +1,7 @@
 #include "renderer.h"
 
-void DrawLine(unsigned int* pixels, unsigned int color, unsigned int w, 
-        unsigned int h, int x0, int y0, int x1, int y1)
+void DrawLine(unsigned int* pixels, unsigned int color, int w, int h,
+        int x0, int y0, int x1, int y1)
 {
     int dx = abs(x1 - x0);
     int sx = x0 < x1 ? 1 : -1;
@@ -13,7 +13,7 @@ void DrawLine(unsigned int* pixels, unsigned int color, unsigned int w,
     {
         if (y0 >= 0 && y0 < h && x0 >= 0 && x0 < w)
             pixels[y0 * w + x0] = color;
-        if (x0 == x1 && y0 == y1) 
+        if (x0 == x1 && y0 == y1)
             break;
         int e2 = 2 * error;
         if (e2 >= dy)

@@ -2,13 +2,12 @@
 #include <math.h>
 #include "hough_lines.h"
 #include "renderer.h"
-#define DEBUG_VIEW
 
 Line* LineFrom(unsigned int val, float theta, float rho, float x1,
         float y1, float x2, float y2)
 {
     Line* l = (Line*) malloc(sizeof(Line));
-    l->val = (int)val;
+    l->val = val;
     l->theta = theta;
     l->rho = rho;
     l->x1 = x1;
@@ -19,13 +18,13 @@ Line* LineFrom(unsigned int val, float theta, float rho, float x1,
 }
 
 Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
-        size_t theta_steps, int threshold)
+        size_t theta_steps, int threshold, int save)
 {
     size_t w = img->width, h = img->height;
-    int hsp_height = (int)ceil(sqrt(w*w + h*h));
-    int h_d2 = hsp_height / 2;
+    size_t hsp_height = (int)ceil(sqrt(w*w + h*h));
+    size_t h_d2 = hsp_height / 2;
     float dtheta = M_PI / theta_steps;
-    int hsp_width = M_PI / dtheta; // M_PI / dtheta
+    size_t hsp_width = M_PI / dtheta; // M_PI / dtheta
     float max_angle = 0;
 
     // Pre-generate sin, cos tables for faster computation.
@@ -41,7 +40,7 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
     Image* accumulator = CreateImage(0, hsp_width, hsp_height, NULL);
     if (accumulator == NULL)
     {
-        errx(EXIT_FAILURE, "Not enough memory for Hough Space (%ix%i) \n",
+        errx(EXIT_FAILURE, "Not enough memory for Hough Space (%lux%lu) \n",
                 hsp_width, hsp_height);
         return NULL;
     }
@@ -70,16 +69,14 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
     }
 
     Line** out_lines = (Line**)malloc(MAX_LINES * sizeof(Line*));
-    if (threshold < 0)
-    {
-        threshold = max * -threshold / 100;
-    }
+    unsigned int t = threshold < 0 ? (max * -threshold / 100) :
+	    (unsigned int) threshold;
     for(size_t y = 0; y < hsp_height; y++)
     {
         for(size_t x = 0; x < hsp_width; x++)
         {
             size_t i = y * hsp_width + x;
-            if (acc[i] >= threshold)
+            if (acc[i] >= t)
             {
                 float theta = x * dtheta - max_angle;
                 float p = ((float)y - h_d2) * hsp_height / h_d2;
@@ -88,25 +85,25 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
                 float a = -10000*sin_t[x];
                 float b = 10000*cos_t[x];
                 out_lines[lines++] = LineFrom(acc[i], theta, p,
-                        x0 + a, y0 + b, 
+                        x0 + a, y0 + b,
                         x0 - a, y0 - b);
                 if (lines == MAX_LINES)
                     break;
             }
-#ifdef DEBUG_VIEW
-            // better visualization in outpout image
-            unsigned int col = ((0xFF * acc[i]) / max) & 0xFF;
-            acc[i] = col << 16 | col << 8 | col; 
-#endif
+            if (save)
+            {
+                // better visualization in outpout image
+                unsigned int col = ((0xFF * acc[i]) / max) & 0xFF;
+                acc[i] = col << 16 | col << 8 | col;
+            }
         }
         if (lines == MAX_LINES)
             break;
     }
 
-#ifdef DEBUG_VIEW
-    //printf("[DEBUG_VIEW] Hough Lines accumulator saved as acc.png\n");
-    SaveImageFile(accumulator, "acc.png");
-#endif
+    if (save && SaveImageFile(accumulator, "acc.png"))
+        printf("Successfully wrote acc.png (Hough Lines accumulator)\n");
+
     DestroyImage(accumulator);
 
     *found_count = lines;
@@ -152,7 +149,7 @@ Line** AverageLines(Line** lines, size_t len, size_t* out_len)
 
 PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len)
 {
-    float Tt = 5 * M_PI / 180; // max angle diff between two lines
+    float Tt = 8 * M_PI / 180; // max angle diff between two lines
     float Tl = 0.4; // threshold for line segements to have similar vote counts
 
     PSet** pairs = malloc(sizeof(PSet*) * len * len);
@@ -166,16 +163,25 @@ PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len)
             if (i == j) continue;
             const Line* l2 = lines[j];
             float dT = fabs(l1->theta - l2->theta);
+            float dT2 = fabs(l1->theta - l2->theta - M_PI);
             float dC = fabs((float)l1->val - (float)l2->val);
             float mid = (l1->val + l2->val) / 2;
 
-            if (dT < Tt && dC < Tl * mid)
+            if ((dT < Tt || dT2 < Tt) && dC < Tl * mid)
             {
                 PSet* ep = malloc(sizeof(PSet));
                 ep->l1 = l1;
                 ep->l2 = l2;
-                ep->alpha = (l1->theta + l2->theta) / 2;
-                ep->epsilon = fabs(l1->rho - l2->rho) / 2;
+                if (dT2 < Tt)
+                {
+                    ep->alpha = (l1->theta + l2->theta - M_PI) / 2;
+                    ep->epsilon = fabs(l1->rho + l2->rho) / 2;
+                }
+                else
+                {
+                    ep->alpha = fabs(l1->theta + l2->theta) / 2;
+                    ep->epsilon = fabs(l1->rho - l2->rho) / 2;
+                }
                 pairs[nb_pairs++] = ep;
             }
         }
@@ -185,7 +191,7 @@ PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len)
     return pairs;
 }
 
-Rect** FindRects(Image* img, PSet** pairs, size_t nb_pairs, size_t* found_count)
+Rect** FindRects(PSet** pairs, size_t nb_pairs, size_t* found_count)
 {
     float a90 = M_PI / 2; // 90°
     float Ta = 8 * M_PI / 180; // max angle diff between two orhogonal lines
@@ -257,7 +263,7 @@ Rect** GetBestRects(Rect** rects, size_t len, size_t keep)
     return top;
 }
 
-Rect* FindSudokuBoard(Image* img, Rect** rects, size_t rect_count)
+Rect* FindSudokuBoard(Rect** rects, size_t rect_count)
 {
     if (rect_count == 0) return NULL;
 

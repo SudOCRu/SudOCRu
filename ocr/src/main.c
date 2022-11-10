@@ -26,14 +26,14 @@ void xor(){
     sample[2] = data3;
     sample[3] = data4;
     //DataPoint sample[] = {*data1, *data2, *data3, *data4};
-    
+
     int neuralCount[] = {2, 2, 1};
     NeuralNetwork *network = CreateNeuralNetwork(neuralCount,
             sizeof(neuralCount)/sizeof(int));
     for (size_t i = 0; i < 10000; i++){
         Learn(network, sample, 4, 2);
     }
-    
+
     double *results = ProcessOutputs(network, data1->inputs);
     double *results2 = ProcessOutputs(network, data2->inputs);
     double *results3 = ProcessOutputs(network, data3->inputs);
@@ -43,7 +43,7 @@ void xor(){
     printf("result=%lf\n",results2[0]);
     printf("result=%lf\n",results3[0]);
     printf("result=%lf\n",results4[0]);
-    
+
     DestroyNeuralNetwork(network);
     DestroyDatapoint(data1);
 }
@@ -76,10 +76,10 @@ int GetMaxIndex(double* data, int size){
 
     s2[0] = 1;
     s2[1] = 0;
-    
+
     s3[0] = 0;
     s3[1] = 1;
-    
+
     s4[0] = 1;
     s4[1] = 1;
 
@@ -138,7 +138,7 @@ int TrainCmd(int argc, char **argv){
     } else {
         printf("Not enought arguments !\n");
         return 1;
-    } 
+    }
 
     if (network == NULL){
         srand(time(NULL));
@@ -170,6 +170,11 @@ int TrainCmd(int argc, char **argv){
 }
 
 int EvalCmd(int argc, char **argv){
+    if (argc != 4)
+    {
+        printf("Not enough arguments.\n");
+        return 1;
+    }
     char *file = argv[2];
     char *input = argv[3];
     NeuralNetwork *network = ReadNetwork(file);
@@ -213,7 +218,7 @@ int main(int argc, char *argv[])
     Train(network, sample, 4, 1);
 
     printf("Training completed.\n");
-    
+
     double inputs[] = {0, 0};
     double *results = ProcessOutputs(network, inputs);
     printf("result=%lf\n",results[0]);
