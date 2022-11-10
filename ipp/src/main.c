@@ -62,7 +62,7 @@ int main(int argc, char** argv)
                 fflush(stdout);
 
                 Image* cell = cells[i];
-                sprintf(name, "cells/cell_%lu.png", i);
+                snprintf(name, sizeof(name), "cells/cell_%02lu.png", i);
                 if (!SaveImageFile(cell, name))
                 {
                     printf("\nError: Could not save %s\n", name);
