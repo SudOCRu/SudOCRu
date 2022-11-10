@@ -13,14 +13,9 @@ size_t mystrlen(char *s)
 
 int main(int argc, char** argv)
 {
-    // --- Check nb arguments ---
-    if (argc > 4)
-        errx(EXIT_FAILURE, "Error: Too many arguments (check man by \
-using './solver'");
-
     // ------- Sudoku Man -------
 
-    else if (argc == 1){
+    if (argc <= 1){
         printf("\n\n   ---> SudokuSolver v1.0 - commands:\n\n\n\
     -> $./solver \n\
             - Load man page (this page)\n\n\
@@ -59,21 +54,32 @@ returns an error\n\n\n\
 
         // --- Check options mentionned in args ---
 
+        unsigned int file_arg = 0;
         if (argc > 2){
-            if (argv[2][0] == '-'){
-                for (int index = 1; argv[index] != 0; index++){
-                    if (argv[2][index] == 'p') p = 1;
-                    else if (argv[2][index] == 'i') i = 1;
-                    else if (argv[2][index] == 'o') o = 1;
-                    else if (argv[2][index] == 'd') d = 1;
+            for (int k = 2; k < argc; k++){
+                if (argv[k][0] == '-'){
+                    for (int j = 1; argv[k][j] != 0; j++){
+                             if (argv[k][j] == 'p') p = 1;
+                        else if (argv[k][j] == 'i') i = 1;
+                        else if (argv[k][j] == 'o') o = 1;
+                        else if (argv[k][j] == 'd') d = 1;
+                    }
+                }
+                else
+                {
+                    if (o && file_arg == 0)
+                    {
+                        file_arg = k;
+                        continue;
+                    }
+                    errx(EXIT_FAILURE, "Parser: Unknown argument `%s` (check"
+                        "man by using './solver')", argv[k]);
                 }
             }
-            else errx(EXIT_FAILURE, "Parser: Bad arguments (check man by \
-using './solver')");
+            if (o == 1 && file_arg == 0)
+                errx(EXIT_FAILURE, "Parser: Missing output file "
+                                   "(check man by using './solver')");
         }
-        if (argc == 3 && o == 1)
-            errx(EXIT_FAILURE, "Parser: Bad arguments, missing output file \
-name (check man by using './solver')");
 
         // ---------------------------------------
 
@@ -101,7 +107,7 @@ name (check man by using './solver')");
         if (d == 1) printf("-> Saving Sudoku...\n\n");
 
         if (o == 1) {
-            SaveSudoku(solved, argv[3]);
+            SaveSudoku(solved, argv[file_arg]);
         }
         else {
             size_t len = mystrlen(argv[1]) + 8;
