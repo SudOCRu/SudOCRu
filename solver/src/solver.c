@@ -194,8 +194,15 @@ int SaveSudoku(const Sudoku* sudoku, const char* out_file){
     }
 
     while (index < sudoku->boardsize){
-        if (index != 0 && index % sudoku->boardedge == 0) fprintf(file, "\n");
-        else if (index != 0 && index % 3 == 0) fprintf(file, " ");
+        if (index != 0 && index % sudoku->boardedge == 0)
+        {
+            if ((index / sudoku->boardedge) % sudoku->nbsquares == 0)
+                fprintf(file, "\n");
+            fprintf(file, "\n");
+        }
+        else if (index != 0 && (index % sudoku->nbsquares) == 0)
+            fprintf(file, " ");
+
         if (sudoku->board[index] != 0){
             fprintf(file, "%hhu", sudoku->board[index]);
         }
