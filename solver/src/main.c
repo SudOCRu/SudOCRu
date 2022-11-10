@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "solver.h"
 #include <stddef.h>
+#include <libgen.h>
 
 size_t mystrlen(char *s)
 {
@@ -72,7 +73,7 @@ returns an error\n\n\n\
                         file_arg = k;
                         continue;
                     }
-                    errx(EXIT_FAILURE, "Parser: Unknown argument `%s` (check"
+                    errx(EXIT_FAILURE, "Parser: Unknown argument `%s` (check "
                         "man by using './solver')", argv[k]);
                 }
             }
@@ -110,10 +111,11 @@ returns an error\n\n\n\
             SaveSudoku(solved, argv[file_arg]);
         }
         else {
-            size_t len = mystrlen(argv[1]) + 8;
+            char* file_name = basename(argv[1]);
+            size_t len = mystrlen(file_name) + 8;
             char finalstring[len];
 
-            snprintf(finalstring, len, "%s%s", argv[1], ".result");
+            snprintf(finalstring, len, "%s%s", file_name, ".result");
             SaveSudoku(solved, finalstring);
         }
         if (d == 1) printf("=====   SUDOKU SAVED   =====\n\n");
