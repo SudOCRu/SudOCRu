@@ -44,7 +44,7 @@ void array_insert(u8* begin, u8* end, u8 val)
 void FilterImage(Image* img, int flags)
 {
     u32* tmp = calloc(img->width * img->height, sizeof(u32));
-    u8 s = 1, t = 4;
+    u8 s = 1, t = 5;
 
     PrintStage(s, t, "Grayscale filter", 0);
     u8 min = 255, max = 0;
@@ -59,19 +59,20 @@ void FilterImage(Image* img, int flags)
     if ((flags & SC_FLG_DGRS) != 0 && SaveImageFile(img, "grayscale.png"))
         printf("Successfully saved grayscale.png\n");
 
-    u32 histogram[256] = { 0, };
-    PrintStage(s, t, "Median filter (3x3)", 0);
-    MedianFilter(img, tmp, 5, histogram);
-    PrintStage(s++, t, "Median filter (3x3)", 1);
+    PrintStage(s, t, "Median filter (5x5)", 0);
+    MedianFilter(img, tmp, 5);
+    PrintStage(s++, t, "Median filter (5x5)", 1);
 
     if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "median.png"))
         printf("Successfully saved median.png\n");
 
-    PrintStage(s, t, "Thresholding (Otsu's method)", 0);
-    u8 threshold = ComputeOtsuThreshold(img->width * img->height, histogram);
-    printf(" --> Threshold: %hhu", threshold);
-    ThresholdImage(img, threshold);
-    PrintStage(s++, t, "Thresholding (Otsu's method)", 1);
+    PrintStage(s, t, "Mean filter (11x11)", 0);
+    MeanFilter(img, tmp, 11);
+    PrintStage(s++, t, "Mean filter (11x11)", 1);
+
+    PrintStage(s, t, "Adaptive thresholding (11x11)", 0);
+    AdaptiveThresholding(img, tmp, 11, 0.1);
+    PrintStage(s++, t, "Adaptive thresholding (11x11)", 1);
 
     free(tmp);
 }
@@ -93,28 +94,6 @@ void GrayscaleFilter(Image* image, u8* min, u8* max)
     }
 }
 
-void EnhanceContrast(Image* image, u8 f, u8* min, u8* max)
-{
-    size_t len = image->width * image->height;
-    for (size_t i = 0; i < len; i++)
-    {
-        u32 c = image->pixels[i] & 0xFF;
-        for (size_t k = 1; k < f; k++)
-        {
-            if (c >= (k * 255) / f && c <= ((k + 1) * 255) / f)
-            {
-                c = ((k + 1) * 255) / f;
-                image->pixels[i] = c | (c << 8) | (c << 16);
-
-                // Prepapre for next stage: Contrast stretching
-                if (c > *max) *max = c;
-                else if (c < *min) *min = c;
-                break;
-            }
-        }
-    }
-}
-
 void StretchContrast(Image* img, u8 min, u8 max)
 {
     if (min == 0 && max == 255) return;
@@ -128,7 +107,7 @@ void StretchContrast(Image* img, u8 min, u8 max)
     }
 }
 
-void MedianFilter(Image* img, u32* buf, size_t block, u32 histogram[256])
+void MedianFilter(Image* img, u32* buf, size_t block)
 {
     ssize_t w = img->width, h = img->height;
     size_t side = block / 2;
@@ -155,9 +134,6 @@ void MedianFilter(Image* img, u32* buf, size_t block, u32 histogram[256])
 
             u8 c = vals[i / 2];
             buf[y * w + x] = (c << 16) | (c << 8) | c;
-
-            // Prepapre for next stage: Otsu's method
-            histogram[c]++;
         }
     }
 
@@ -258,27 +234,55 @@ void ThresholdImage(Image* image, u8 threshold)
     }
 }
 
-void AdapativeThresholding(Image* img, u32* buf, size_t r, float threshold)
+void MeanFilter(Image* img, u32* buf, size_t r)
 {
-    ssize_t w = img->width, h = img->height;
+    size_t w = img->width, h = img->height;
     memset(buf, 0, w * h * sizeof(u32));
-    ssize_t side = r / 2;
-    for (ssize_t y = side; y < h - side; y++)
+    size_t side = r / 2;
+    for (size_t y = side; y < h - side; y++)
     {
-        for (ssize_t x = side; x < w - side; x++)
+        for (size_t x = side; x < w - side; x++)
         {
-            float sum = 0;
-            ssize_t endX = x + side;
-            ssize_t endY = y + side;
-            for (ssize_t dy = y - side; dy <= endY; dy++)
+            u32 sum = 0;
+            size_t endX = x + side;
+            size_t endY = y + side;
+            for (size_t dy = y - side; dy <= endY; dy++)
             {
-                for (ssize_t dx = x - side; dx <= endX; dx++)
+                for (size_t dx = x - side; dx <= endX; dx++)
                 {
                     if (dy >= 0 && dx >= 0 && dy < h && dx < w)
                         sum += img->pixels[dy * w + dx] & 0xFF;
                 }
             }
-            float m = (sum / (r * r)) - threshold;
+            u8 m = sum / (r * r);
+            buf[y * w + x] = (m << 16) | (m << 8) | m;
+         }
+    }
+
+    memcpy(img->pixels, buf, w * h * sizeof(u32));
+}
+
+void AdaptiveThresholding(Image* img, u32* buf, size_t r, float threshold)
+{
+    size_t w = img->width, h = img->height;
+    memset(buf, 0, w * h * sizeof(u32));
+    size_t side = r / 2;
+    for (size_t y = side; y < h - side; y++)
+    {
+        for (size_t x = side; x < w - side; x++)
+        {
+            u32 sum = 0;
+            size_t endX = x + side;
+            size_t endY = y + side;
+            for (size_t dy = y - side; dy <= endY; dy++)
+            {
+                for (size_t dx = x - side; dx <= endX; dx++)
+                {
+                    if (dy >= 0 && dx >= 0 && dy < h && dx < w)
+                        sum += img->pixels[dy * w + dx] & 0xFF;
+                }
+            }
+            float m = ((float)sum / (float)(r * r)) * (1.0 - threshold);
             buf[y * w + x] = (img->pixels[y * w + x] & 0xFF) >= m ?
                 0 : 0xFFFFFF;
         }

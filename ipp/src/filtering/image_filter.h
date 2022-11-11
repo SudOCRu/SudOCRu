@@ -12,7 +12,8 @@ void FilterImage(Image* image, int flags);
 /* Applys a grayscale filter to the image and fills the histogram array */
 void GrayscaleFilter(Image* image, u8* min, u8* max);
 void StretchContrast(Image* img, u8 min, u8 max);
-void MedianFilter(Image* image, u32* buf, size_t block, u32 histogram[256]);
+void MedianFilter(Image* image, u32* buf, size_t block);
+void MeanFilter(Image* img, u32* buf, size_t r);
 void GaussianBlur(Image* img, u32* buf, const float* kernel, size_t r);
 
 void EnhanceContrast(Image* image, u8 f, u8* min, u8* max);
@@ -23,7 +24,7 @@ u8 ComputeOtsuThreshold(size_t len, const u32 histogram[256]);
 
 /* Applys a binary tresholding filter to the image */
 void ThresholdImage(Image* image, u8 threshold);
-void AdapativeThresholding(Image* img, u32* buf, size_t r, float threshold);
+void AdaptiveThresholding(Image* img, u32* buf, size_t r, float threshold);
 
 Image* CannyEdgeDetection(const Image* src);
 
