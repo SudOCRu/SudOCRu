@@ -1,1 +1,10 @@
 # Optical Character Recognition using AI
+
+Using the Neural Network:
+- `make RELEASE=1` to generate the binary `./ocr`
+- `./ocr train -f <output_file> <iterations> <learning_rate>` train a neural
+network based on the XOR truth table. Example: `./ocr train -f net.bin 1000 10`
+- `./ocr eval <input_file> <neural_network_input>` evaluates a user input by the
+neural network saved in the input file. Note that if the neural network has
+multiple inputs, inputs must be seperated by commas.
+Example: `./ocr eval net.bin "1,1"`
