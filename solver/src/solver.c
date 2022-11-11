@@ -494,13 +494,13 @@ int IntBacktracking(const Sudoku* org, Sudoku* sudoku, size_t i){
             fflush(stdout);
             msleep(15);
 
-            if(IntBacktracking(org, sudoku, i) == Operation_Succeeded)
+            if(IntBacktracking(org, sudoku, i + 1) == Operation_Succeeded)
             {
                 return Operation_Succeeded;
             }
-            sudoku->board[i] = 0;
         }
     }
+    sudoku->board[i] = 0;
 
     return Sudoku_Not_Solved;
 }
