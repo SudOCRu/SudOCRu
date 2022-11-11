@@ -43,6 +43,7 @@ void array_insert(u8* begin, u8* end, u8 val)
 
 void FilterImage(Image* img, int flags)
 {
+    u32* tmp = calloc(img->width * img->height, sizeof(u32));
     u8 s = 1, t = 4;
 
     PrintStage(s, t, "Grayscale filter", 0);
@@ -60,7 +61,7 @@ void FilterImage(Image* img, int flags)
 
     u32 histogram[256] = { 0, };
     PrintStage(s, t, "Median filter (3x3)", 0);
-    MedianFilter(img, 3, histogram);
+    MedianFilter(img, tmp, 5, histogram);
     PrintStage(s++, t, "Median filter (3x3)", 1);
 
     if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "median.png"))
@@ -71,6 +72,8 @@ void FilterImage(Image* img, int flags)
     printf(" --> Threshold: %hhu", threshold);
     ThresholdImage(img, threshold);
     PrintStage(s++, t, "Thresholding (Otsu's method)", 1);
+
+    free(tmp);
 }
 
 void GrayscaleFilter(Image* image, u8* min, u8* max)
@@ -125,7 +128,7 @@ void StretchContrast(Image* img, u8 min, u8 max)
     }
 }
 
-void MedianFilter(Image* img, size_t block, u32 histogram[256])
+void MedianFilter(Image* img, u32* buf, size_t block, u32 histogram[256])
 {
     ssize_t w = img->width, h = img->height;
     size_t side = block / 2;
@@ -151,19 +154,21 @@ void MedianFilter(Image* img, size_t block, u32 histogram[256])
             }
 
             u8 c = vals[i / 2];
-            img->pixels[y * w + x] = (c << 16) | (c << 8) | c;
+            buf[y * w + x] = (c << 16) | (c << 8) | c;
 
             // Prepapre for next stage: Otsu's method
             histogram[c]++;
         }
     }
 
+    memcpy(img->pixels, buf, w * h * sizeof(u32));
     free(vals);
 }
 
-void GaussianBlur(Image* img, const float* kernel, size_t r)
+void GaussianBlur(Image* img, u32* buf, const float* kernel, size_t r)
 {
     size_t w = img->width, h = img->height;
+    memset(buf, 0, w * h * sizeof(u32));
     size_t side = r / 2;
     for (size_t y = side; y < h - side; y++)
     {
@@ -180,9 +185,11 @@ void GaussianBlur(Image* img, const float* kernel, size_t r)
             }
 
             u8 c = sum;
-            img->pixels[y * w + x] = (c << 16) | (c << 8) | c;
+            buf[y * w + x] = (c << 16) | (c << 8) | c;
         }
     }
+
+    memcpy(img->pixels, buf, w * h * sizeof(u32));
 }
 
 void GammaFilter(Image* img, float f)
@@ -251,10 +258,10 @@ void ThresholdImage(Image* image, u8 threshold)
     }
 }
 
-void AdapativeThresholding(Image* img, size_t r, float threshold)
+void AdapativeThresholding(Image* img, u32* buf, size_t r, float threshold)
 {
-    // FIXME: Not working as attended
     ssize_t w = img->width, h = img->height;
+    memset(buf, 0, w * h * sizeof(u32));
     ssize_t side = r / 2;
     for (ssize_t y = side; y < h - side; y++)
     {
@@ -272,10 +279,12 @@ void AdapativeThresholding(Image* img, size_t r, float threshold)
                 }
             }
             float m = (sum / (r * r)) - threshold;
-            img->pixels[y * w + x] = (img->pixels[y * w + x] & 0xFF)
-                >= m ? 0 : 0xFFFFFF;
+            buf[y * w + x] = (img->pixels[y * w + x] & 0xFF) >= m ?
+                0 : 0xFFFFFF;
         }
     }
+
+    memcpy(img->pixels, buf, w * h * sizeof(u32));
 }
 
 void SobelOperator(const Image* img, u32* out, float* dirs, u32* max_mag)
@@ -404,14 +413,15 @@ void Hysteresis(u32* mat, size_t w, size_t h, u32 weak, u32 strong)
 Image* CannyEdgeDetection(const Image* src)
 {
     size_t len = src->width * src->height;
+    u32* mat = calloc(len, sizeof(u32));
     Image* out = LoadBufImage(src->pixels, src->width, src->height, NULL);
     if (out == NULL) return NULL;
 
     PrintStage(1, 2, "Gaussian blur (3x3)", 0);
-    GaussianBlur(out, CANN_KERNEL_5, 3);
+    GaussianBlur(out, mat, CANN_KERNEL_5, 5);
     PrintStage(1, 2, "Gaussian blur (3x3)", 1);
 
-    u32* mat = calloc(len, sizeof(u32));
+    memset(mat, 0, len * sizeof(u32));
     float* dirs = calloc(len, sizeof(float));
     u32 max = 0;
 
