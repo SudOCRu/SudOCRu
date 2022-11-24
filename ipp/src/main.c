@@ -5,6 +5,7 @@
 #include "image.h"
 #include "utils.h"
 #include "filtering/image_filter.h"
+#include "filtering/edge_detection.h"
 #include "grid_slicer/grid_slicer.h"
 
 int ParseFlags(int argc, char** argv);
@@ -21,7 +22,7 @@ int main(int argc, char** argv)
     // Load the image
     ImageStatus status = ImageOk;
     Image* img = LoadImageFile(argv[1], &status);
-    int flags = ParseFlags(argc, argv);
+    int flags = /*ParseFlags(argc, argv)*/SC_FLG_IPP;
 
     if (img != NULL && status == ImageOk)
     {
@@ -35,6 +36,7 @@ int main(int argc, char** argv)
             printf("Successfully wrote filtered.png\n");
         }
 
+        /*
         printf("Detecting edges...\n");
         Image* edges = CannyEdgeDetection(img);
 
@@ -77,7 +79,7 @@ int main(int argc, char** argv)
         {
             printf("Oops... Looks like something went wrong"
                    ": No cells were detected :(\n");
-        }
+        }*/
     } else {
         // load failed
         DestroyImage(img);
