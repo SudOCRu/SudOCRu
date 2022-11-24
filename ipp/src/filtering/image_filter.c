@@ -6,7 +6,7 @@
 void FilterImage(Image* img, int flags)
 {
     u32* tmp = calloc(img->width * img->height, sizeof(u32));
-    u8 s = 1, t = 5;
+    u8 s = 1, t = 6;
 
     PrintStage(s, t, "Grayscale filter", 0);
     u8 min = 255, max = 0;
@@ -21,29 +21,24 @@ void FilterImage(Image* img, int flags)
     if ((flags & SC_FLG_DGRS) != 0 && SaveImageFile(img, "grayscale.png"))
         printf("Successfully saved grayscale.png\n");
 
-    PrintStage(s, t, "Median Filter (7x7)", 0);
+    PrintStage(s, t, "Median Filter (5x5)", 0);
     MedianFilter(img, tmp, 5);
-    PrintStage(s++, t, "Median Filter (7x7)", 1);
+    PrintStage(s++, t, "Median Filter (5x5)", 1);
 
-    PrintStage(s, t, "BilateralFilter (9x9)", 0);
-    BilateralFilter(img, tmp, 11, 35, 35);
-    PrintStage(s++, t, "BilateralFilter (9x9)", 1);
+    PrintStage(s, t, "Bilateral Filter (11x11)", 0);
+    BilateralFilter(img, tmp, 11, 70, 70);
+    PrintStage(s++, t, "Bilateral Filter (11x11)", 1);
 
-   // AdaptiveThresholding(img, tmp, 11, 5);
-    //Dilate(img, tmp, 3);
+    if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "smoothed.png"))
+        printf("Successfully saved smoothed.png\n");
 
-    /*
+    PrintStage(s, t, "AdaptiveThresholding (7x7)", 0);
+    AdaptiveThresholding(img, tmp, 7, 5);
+    PrintStage(s++, t, "AdaptiveThresholding (7x7)", 1);
 
-    if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "median.png"))
-        printf("Successfully saved median.png\n");
-
-    PrintStage(s, t, "Adaptive thresholding (11x11)", 0);
-    u32 histo[256];
-    FillHistogram(img, histo);
-    u8 threshold = ComputeOtsuThreshold(img->width * img->height, histo);
-    ThresholdImage(img, threshold);
-    PrintStage(s++, t, "Adaptive thresholding (11x11)", 1);
-    */
+    PrintStage(s, t, "Dilate (3x3)", 0);
+    Dilate(img, tmp, 3);
+    PrintStage(s++, t, "Dilate (3x3)", 1);
 
     size_t len = img->width * img->height;
     for (size_t i = 0; i < len; i++)

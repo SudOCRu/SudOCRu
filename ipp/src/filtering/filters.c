@@ -73,10 +73,7 @@ void Invert(Image* img)
         img->pixels[i] = 255 - (img->pixels[i] & 0xFF);
 }
 
-static inline ssize_t clamp(ssize_t x, ssize_t min, ssize_t max)
-{
-    return x >= max ? (max - 1) : (x < min ? min : x);
-}
+#define clamp(x, min, max) (x) >= (max) ? ((max) - 1) : ((x) < (min) ? (min) : (x))
 
 void Convolve(const Image* img, u32* out, const Kernel* ker)
 {
@@ -134,7 +131,6 @@ void GaussianBlur(Image* img, u32* buf, float sigma, size_t r)
 {
     size_t w = img->width, h = img->height;
     Kernel* ker = GetGaussianKernel(sigma, r);
-    PrintKernel(ker);
     Convolve(img, buf, ker);
     memcpy(img->pixels, buf, w * h * sizeof(u32));
     free(ker);
@@ -163,20 +159,21 @@ void BilateralFilter(Image* img, u32* buf, size_t r, float col, float sp)
     float b = M_PI * M_PI * col2 * sp2; // Precalculate the quotient
 
     ssize_t w = img->width, h = img->height;
-    memset(buf, 0, w * h * sizeof(u32));
     ssize_t m = r / 2;
-    for (ssize_t y = m; y < h - m; y++)
+    for (ssize_t y = 0; y < h; y++)
     {
-        for (ssize_t x = m; x < w - m; x++)
+        for (ssize_t x = 0; x < w; x++)
         {
             float sum = 0;
             float wf = 0;
             float ic = img->pixels[y * w + x] & 0xFF;
             for (ssize_t dy = -m; dy <= m; dy++)
             {
+                ssize_t ey = clamp(y + dy, 0, h);
                 for (ssize_t dx = -m; dx <= m; dx++)
                 {
-                    float i = img->pixels[(y + dy) * w + (x + dx)] & 0xFF;
+                    ssize_t ex = clamp(x + dx, 0, w);
+                    float i = img->pixels[ey * w + ex] & 0xFF;
                     float dl = dx * dx + dy * dy;
                     float gauss = exp(-(dl/sp2) - (pow(i - ic, 2))/col2) / b;
                     wf += gauss;
@@ -195,29 +192,28 @@ void BilateralFilter(Image* img, u32* buf, size_t r, float col, float sp)
 void MedianFilter(Image* img, u32* buf, size_t block)
 {
     ssize_t w = img->width, h = img->height;
-    size_t side = block / 2;
+    ssize_t m = block / 2;
+    size_t mid = block * block / 2;
     u8* vals = calloc(block * block, sizeof(u8));
     for (ssize_t y = 0; y < h; y++)
     {
         for (ssize_t x = 0; x < w; x++)
         {
             size_t i = 0;
-            ssize_t endX = x + side;
-            ssize_t endY = y + side;
-            for (ssize_t dy = y - side; dy <= endY; dy++)
+            for (ssize_t dy = -m; dy <= m; dy++)
             {
-                for (ssize_t dx = x - side; dx <= endX; dx++)
+                ssize_t ey = clamp(y + dy, 0, h);
+                for (ssize_t dx = -m; dx <= m; dx++)
                 {
-                    u8 col = 0;
-                    if (dy >= 0 && dx >= 0 && dy < h && dx < w)
-                        col = img->pixels[dy * w + dx] & 0xFF;
+                    ssize_t ex = clamp(x + dx, 0, w);
+                    u8 col = img->pixels[ey * w + ex] & 0xFF;
 
                     array_insert(vals, vals + i, col);
                     i++;
                 }
             }
 
-            u8 c = vals[i / 2];
+            u8 c = vals[mid];
             buf[y * w + x] = (c << 16) | (c << 8) | c;
         }
     }
