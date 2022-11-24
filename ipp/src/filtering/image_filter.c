@@ -6,7 +6,7 @@
 void FilterImage(Image* img, int flags)
 {
     u32* tmp = calloc(img->width * img->height, sizeof(u32));
-    u8 s = 1, t = 6;
+    u8 s = 1, t = 7;
 
     PrintStage(s, t, "Grayscale filter", 0);
     u8 min = 255, max = 0;
@@ -31,6 +31,10 @@ void FilterImage(Image* img, int flags)
 
     if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "smoothed.png"))
         printf("Successfully saved smoothed.png\n");
+
+    PrintStage(s, t, "Erode (3x3)", 0);
+    Dilate(img, tmp, 3); // Actually Erode because image is not inverted
+    PrintStage(s++, t, "Erode (3x3)", 1);
 
     PrintStage(s, t, "AdaptiveThresholding (7x7)", 0);
     AdaptiveThresholding(img, tmp, 7, 5);

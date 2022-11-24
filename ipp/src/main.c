@@ -36,7 +36,6 @@ int main(int argc, char** argv)
             printf("Successfully wrote filtered.png\n");
         }
 
-        /*
         printf("Detecting edges...\n");
         Image* edges = CannyEdgeDetection(img);
 
@@ -45,6 +44,7 @@ int main(int argc, char** argv)
             printf("Successfully wrote edges.png\n");
         }
 
+        /*
         printf("Extracting cells...\n");
         size_t len = 0;
         Image** cells = ExtractSudokuCells(img, edges, &len, -50, flags);

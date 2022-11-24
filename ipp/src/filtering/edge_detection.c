@@ -91,27 +91,27 @@ Image* CannyEdgeDetection(const Image* src)
     if (out == NULL) return NULL;
 
     PrintStage(1, 2, "Gaussian blur (3x3)", 0);
-    //GaussianBlur(out, mat, CANN_KERNEL_5, 5);
+    GaussianBlur(out, mat, 2, 5);
     PrintStage(1, 2, "Gaussian blur (3x3)", 1);
 
     memset(mat, 0, len * sizeof(u32));
     float* dirs = calloc(len, sizeof(float));
-    u32 max = 0;
+    float max = 0;
 
     PrintStage(2, 3, "Sobel Operator", 0);
     SobelOperator(out, mat, dirs, &max);
     PrintStage(2, 3, "Sobel Operator", 1);
 
     PrintStage(3, 3, "Edge thinning", 0);
-    NonMaximumSuppression(mat, dirs, src->width, src->height);
-    DoubleThresholding(mat, len, max, 0.25, 0.10, 50, 255);
-    Hysteresis(mat, src->width, src->height, 50, 255);
+    //NonMaximumSuppression(mat, dirs, src->width, src->height);
+    //DoubleThresholding(mat, len, max, 0.25, 0.10, 50, 255);
+    //Hysteresis(mat, src->width, src->height, 50, 255);
     PrintStage(3, 3, "Edge thinning", 1);
 
     // Rendering
     for (size_t i = 0; i < len; i++)
     {
-        u8 c = 2 * mat[i] / 3;
+        u8 c = (255.0 * mat[i]) / max;
         out->pixels[i] = (c << 16) | (c << 8) | c;
     }
 

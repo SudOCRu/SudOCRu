@@ -222,7 +222,7 @@ void MedianFilter(Image* img, u32* buf, size_t block)
     free(vals);
 }
 
-void SobelOperator(const Image* img, u32* out, float* dirs, u32* max_mag)
+void SobelOperator(const Image* img, u32* out, float* dirs, float* max_mag)
 {
     int Iy[9] =
     {
@@ -236,6 +236,7 @@ void SobelOperator(const Image* img, u32* out, float* dirs, u32* max_mag)
          0,  0,  0,
         -1, -2, -1,
     };
+    ssize_t s = 1;
     ssize_t w = img->width, h = img->height;
     *max_mag = 0;
     for (ssize_t y = 0; y < h; y++)
@@ -243,19 +244,19 @@ void SobelOperator(const Image* img, u32* out, float* dirs, u32* max_mag)
         for (ssize_t x = 0; x < w; x++)
         {
             int gx = 0, gy = 0;
-            for (ssize_t dy = -1; dy <= 1; dy++)
+            
+            for (ssize_t dy = -s; dy <= s; dy++)
             {
-                for (ssize_t dx = -1; dx <= 1; dx++)
+                ssize_t ey = clamp(y + dy, 0, h);
+                for (ssize_t dx = -s; dx <= s; dx++)
                 {
-                    ssize_t nx = x + dx;
-                    ssize_t ny = y + dy;
-                    if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-                    u8 c = (img->pixels[ny * w + nx] & 0xFF);
-                    gx += c * Ix[(dy + 1) * 3 + dx + 1];
-                    gy += c * Iy[(dy + 1) * 3 + dx + 1];
+                    ssize_t ex = clamp(x + dx, 0, w);
+                    u8 c = (img->pixels[ey * w + ex] & 0xFF);
+                    gx += c * Ix[(dy + s) * 3 + dx + s];
+                    gy += c * Iy[(dy + s) * 3 + dx + s];
                 }
             }
-            u32 mag = sqrt(gx * gx + gy * gy);
+            float mag = sqrt(gx * gx + gy * gy);
             if (mag > *max_mag) *max_mag = mag;
             out[y * w + x] = mag;
             dirs[y * w + x] = atan2(gy, gx);
