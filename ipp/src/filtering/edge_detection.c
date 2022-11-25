@@ -83,15 +83,14 @@ void Hysteresis(u32* mat, size_t w, size_t h, u32 weak, u32 strong)
     }
 }
 
-Image* CannyEdgeDetection(const Image* src)
+Image* CannyEdgeDetection(const Image* src, u32* mat)
 {
     size_t len = src->width * src->height;
-    u32* mat = calloc(len, sizeof(u32));
     Image* out = LoadBufImage(src->pixels, src->width, src->height, NULL);
     if (out == NULL) return NULL;
 
     PrintStage(1, 2, "Gaussian blur (3x3)", 0);
-    GaussianBlur(out, mat, 2, 5);
+    GaussianBlur(out, mat, 1, 5);
     PrintStage(1, 2, "Gaussian blur (3x3)", 1);
 
     memset(mat, 0, len * sizeof(u32));
@@ -102,20 +101,19 @@ Image* CannyEdgeDetection(const Image* src)
     SobelOperator(out, mat, dirs, &max);
     PrintStage(2, 3, "Sobel Operator", 1);
 
-    PrintStage(3, 3, "Edge thinning", 0);
-    //NonMaximumSuppression(mat, dirs, src->width, src->height);
-    //DoubleThresholding(mat, len, max, 0.25, 0.10, 50, 255);
-    //Hysteresis(mat, src->width, src->height, 50, 255);
-    PrintStage(3, 3, "Edge thinning", 1);
+    PrintStage(3, 3, "Processing edges", 0);
+    NonMaximumSuppression(mat, dirs, src->width, src->height);
+    DoubleThresholding(mat, len, max, 0.25, 0.10, 50, 255);
+    Hysteresis(mat, src->width, src->height, 50, 255);
+    PrintStage(3, 3, "Processing edges", 1);
 
     // Rendering
     for (size_t i = 0; i < len; i++)
     {
-        u8 c = (255.0 * mat[i]) / max;
+        u8 c = 2 * mat[i] / 3;
         out->pixels[i] = (c << 16) | (c << 8) | c;
     }
 
     free(dirs);
-    free(mat);
     return out;
 }

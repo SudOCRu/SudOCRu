@@ -29,7 +29,9 @@ int main(int argc, char** argv)
         // load succeeded
         printf("Processing image... (%lux%lu)\n",img->width,img->height);
 
-        FilterImage(img, flags);
+        u32* tmp = calloc(img->width * img->height, sizeof(u32));
+        FilterImage(img, tmp, flags);
+        BinarizeImage(img, tmp, THRESH_OPTIMAL);
 
         if ((flags & SC_FLG_DFIL) != 0 && SaveImageFile(img, "filtered.png"))
         {
@@ -37,14 +39,15 @@ int main(int argc, char** argv)
         }
 
         printf("Detecting edges...\n");
-        Image* edges = CannyEdgeDetection(img);
+
+        Image* edges = CannyEdgeDetection(img, tmp);
+        free(tmp);
 
         if ((flags & SC_FLG_DEDG) != 0 && SaveImageFile(edges, "edges.png"))
         {
             printf("Successfully wrote edges.png\n");
         }
 
-        /*
         printf("Extracting cells...\n");
         size_t len = 0;
         Image** cells = ExtractSudokuCells(img, edges, &len, -50, flags);
@@ -79,7 +82,7 @@ int main(int argc, char** argv)
         {
             printf("Oops... Looks like something went wrong"
                    ": No cells were detected :(\n");
-        }*/
+        }
     } else {
         // load failed
         DestroyImage(img);

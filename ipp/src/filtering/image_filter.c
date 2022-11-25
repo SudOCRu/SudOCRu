@@ -3,9 +3,8 @@
 #include "edge_detection.h"
 #include "../utils.h"
 
-void FilterImage(Image* img, int flags)
+void FilterImage(Image* img, u32* tmp, int flags)
 {
-    u32* tmp = calloc(img->width * img->height, sizeof(u32));
     u8 s = 1, t = 7;
 
     PrintStage(s, t, "Grayscale filter", 0);
@@ -22,11 +21,11 @@ void FilterImage(Image* img, int flags)
         printf("Successfully saved grayscale.png\n");
 
     PrintStage(s, t, "Median Filter (5x5)", 0);
-    MedianFilter(img, tmp, 5);
+    MedianFilter(img, tmp, 7);
     PrintStage(s++, t, "Median Filter (5x5)", 1);
 
     PrintStage(s, t, "Bilateral Filter (11x11)", 0);
-    BilateralFilter(img, tmp, 11, 70, 70);
+    BilateralFilter(img, tmp, 11, 55, 55);
     PrintStage(s++, t, "Bilateral Filter (11x11)", 1);
 
     if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "smoothed.png"))
@@ -35,22 +34,18 @@ void FilterImage(Image* img, int flags)
     PrintStage(s, t, "Erode (3x3)", 0);
     Dilate(img, tmp, 3); // Actually Erode because image is not inverted
     PrintStage(s++, t, "Erode (3x3)", 1);
+}
 
-    PrintStage(s, t, "AdaptiveThresholding (7x7)", 0);
-    AdaptiveThresholding(img, tmp, 7, 5);
-    PrintStage(s++, t, "AdaptiveThresholding (7x7)", 1);
+void BinarizeImage(Image* img, u32* tmp, float threshold)
+{
+    PrintStage(1, 2, "Adaptive Thresholding (11x11)", 0);
+    // nominal threshold: -5, optimal: 2.5%
+    AdaptiveThresholding(img, tmp, 11, threshold); 
+    PrintStage(1, 2, "Adaptive Thresholding (11x11)", 1);
 
-    PrintStage(s, t, "Dilate (3x3)", 0);
+    PrintStage(2, 2, "Dilate (3x3)", 0);
     Dilate(img, tmp, 3);
-    PrintStage(s++, t, "Dilate (3x3)", 1);
-
-    size_t len = img->width * img->height;
-    for (size_t i = 0; i < len; i++)
-    {
-        u32 pix = img->pixels[i] & 0xFF;
-        img->pixels[i] = (pix << 16) | (pix << 8) | pix;
-    }
-    free(tmp);
+    PrintStage(2, 2, "Dilate (3x3)", 1);
 }
 
 void GrayscaleFilter(Image* image, u8* min, u8* max)
@@ -175,7 +170,7 @@ void AdaptiveThresholding(Image* img, u32* buf, size_t r, float threshold)
     {
         for (size_t x = side; x < w - side; x++)
         {
-            u32 sum = 0;
+            float sum = 0;
             size_t endX = x + side;
             size_t endY = y + side;
             for (size_t dy = y - side; dy <= endY; dy++)
@@ -186,7 +181,7 @@ void AdaptiveThresholding(Image* img, u32* buf, size_t r, float threshold)
                         sum += img->pixels[dy * w + dx] & 0xFF;
                 }
             }
-            float m = ((float)sum / (float)(r * r)) - threshold;
+            float m = (sum / (float)(r * r)) * (1.0 - threshold);
             buf[y * w + x] = (img->pixels[y * w + x] & 0xFF) >= m ?
                 0 : 0xFFFFFF;
         }

@@ -99,8 +99,14 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
         }
 
         sudoku = CropRotateImage(original, -angle, midX, midY, l, t, r, b);
-        if (SaveImageFile(sudoku, "sudoku.png"))
+        if (sudoku == NULL)
+        {
+            printf("<!> Something went wrong when cropping sudoku\n");
+        }
+        else if (SaveImageFile(sudoku, "sudoku.png"))
+        {
             printf("Successfully wrote sudoku.png\n");
+        }
 
         FreeBB(bb);
     }

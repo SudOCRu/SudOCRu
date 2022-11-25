@@ -95,7 +95,8 @@ void Convolve(const Image* img, u32* out, const Kernel* ker)
                         ker->vals[(dy + s) * ker->radius + (dx + s)];
                 }
             }
-            out[y * w + x] = (sum > 255) ? 255 : ((sum < 0) ? 0 : sum);
+            u8 col = (sum > 255) ? 255 : ((sum < 0) ? 0 : sum);
+            out[y * w + x] = (col << 16) | (col << 8) | col;
         }
     }
 }
@@ -272,7 +273,7 @@ void Dilate(Image* img, u32* buf, size_t block)
     {
         for (ssize_t x = 0; x < w; x++)
         {
-            u32 ma = 0;
+            u8 ma = 0;
             for (ssize_t dy = -s; dy <= s; dy++)
             {
                 ssize_t ey = clamp(y + dy, 0, h);
@@ -282,7 +283,7 @@ void Dilate(Image* img, u32* buf, size_t block)
                     ma = max(ma, (img->pixels[ey * w + ex] & 0xFF));
                 }
             }
-            buf[y * w + x] = ma;
+            buf[y * w + x] = (ma << 16) | (ma << 8) | ma;
         }
     }
 
@@ -297,7 +298,7 @@ void Erode(Image* img, u32* buf, size_t block)
     {
         for (ssize_t x = 0; x < w; x++)
         {
-            u32 mi = 255;
+            u8 mi = 255;
             for (ssize_t dy = -s; dy <= s; dy++)
             {
                 ssize_t ey = clamp(y + dy, 0, h);
@@ -307,7 +308,7 @@ void Erode(Image* img, u32* buf, size_t block)
                     mi = min(mi, (img->pixels[ey * w + ex] & 0xFF));
                 }
             }
-            buf[y * w + x] = mi;
+            buf[y * w + x] = (mi << 16) | (mi << 8) | mi;
         }
     }
 
