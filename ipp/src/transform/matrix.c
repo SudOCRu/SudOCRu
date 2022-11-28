@@ -12,6 +12,17 @@ Matrix* NewMatrix(size_t rows, size_t cols, const float* vals)
     return mat;
 }
 
+Matrix* GetIdMatrix(size_t n)
+{
+    Matrix* mat = malloc(sizeof(Matrix));
+    mat->cols = n;
+    mat->rows = n;
+    mat->m = calloc(n * n, sizeof(float));
+    for (size_t i = 0; i < n; i++)
+        mat->m[i * n + i] = 1;
+    return mat;
+}
+
 void PrintMatrix(const Matrix* a)
 {
     for (size_t i = 0; i < a->rows; i++)
@@ -68,12 +79,63 @@ Matrix* MatTranspose(const Matrix* a)
 // Right associative matrix multiplication
 Matrix* MatMultiply(const Matrix* a, const Matrix* b)
 {
-    return NULL;
+    if (a->cols != b->rows)
+        return NULL;
+    Matrix* c = malloc(sizeof(Matrix));
+    c->rows = a->rows;
+    c->cols = b->cols;
+    c->m = calloc(c->cols * c->rows, sizeof(float));
+
+    for(size_t i = 0; i < a->rows; ++i)
+    {
+        for(size_t k = 0; k < a->cols; ++k)
+        {
+            for(size_t j = 0; j < b->cols; ++j)
+            {
+                c->m[i * c->cols + j] += a->m[i * a->cols + k]
+                    * b->m[k * b->cols + j];
+            }
+        }
+    }
+
+    return c;
 }
 
 int MatInvert(Matrix* a)
 {
     if (a->rows != a->cols)
         return 0;
+    size_t n = a->cols;
+
+    float* id = calloc(n * n, sizeof(float));
+    for (size_t i = 0; i < n; i++)
+        id[i * n + i] = 1;
+
+    // Gauss-Jordan Elimination
+    for (size_t i = 0; i < n; i++)
+    {
+        if (a->m[i * n + i] == 0) // division by 0
+            return 0;
+        for (size_t j = 0; j < n; j++)
+        {
+            if (i == j) continue;
+            float r = a->m[j * n + i] / a->m[i * n + i];
+            for (size_t k = 0; k < n; k++)
+            {
+                id[j * n + k] = id[j * n + k] -
+                    r * id[i * n + k];
+            }
+        }
+    }
+
+    // Normalisation to have ones on the diagonal of a
+    for (size_t i = 0; i < n; i++)
+    {
+        for (size_t j = 0; j < n; j++)
+        {
+            id[i * n + j] /= a->m[i * n + i];
+        }
+    }
+    a->m = id;
     return 1;
 }

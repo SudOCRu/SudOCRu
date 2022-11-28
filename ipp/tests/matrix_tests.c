@@ -286,8 +286,8 @@ ParameterizedTest(struct mat_mul** tr, matrix, multiply) {
     Matrix* ab = MatMultiply(a, b);
 
     cr_assert(ne(ptr, ab, NULL), "A and B can be multiplied but they were not");
-    cr_assert(eq(sz, ab->rows, a->cols));
-    cr_assert(eq(sz, ab->cols, b->rows));
+    cr_assert(eq(sz, ab->rows, a->rows));
+    cr_assert(eq(sz, ab->cols, b->cols));
     int r = MatEqual(ab, expected);
     if (!r)
     {
@@ -388,14 +388,7 @@ ParameterizedTest(struct mat_inv** tr, matrix, invert) {
         Matrix* a_copy = NewMatrix(a->rows, a->cols, a->m);
         cr_assert(eq(int, MatInvert(a), 1), "Matrix was not inverted but it is "
                 "invertible");
-        Matrix* id = malloc(sizeof(Matrix));
-        id->cols = a->cols;
-        id->rows = a->cols;
-        id->m = calloc(id->cols * id->rows, sizeof(float));
-        for (size_t i = 0; i < id->cols; i++)
-        {
-            id->m[i * id->cols + i] = 1;
-        }
+        Matrix* id = GetIdMatrix(a->cols);
 
         cr_assert(ne(ptr, MatMultiply(a_copy, a), NULL),
                 "A and A^-1 should have the same dimension");

@@ -9,6 +9,7 @@ typedef struct Matrix
 } Matrix;
 
 Matrix* NewMatrix(size_t rows, size_t cols, const float* vals);
+Matrix* GetIdMatrix(size_t n);
 void PrintMatrix(const Matrix* a);
 void DestroyMatrix(Matrix* mat);
 
