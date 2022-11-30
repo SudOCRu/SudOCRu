@@ -3,18 +3,7 @@
 #include <criterion/new/assert.h>
 #include <criterion/parameterized.h>
 #include <criterion/redirect.h>
-#include "transform/matrix.h"
-
-Matrix* cr_mat(size_t rows, size_t cols, const float* vals)
-{
-    size_t size = cols * rows * sizeof(float);
-    Matrix* mat = cr_malloc(sizeof(Matrix));
-    mat->cols = cols;
-    mat->rows = rows;
-    mat->m = cr_malloc(size);
-    memcpy(mat->m, vals, size);
-    return mat;
-}
+#include "mat_tests_utils.h"
 
 Test(matrix, new) {
     float vals[] = {
