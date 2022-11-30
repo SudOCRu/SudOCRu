@@ -45,6 +45,8 @@ static inline int feq(float a, float b, float epsilon) {
 
 int MatEqual(const Matrix* a, const Matrix* b)
 {
+    if (a == NULL || b == NULL)
+        return a == b;
     if (a->cols != b->cols || a->rows != b-> rows)
         return 0;
     for (size_t i = 0; i < a->rows; i++)
@@ -74,6 +76,8 @@ void DestroyMatrix(Matrix* mat)
 
 Matrix* MatTranspose(const Matrix* a)
 {
+    if (a == NULL)
+        return NULL;
     Matrix* mat = malloc(sizeof(Matrix));
     mat->cols = a->rows;
     mat->rows = a->cols;
@@ -92,7 +96,7 @@ Matrix* MatTranspose(const Matrix* a)
 // Right associative matrix multiplication
 Matrix* MatMultiply(const Matrix* a, const Matrix* b)
 {
-    if (a->cols != b->rows)
+    if (a == NULL || b == NULL || a->cols != b->rows)
         return NULL;
     Matrix* c = malloc(sizeof(Matrix));
     c->rows = a->rows;
@@ -127,7 +131,7 @@ static inline void SwapLines(float* m, size_t a, size_t b, size_t cols)
 
 int MatInvert(Matrix* a)
 {
-    if (a->rows != a->cols) // Not a square matrix
+    if (a == NULL || a->rows != a->cols) // Not a square matrix
         return 0;
     size_t n = a->cols;
 
