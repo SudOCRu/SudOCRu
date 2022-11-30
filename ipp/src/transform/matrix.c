@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
-#define M_EP 1e-6
+#define M_EP 1e-5
 
 Matrix* NewMatrix(size_t rows, size_t cols, const float* vals)
 {
@@ -127,22 +127,33 @@ static inline void SwapLines(float* m, size_t a, size_t b, size_t cols)
 
 int MatInvert(Matrix* a)
 {
-    if (a->rows != a->cols)
+    if (a->rows != a->cols) // Not a square matrix
         return 0;
     size_t n = a->cols;
 
-    float* id = calloc(n * n, sizeof(float));
+    float* id = malloc(n * n * sizeof(float));
     for (size_t i = 0; i < n; i++)
-        id[i * n + i] = 1;
+    {
+        for (size_t j = 0; j < n; j++)
+        {
+            id[i * n + j] = j == i;
+        }
+    }
 
     // Gauss-Jordan Elimination
     for (size_t i = 0; i < n; i++)
     {
-        if (a->m[i * n + i] == 0) // division by 0
+        if (feq(a->m[i * n + i], 0, M_EP)) // Found a 0 in the diagonal
         {
+            // Find a line with the coef at (position i) != 0 and swap them
             size_t l = 0;
             while (l < n && feq(a->m[l * n + i], 0, M_EP))
                 l++;
+
+            // Could not find any line with a value != 0 at pos i
+            // Not invertible
+            if (l == i)
+                return 0;
             SwapLines(a->m, i, l, n);
             SwapLines(id, i, l, n);
         }

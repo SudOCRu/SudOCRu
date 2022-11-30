@@ -324,7 +324,7 @@ void cleanup_mat_inv(struct criterion_test_params *crp) {
 }
 
 ParameterizedTestParameters(matrix, invert) {
-    const size_t size = 8;
+    const size_t size = 9;
     struct mat_inv** params = cr_calloc(size, sizeof(struct mat_inv*));
 
     float a1[] = {
@@ -376,6 +376,15 @@ ParameterizedTestParameters(matrix, invert) {
         1,  2,
     };
     params[7] = make_mat_inv(a8, 2, 2, 1);
+
+    float a9[] = {
+        5, 2, 10, 7, 1,
+        7, 2, 7, 6, 9,
+        0, 3, 4, 2, 0,
+        5, 0, 0, 8, 15,
+        26, 37, 42, 2, 18
+    };
+    params[8] = make_mat_inv(a9, 5, 5, 1);
 
     return cr_make_param_array(struct mat_inv*, params, size, cleanup_mat_inv);
 }
