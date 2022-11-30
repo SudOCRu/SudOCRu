@@ -114,10 +114,14 @@ Matrix* MatMultiply(const Matrix* a, const Matrix* b)
     return c;
 }
 
-static inline void swapLines(float* m, size_t a, size_t b, size_t cols)
+static inline void SwapLines(float* m, size_t a, size_t b, size_t cols)
 {
+    if (a == b) return;
     for (size_t j = 0; j < cols; j++)
     {
+        float tmp = m[a * cols + j];
+        m[a * cols + j] = m[b * cols + j];
+        m[b * cols + j] = tmp;
     }
 }
 
@@ -136,8 +140,11 @@ int MatInvert(Matrix* a)
     {
         if (a->m[i * n + i] == 0) // division by 0
         {
-            // TODO: Interchange lines
-            return 0;
+            size_t l = 0;
+            while (l < n && feq(a->m[l * n + i], 0, M_EP))
+                l++;
+            SwapLines(a->m, i, l, n);
+            SwapLines(id, i, l, n);
         }
         for (size_t j = 0; j < n; j++)
         {

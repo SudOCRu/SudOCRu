@@ -372,8 +372,8 @@ ParameterizedTestParameters(matrix, invert) {
     params[6] = make_mat_inv(a7, 3, 1, 0);
 
     float a8[] = {
+        0, -1,
         1,  2,
-        0, -1
     };
     params[7] = make_mat_inv(a8, 2, 2, 1);
 
