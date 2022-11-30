@@ -1,4 +1,5 @@
 #include "filters.h"
+#include "utils.h"
 
 const float GAUS_KERNEL_3[] =
 {
@@ -47,16 +48,6 @@ void PrintKernel(const Kernel* kernel)
         printf("\n");
     }
     printf("] (sum = %f)\n", sum);
-}
-
-size_t max(size_t a, size_t b)
-{
-    return a > b ? a : b;
-}
-
-size_t min(size_t a, size_t b)
-{
-    return a < b ? a : b;
 }
 
 void array_insert(u8* begin, u8* end, u8 val)

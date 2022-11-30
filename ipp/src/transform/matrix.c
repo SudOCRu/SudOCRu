@@ -33,7 +33,7 @@ void PrintMatrix(const Matrix* a)
         printf("|");
         for (size_t j = 0; j < a->cols; j++)
         {
-            printf(" %-8f |", a->m[i * a->cols + j]);
+            printf(" %8.4f |", a->m[i * a->cols + j]);
         }
         printf("\n");
     }
@@ -54,13 +54,7 @@ int MatEqual(const Matrix* a, const Matrix* b)
         for (size_t j = 0; j < a->cols; j++)
         {
             if (!feq(a->m[i * a->cols + j], b->m[i * a->cols + j], M_EP))
-            {
-                /*
-                printf("<a == b> %f != %f\n", a->m[i * a->cols + j] + 0.0,
-                        b->m[i * a->cols + j] + 0.0);
-                        */
                 return 0;
-            }
         }
     }
     return 1;

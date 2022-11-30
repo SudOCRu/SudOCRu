@@ -5,6 +5,7 @@
 #include <criterion/redirect.h>
 #include "transform/homography.h"
 #include "mat_tests_utils.h"
+#include <time.h>
 
 struct homography_t {
     BBox* from;
@@ -43,11 +44,12 @@ ParameterizedTestParameters(homography, solve) {
     const size_t size = 4;
     struct homography_t** p = cr_calloc(size, sizeof(struct homography_t*));
 
-    BBox ft1 = { /*1*/ 0, 0, /*2*/  10, 0, /*3*/ 0, 10, /*4*/ 10, 10 };
+    // No transformation
+    BBox ft1 = { 0, 0, 10, 0, 0, 10, 10, 10 };
     float h[] = {
         1, 0, 0,
         0, 1, 0,
-        0, 0,
+        0, 0, // 1
     };
     p[0] = make_homography_t(&ft1, &ft1, h);
 

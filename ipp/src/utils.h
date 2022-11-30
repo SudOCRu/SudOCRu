@@ -19,4 +19,7 @@
 #define SC_FLG_IPP ((SC_FLG_DFIL) | (SC_FLG_DEDG) | (SC_FLG_FIL))
 #define SC_FLG_FIL ((SC_FLG_DGRD) | (SC_FLG_FLINES) | (SC_FLG_FRECTS) | (SC_FLG_PRESTL))
 
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
 void PrintStage(unsigned char id, unsigned char total, char* stage, int ok);

@@ -51,7 +51,8 @@ void GetCenterBB(BBox* bb, float* centerX, float* centerY)
     *centerY = (bb->y1 + bb->y2 + bb->y3 + bb->y4) / 4.0f;
 }
 
-void RotatePoint(int* x, int* y, float cx, float cy, float cost, float sint)
+static inline void RotatePoint(int* x, int* y, float cx, float cy, float cost,
+        float sint)
 {
     float nx = cost * ((float)*x - cx) - sint * ((float)*y - cy) + cx;
     float ny = sint * ((float)*x - cx) + cost * ((float)*y - cy) + cy;
