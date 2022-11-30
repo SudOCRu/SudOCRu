@@ -1,5 +1,8 @@
 #include "matrix.h"
 #include <stdio.h>
+#include <math.h>
+#include <float.h>
+#define M_EP 1e-6
 
 Matrix* NewMatrix(size_t rows, size_t cols, const float* vals)
 {
@@ -36,6 +39,10 @@ void PrintMatrix(const Matrix* a)
     }
 }
 
+static inline int feq(float a, float b, float epsilon) {
+    return a == b || (fabs(a) == 0 && fabs(b) == 0) || fabs(a - b) < epsilon;
+}
+
 int MatEqual(const Matrix* a, const Matrix* b)
 {
     if (a->cols != b->cols || a->rows != b-> rows)
@@ -44,8 +51,14 @@ int MatEqual(const Matrix* a, const Matrix* b)
     {
         for (size_t j = 0; j < a->cols; j++)
         {
-            if (a->m[i * a->cols + j] != b->m[i * a->cols + j])
+            if (!feq(a->m[i * a->cols + j], b->m[i * a->cols + j], M_EP))
+            {
+                /*
+                printf("<a == b> %f != %f\n", a->m[i * a->cols + j] + 0.0,
+                        b->m[i * a->cols + j] + 0.0);
+                        */
                 return 0;
+            }
         }
     }
     return 1;
@@ -101,6 +114,13 @@ Matrix* MatMultiply(const Matrix* a, const Matrix* b)
     return c;
 }
 
+static inline void swapLines(float* m, size_t a, size_t b, size_t cols)
+{
+    for (size_t j = 0; j < cols; j++)
+    {
+    }
+}
+
 int MatInvert(Matrix* a)
 {
     if (a->rows != a->cols)
@@ -115,15 +135,18 @@ int MatInvert(Matrix* a)
     for (size_t i = 0; i < n; i++)
     {
         if (a->m[i * n + i] == 0) // division by 0
+        {
+            // TODO: Interchange lines
             return 0;
+        }
         for (size_t j = 0; j < n; j++)
         {
             if (i == j) continue;
             float r = a->m[j * n + i] / a->m[i * n + i];
             for (size_t k = 0; k < n; k++)
             {
-                id[j * n + k] = id[j * n + k] -
-                    r * id[i * n + k];
+                a->m[j * n + k] = a->m[j * n + k] - r * a->m[i * n + k];
+                id[j * n + k]   =   id[j * n + k] - r * id[i * n + k];
             }
         }
     }
@@ -136,6 +159,8 @@ int MatInvert(Matrix* a)
             id[i * n + j] /= a->m[i * n + i];
         }
     }
+    float* m = a->m;
     a->m = id;
+    free(m);
     return 1;
 }

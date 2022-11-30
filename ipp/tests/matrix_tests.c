@@ -385,25 +385,29 @@ ParameterizedTest(struct mat_inv** tr, matrix, invert) {
 
     if ((*tr)->is_invertible)
     {
-        Matrix* a_copy = NewMatrix(a->rows, a->cols, a->m);
-        cr_assert(eq(int, MatInvert(a), 1), "Matrix was not inverted but it is "
+        Matrix* inv = NewMatrix(a->rows, a->cols, a->m);
+        cr_assert(eq(int, MatInvert(inv), 1), "Matrix was not inverted but it is "
                 "invertible");
-        Matrix* id = GetIdMatrix(a->cols);
+        Matrix* ex_id = GetIdMatrix(a->cols);
 
-        cr_assert(ne(ptr, MatMultiply(a_copy, a), NULL),
+        Matrix* id = MatMultiply(inv, a);
+        cr_assert(ne(ptr, id, NULL),
                 "A and A^-1 should have the same dimension");
-        int r = MatEqual(a_copy, id);
+        int r = MatEqual(id, ex_id);
         if (!r)
         {
             printf("A^-1 =\n");
-            PrintMatrix(a);
+            PrintMatrix(inv);
             printf("A * A^-1 =\n");
-            PrintMatrix(a_copy);
+            PrintMatrix(id);
+            printf("Id^%lu =\n", a->cols);
+            PrintMatrix(ex_id);
         }
         cr_assert(eq(int, r, 1), "A*A^-1 should be the Id matrix");
 
+        DestroyMatrix(ex_id);
         DestroyMatrix(id);
-        DestroyMatrix(a_copy);
+        DestroyMatrix(inv);
     }
     else
     {
