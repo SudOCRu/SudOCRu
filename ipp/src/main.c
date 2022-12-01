@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     // Load the image
     ImageStatus status = ImageOk;
     Image* img = LoadImageFile(argv[1], &status);
-    int flags = /*ParseFlags(argc, argv)*/SC_FLG_IPP;
+    int flags = ParseFlags(argc, argv);
 
     if (img != NULL && status == ImageOk)
     {
