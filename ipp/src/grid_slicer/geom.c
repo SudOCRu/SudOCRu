@@ -37,6 +37,16 @@ BBox* NewBB(Rect* r)
     const Line* l3 = r->ep2->l1;
     const Line* l4 = r->ep2->l2;
 
+    /*
+     (x1, y1) --- [l1] --- (x3, y3)
+        |                     |
+        |                     |
+       [l3]                 [l4]
+        |                     |
+        |                     |
+     (x2, y2) --- [l2] --- (x4, y4)
+     */
+
     LineIntersection(l1, l3, &bb->x1, &bb->y1);
     LineIntersection(l2, l3, &bb->x2, &bb->y2);
     LineIntersection(l1, l4, &bb->x3, &bb->y3);

@@ -95,7 +95,7 @@ Matrix* MatMultiply(const Matrix* a, const Matrix* b)
     Matrix* c = malloc(sizeof(Matrix));
     c->rows = a->rows;
     c->cols = b->cols;
-    c->m = calloc(c->cols * c->rows, sizeof(float));
+    c->m = malloc(c->cols * c->rows * sizeof(float));
 
     for(size_t i = 0; i < a->rows; ++i)
     {
@@ -112,6 +112,30 @@ Matrix* MatMultiply(const Matrix* a, const Matrix* b)
     return c;
 }
 
+// No allocation of memory
+int MatMultiplyN(const Matrix* a, const Matrix* b, Matrix* c)
+{
+    if (a == NULL || b == NULL || c == NULL || a->cols != b->rows
+            || c->rows != a->rows || c->cols != b->cols)
+        return 0;
+
+    memset(c->m, 0, c->cols * c->rows * sizeof(float));
+    for(size_t i = 0; i < a->rows; i++)
+    {
+        for(size_t k = 0; k < a->cols; k++)
+        {
+            for(size_t j = 0; j < b->cols; j++)
+            {
+                c->m[i * c->cols + j] += a->m[i * a->cols + k]
+                    * b->m[k * b->cols + j];
+            }
+        }
+    }
+
+    return 1;
+}
+
+// Swap lines at row a and row b in a matrix of cols columns.
 static inline void SwapLines(float* m, size_t a, size_t b, size_t cols)
 {
     if (a == b) return;
@@ -162,7 +186,7 @@ int MatInvert(Matrix* a)
             for (size_t k = 0; k < n; k++)
             {
                 a->m[j * n + k] = a->m[j * n + k] - r * a->m[i * n + k];
-                id[j * n + k]   =   id[j * n + k] - r * id[i * n + k];
+                  id[j * n + k] =   id[j * n + k] - r *   id[i * n + k];
             }
         }
     }

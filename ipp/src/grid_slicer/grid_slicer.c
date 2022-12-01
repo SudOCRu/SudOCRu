@@ -2,6 +2,7 @@
 #include "hough_lines.h"
 #include "renderer.h"
 #include "../utils.h"
+#include "../transform/homography.h"
 
 Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
 {
@@ -81,6 +82,9 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
             RenderRect(img, 0x00ff00, candidate);
 
         BBox* bb = NewBB(candidate);
+        printf("[(%i, %i), (%i, %i), (%i, %i), (%i, %i)]\n", bb->x1, bb->y1, bb->x2, bb->y2, bb->x3, bb->y3, bb->x4, bb->y4);
+        Image* perp = WarpPerspective(original, bb);
+
         float midX = 0, midY = 0;
         GetCenterBB(bb, &midX, &midY);
         RotateBB(bb, -angle, midX, midY);
@@ -107,6 +111,12 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
         {
             printf("Successfully wrote sudoku.png\n");
         }
+
+        if (SaveImageFile(perp, "perp.png"))
+        {
+            printf("Successfully wrote perp.png\n");
+        }
+        DestroyImage(perp);
 
         FreeBB(bb);
     }

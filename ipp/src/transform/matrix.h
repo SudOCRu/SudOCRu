@@ -75,17 +75,28 @@ Matrix* MatTranspose(const Matrix* a);
  *
  * Let A(m, n) and B(b, p) two matrices. This function will return the product
  * of the two matrices only if n = p, as A(m, n) and B(n, p), the result will be
- * C(m, p). Returns NULL otherwise.
+ * C(m, p). Returns NULL otherwise. It is safe to pass NULL to a and/or b.
  */
 Matrix* MatMultiply(const Matrix* a, const Matrix* b);
 
 
 /*
+ * MatMultiplyN(const Matrix* a, const Matrix* b, Matrix* c) -> bool
+ *
+ * No allocation version of MatMultiply, this function will return true if the
+ * matrix c has been modified, false otherwise. It is safe to pass NULL to a,
+ * b or c.
+ */
+int MatMultiplyN(const Matrix* a, const Matrix* b, Matrix* c);
+
+
+/*
  * MatInvert(Matrix* a) -> bool
  *
- * Returns true (1) if the matrix A is invertible. Otherwise, this function
- * returns false (0). Note that, whether or not the matrix A is invertible, the
- * matrix will be modified: in the case of A invertible, A will contain A^-1,
- * otherwise, the original values of A will be lost.
+ * Returns true (1) if the matrix A is a square matrix and is invertible.
+ * Otherwise, this function returns false (0). Note that, whether or not the
+ * matrix A is invertible, the matrix will be modified: in the case of A
+ * invertible, A will contain A^-1, otherwise, the original values of A will be
+ * lost.
  */
 int MatInvert(Matrix* a);
