@@ -44,20 +44,38 @@ Matrix* GetHomographyMatrix(const BBox* from, const BBox* to)
     return h;
 }
 
-static inline float dist(int x1, int y1, int x2, int y2)
+// Calculate the distance squared between two points (x1, y1), (x2, y2)
+static inline float DistanceSqrd(int x1, int y1, int x2, int y2)
 {
     float dx = x1 - x2;
     float dy = y1 - y2;
     return dx * dx + dy * dy;
 }
 
+// Transforms a specific point stored in out_coords (the coordinates of the
+// pixel in the output image to transform) to the new coordinates converted back
+// from homogenous coordinates as (a, b). Note in_coords is used only to avoid
+// allocating memory.
+static inline int TransformPoint(const Matrix* h, const Matrix* out_coords,
+        Matrix* in_coords, size_t* a, size_t* b)
+{
+    if(!MatMultiplyN(h, out_coords, in_coords))
+        return 0;
+
+    float norm = in_coords->m[2];
+    *a = in_coords->m[0] / norm;
+    *b = in_coords->m[1] / norm;
+    return 1;
+}
+
 Image* WarpPerspective(const Image* img, BBox* from)
 {
+    // TODO: Sort bounding's box points to be always in the same order
     // Calculate the size of the effective square
-    float ab = dist(from->x1, from->y1, from->x2, from->y2);
-    float cb = dist(from->x2, from->y2, from->x4, from->y4);
-    float ad = dist(from->x1, from->y1, from->x3, from->y3);
-    float cd = dist(from->x3, from->y3, from->x4, from->y4);
+    float ab = DistanceSqrd(from->x1, from->y1, from->x2, from->y2);
+    float cb = DistanceSqrd(from->x2, from->y2, from->x4, from->y4);
+    float ad = DistanceSqrd(from->x1, from->y1, from->x3, from->y3);
+    float cd = DistanceSqrd(from->x3, from->y3, from->x4, from->y4);
     size_t l = sqrt(fmax(fmax(ab, cb), fmax(ad, cd)));
     printf("max length = %lu\n", l);
 
@@ -75,13 +93,18 @@ Image* WarpPerspective(const Image* img, BBox* from)
     if(!MatInvert(h))
         return NULL;
 
-    // prepare the matrix corresponding to the coordinates (x, y) in the output
+    // Prepare the matrix corresponding to the coordinates (x, y) in the output
     // image. Note: homogenous coordinates are used (last 1 in the matrix).
     float vals[] = { 0, 0, 1 };
     Matrix* out_coords = NewMatrix(3, 1, vals);
     Matrix* in_coords = NewMatrix(3, 1, vals);
 
-    Image* out = CreateImage(0, img->width, img->height, NULL);
+    Image* out = CreateImage(0, l, l, NULL);
+    if (out == NULL)
+        return NULL;
+    size_t a, b;
+
+    // Apply the inverse transformation on the input image.
     for (size_t y = 0; y < out->height; y++)
     {
         out_coords->m[1] = y;
@@ -91,11 +114,9 @@ Image* WarpPerspective(const Image* img, BBox* from)
 
             // Calculate the homogenous coordinates (x', y') as (a, b) in
             // the input image
-            if(!MatMultiplyN(h, out_coords, in_coords))
+            if(!TransformPoint(h, out_coords, in_coords, &a, &b))
                 continue;
 
-            float norm = in_coords->m[2];
-            size_t a = in_coords->m[0] / norm, b = in_coords->m[1] / norm;
             out->pixels[y * out->width + x] = img->pixels[b * img->width + a];
         }
     }

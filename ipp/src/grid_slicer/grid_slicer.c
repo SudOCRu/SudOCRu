@@ -82,41 +82,41 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
             RenderRect(img, 0x00ff00, candidate);
 
         BBox* bb = NewBB(candidate);
-        printf("[(%i, %i), (%i, %i), (%i, %i), (%i, %i)]\n", bb->x1, bb->y1, bb->x2, bb->y2, bb->x3, bb->y3, bb->x4, bb->y4);
-        Image* perp = WarpPerspective(original, bb);
+        printf("[(%i, %i), (%i, %i), (%i, %i), (%i, %i)]\n",
+                bb->x1, bb->y1, bb->x2, bb->y2, bb->x3, bb->y3, bb->x4, bb->y4);
+        sudoku = WarpPerspective(original, bb);
 
-        float midX = 0, midY = 0;
-        GetCenterBB(bb, &midX, &midY);
-        RotateBB(bb, -angle, midX, midY);
-        int l = 0, t = 0, r = original->width - 1, b = original->height - 1;
-        GetRectFromBB(bb, &l, &t, &r, &b);
-        printf("   > left=%i, top=%i, right=%i, bottom=%i\n", l, t, r, b);
-
-        if((flags & SC_FLG_DROT) != 0)
-        {
-            Image* out = LoadBufImage(original->pixels, original->width,
-                    original->height, NULL);
-            RotateImage(out, -angle, midX, midY);
-            if (SaveImageFile(out, "rotated.png"))
-                printf("Successfully wrote rotated.png\n");
-            DestroyImage(out);
-        }
-
-        sudoku = CropRotateImage(original, -angle, midX, midY, l, t, r, b);
         if (sudoku == NULL)
         {
-            printf("<!> Something went wrong when cropping sudoku\n");
+            printf("<!> Something went wrong when trying to warp perspective."
+                    "Trying again with fallback method (auto-rotate).\n");
+
+            float midX = 0, midY = 0;
+            GetCenterBB(bb, &midX, &midY);
+            RotateBB(bb, -angle, midX, midY);
+            int l = 0, t = 0, r = original->width - 1, b = original->height - 1;
+            GetRectFromBB(bb, &l, &t, &r, &b);
+            printf("   > left=%i, top=%i, right=%i, bottom=%i\n", l, t, r, b);
+
+            if((flags & SC_FLG_DROT) != 0)
+            {
+                Image* out = LoadBufImage(original->pixels, original->width,
+                        original->height, NULL);
+                RotateImage(out, -angle, midX, midY);
+                if (SaveImageFile(out, "rotated.png"))
+                    printf("Successfully wrote rotated.png\n");
+                DestroyImage(out);
+            }
+
+            sudoku = CropRotateImage(original, -angle, midX, midY, l, t, r, b);
+            if (sudoku == NULL)
+                printf("<!> Something went wrong when cropping sudoku\n");
         }
-        else if (SaveImageFile(sudoku, "sudoku.png"))
+
+        if (sudoku != NULL && SaveImageFile(sudoku, "sudoku.png"))
         {
             printf("Successfully wrote sudoku.png\n");
         }
-
-        if (SaveImageFile(perp, "perp.png"))
-        {
-            printf("Successfully wrote perp.png\n");
-        }
-        DestroyImage(perp);
 
         FreeBB(bb);
     }
