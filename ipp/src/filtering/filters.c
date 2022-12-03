@@ -64,8 +64,6 @@ void Invert(Image* img)
         img->pixels[i] = 255 - (img->pixels[i] & 0xFF);
 }
 
-#define clamp(x, min, max) (x) >= (max) ? ((max) - 1) : ((x) < (min) ? (min) : (x))
-
 void Convolve(const Image* img, u32* out, const Kernel* ker)
 {
     ssize_t w = img->width, h = img->height;
@@ -212,48 +210,6 @@ void MedianFilter(Image* img, u32* buf, size_t block)
 
     memcpy(img->pixels, buf, w * h * sizeof(u32));
     free(vals);
-}
-
-void SobelOperator(const Image* img, u32* out, float* dirs, float* max_mag)
-{
-    int Iy[9] =
-    {
-        -1, 0, 1,
-        -2, 0, 2,
-        -1, 0, 1,
-    };
-    int Ix[9] =
-    {
-         1,  2,  1,
-         0,  0,  0,
-        -1, -2, -1,
-    };
-    ssize_t s = 1;
-    ssize_t w = img->width, h = img->height;
-    *max_mag = 0;
-    for (ssize_t y = 0; y < h; y++)
-    {
-        for (ssize_t x = 0; x < w; x++)
-        {
-            int gx = 0, gy = 0;
-            
-            for (ssize_t dy = -s; dy <= s; dy++)
-            {
-                ssize_t ey = clamp(y + dy, 0, h);
-                for (ssize_t dx = -s; dx <= s; dx++)
-                {
-                    ssize_t ex = clamp(x + dx, 0, w);
-                    u8 c = (img->pixels[ey * w + ex] & 0xFF);
-                    gx += c * Ix[(dy + s) * 3 + dx + s];
-                    gy += c * Iy[(dy + s) * 3 + dx + s];
-                }
-            }
-            float mag = sqrt(gx * gx + gy * gy);
-            if (mag > *max_mag) *max_mag = mag;
-            out[y * w + x] = mag;
-            dirs[y * w + x] = atan2(gy, gx);
-        }
-    }
 }
 
 void Dilate(Image* img, u32* buf, size_t block)

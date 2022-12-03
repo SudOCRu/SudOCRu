@@ -1,5 +1,6 @@
 #pragma once
 #include "image.h"
+#define clamp(x, min, max) ((x)>=(max)?((max)-1):((x)<(min)?(min):(x)))
 
 typedef unsigned int u32;
 typedef unsigned char u8;
@@ -21,7 +22,6 @@ void GaussianBlur(Image* img, u32* buf, float sigma, size_t r);
 void MeanFilter(Image* img, u32* buf, size_t r);
 void BilateralFilter(Image* img, u32* buf, size_t r, float col, float sp);
 void MedianFilter(Image* img, u32* buf, size_t block);
-void SobelOperator(const Image* img, u32* out, float* dirs, float* max_mag);
 
 void GammaFilter(Image* img, float f);
 void Dilate(Image* img, u32* buf, size_t block);

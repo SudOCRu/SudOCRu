@@ -1,6 +1,48 @@
 #include "filters.h"
 #include "../utils.h"
 
+void SobelOperator(const Image* img, u32* out, float* dirs, float* max_mag)
+{
+    int Iy[9] =
+    {
+        -1, 0, 1,
+        -2, 0, 2,
+        -1, 0, 1,
+    };
+    int Ix[9] =
+    {
+         1,  2,  1,
+         0,  0,  0,
+        -1, -2, -1,
+    };
+    ssize_t s = 1;
+    ssize_t w = img->width, h = img->height;
+    *max_mag = 0;
+    for (ssize_t y = 0; y < h; y++)
+    {
+        for (ssize_t x = 0; x < w; x++)
+        {
+            int gx = 0, gy = 0;
+
+            for (ssize_t dy = -s; dy <= s; dy++)
+            {
+                ssize_t ey = clamp(y + dy, 0, h);
+                for (ssize_t dx = -s; dx <= s; dx++)
+                {
+                    ssize_t ex = clamp(x + dx, 0, w);
+                    u8 c = img->pixels[ey * w + ex] & 0xFF;
+                    gx += c * Ix[(dy + s) * 3 + dx + s];
+                    gy += c * Iy[(dy + s) * 3 + dx + s];
+                }
+            }
+            float mag = sqrt(gx * gx + gy * gy);
+            if (mag > *max_mag) *max_mag = mag;
+            out[y * w + x] = mag;
+            dirs[y * w + x] = atan2f(gy, gx);
+        }
+    }
+}
+
 void NonMaximumSuppression(u32* mat, float* dirs, size_t w, size_t h)
 {
     for (size_t y = 1; y < h - 1; y++)
@@ -9,7 +51,7 @@ void NonMaximumSuppression(u32* mat, float* dirs, size_t w, size_t h)
         {
             size_t i = y * w + x;
             u32 mag = mat[i];
-            char ring_pos = round(dirs[i] / (M_PI / 4));
+            char ring_pos = round(dirs[i] * 4.0 / M_PI);
             switch (ring_pos)
             {
                 case 3:
@@ -90,7 +132,7 @@ Image* CannyEdgeDetection(const Image* src, u32* mat)
     if (out == NULL) return NULL;
 
     PrintStage(1, 2, "Gaussian blur (3x3)", 0);
-    GaussianBlur(out, mat, 1, 5);
+    GaussianBlur(out, mat, 2, 3);
     PrintStage(1, 2, "Gaussian blur (3x3)", 1);
 
     memset(mat, 0, len * sizeof(u32));

@@ -13,7 +13,7 @@ Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
 Line** AverageLines(Line** lines, size_t len, size_t* out_len);
 
 PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len);
-Rect** FindRects(PSet** pairs, size_t len, size_t* found_count);
+Rect** FindRects(Image* img, PSet** pairs, size_t len, size_t* found_count);
 
 Rect** GetBestRects(Rect** rects, size_t len, size_t keep);
 Rect* FindSudokuBoard(Rect** rects, size_t rect_count);

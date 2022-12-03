@@ -36,12 +36,14 @@ typedef struct PSet {
  * Rect or Rectangle is a rectangle formed by two pairs of parallel lines
  * seperated by a 90° angle in hough space (PI). Squareness is a unitless metric
  * to compare rects to squares by dividing the length of the longest side by its
- * shortest.
+ * shortest. Occ is short for occupency and corresponds to the number of pixels
+ * missing from the rect's outline (lower is better).
 */
 typedef struct Rect {
     PSet* ep1;
     PSet* ep2;
     unsigned int area;
+    unsigned int occ;
     float squareness;
 } Rect;
 

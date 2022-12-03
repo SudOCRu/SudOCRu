@@ -50,7 +50,9 @@ int main(int argc, char** argv)
 
         printf("Extracting cells...\n");
         size_t len = 0;
-        SudokuGrid* grid = ExtractSudoku(edges, -50, flags);
+        SudokuGrid* grid = ExtractSudoku(img, edges, -50, flags);
+        if (grid == NULL)
+            errx(EXIT_FAILURE, "Unable to find rects");
         SudokuCell** cells = ExtractSudokuCells(img, grid, flags, &len);
 
         if ((flags & SC_FLG_DGRD) != 0 && SaveImageFile(edges, "detected.png"))

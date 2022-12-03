@@ -4,7 +4,7 @@
 #include "../utils.h"
 #include "../transform/transform.h"
 
-SudokuGrid* ExtractSudoku(Image* edges, int threshold, int flags)
+SudokuGrid* ExtractSudoku(Image* org, Image* edges, int threshold, int flags)
 {
     // Find all lines
     size_t len = 0;
@@ -33,7 +33,7 @@ SudokuGrid* ExtractSudoku(Image* edges, int threshold, int flags)
 
     PrintStage(4, 4, "Find Rectangles", 0);
     size_t rect_count = 0;
-    Rect** rects = FindRects(psets, nb_psets, &rect_count);
+    Rect** rects = FindRects(org, psets, nb_psets, &rect_count);
     printf(" --> Detected %lu rects", rect_count);
     PrintStage(4, 4, "Find Rectangles", 1);
 
@@ -42,14 +42,14 @@ SudokuGrid* ExtractSudoku(Image* edges, int threshold, int flags)
 
     if((flags & SC_FLG_ARECTS) != 0)
         RenderRects(edges, rects, rect_count);
-    Rect** best = GetBestRects(rects, rect_count, 5);
+    Rect** best = GetBestRects(rects, rect_count, 50);
 
     if ((flags & SC_FLG_PRESTL) != 0)
     {
         printf("Results:\n");
-        printf("-------------------------------------------------\n");
-        printf("|  i |  color |     area | squareness |   angle |\n");
-        printf("-------------------------------------------------\n");
+        printf("----------------------------------------------------------\n");
+        printf("|  i |  color |     area | squareness |   angle |    occ |\n");
+        printf("----------------------------------------------------------\n");
     }
     int colors[5] = { 0x008800, 0xFFAA00, 0xAA00FF, 0xFF00AA, 0x00FFFF };
     char* names[5] = { "green", "orange", "purple", "pink", "cyan" };
@@ -59,9 +59,10 @@ SudokuGrid* ExtractSudoku(Image* edges, int threshold, int flags)
         if (r == NULL) continue;
         if ((flags & SC_FLG_PRESTL) != 0)
         {
-            printf("| %lu. | %6s | %8u | %10f | %3.2f° |\n", i, names[i - 1],
-                    r->area, r->squareness, (r->ep1->alpha) * 180 / M_PI);
-            printf("-------------------------------------------------\n");
+            printf("| %lu. | %6s | %8u | %10f | %6.2f° | %6u |\n--------------"
+                    "--------------------------------------------\n", i,
+                    names[i - 1], r->area, r->squareness,
+                    (r->ep1->alpha) * 180 / M_PI, r->occ);
         }
         if((flags & SC_FLG_FRECTS) != 0)
             RenderRect(edges, colors[i - 1], r);

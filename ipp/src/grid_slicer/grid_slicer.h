@@ -13,7 +13,7 @@ typedef struct SudokuCell {
     unsigned char value;
 } SudokuCell;
 
-SudokuGrid* ExtractSudoku(Image* edges, int threshold, int flags);
+SudokuGrid* ExtractSudoku(Image* org, Image* edges, int threshold, int flags);
 SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
         int flags, size_t* out_count);
 
