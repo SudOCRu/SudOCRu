@@ -7,11 +7,6 @@
 #define BLACK_EDGE 0
 #define WHITE_EDGE 1
 
-typedef struct SudokuGrid {
-    Rect bounds;
-    double angle;
-} SudokuGrid;
-
 Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
         size_t theta_steps, int threshold, int save);
 

@@ -50,7 +50,8 @@ int main(int argc, char** argv)
 
         printf("Extracting cells...\n");
         size_t len = 0;
-        Image** cells = ExtractSudokuCells(img, edges, &len, -50, flags);
+        SudokuGrid* grid = ExtractSudoku(edges, -50, flags);
+        SudokuCell** cells = ExtractSudokuCells(img, grid, flags, &len);
 
         if ((flags & SC_FLG_DGRD) != 0 && SaveImageFile(edges, "detected.png"))
         {
@@ -66,13 +67,13 @@ int main(int argc, char** argv)
                 printf("\rExtracting cell %lu/%lu", i + 1, len);
                 fflush(stdout);
 
-                Image* cell = cells[i];
+                SudokuCell* cell = cells[i];
                 snprintf(name, sizeof(name), "cells/cell_%02lu.png", i);
-                if (!SaveImageFile(cell, name))
+                if (!SaveImageFile(cell->data, name))
                 {
                     printf("\nError: Could not save %s\n", name);
                 }
-                DestroyImage(cell);
+                FreeSudokuCell(cell);
             }
             printf("\n");
 
@@ -83,6 +84,8 @@ int main(int argc, char** argv)
             printf("Oops... Looks like something went wrong"
                    ": No cells were detected :(\n");
         }
+
+        FreeSudokuGrid(grid);
     } else {
         // load failed
         DestroyImage(img);
