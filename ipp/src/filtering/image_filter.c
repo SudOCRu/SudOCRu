@@ -90,13 +90,13 @@ int CleanCell(Image* img, u8* markers)
         }
     }
 
-    // Find all the connected components in the image
     size_t capacity = 4;
     size_t nb_comp = 0;
     size_t largest = 1;
     memset(markers, 0, img->width * img->height * sizeof(u8));
     Component** components = malloc(capacity * sizeof(Component*));
 
+    // Find all the connected components in the image and the largest component
     for (size_t y = 0; y < img->height; y++)
     {
         for (size_t x = 0; x < img->width; x++)
@@ -127,7 +127,8 @@ int CleanCell(Image* img, u8* markers)
         return 0;
     }
 
-    size_t target = components[largest - 1]->size * 40 / 100;
+    // keep all components that are up to 60% smaller than the largest component
+    size_t target = components[largest - 1]->size * 40 / 100; 
     size_t count = 0;
     for (size_t i = 0; i < nb_comp; i++)
     {
@@ -137,7 +138,7 @@ int CleanCell(Image* img, u8* markers)
 
     if (nb_comp > 1 && (count / (M_PI * r_squared) > 0.075f))
     {
-        // Component decimation
+        // Component decimation: remove any component not large enough
         for (size_t y = 0; y < img->height; y++)
         {
             for (size_t x = 0; x < img->width; x++)
@@ -165,6 +166,7 @@ int CleanCell(Image* img, u8* markers)
 Image* PrepareCell(const Image* cell, u8* markers) {
     size_t min_x = cell->width - 1, min_y = cell->height - 1,
            max_x = 0, max_y = 0;
+    // Find the smallest box containg all the components
     for (size_t y = 0; y < cell->height; y++)
     {
         for (size_t x = 0; x < cell->width; x++)
@@ -179,6 +181,7 @@ Image* PrepareCell(const Image* cell, u8* markers) {
         }
     }
 
+    // Make the cropped image square
     size_t new_width = max_x - min_x;
     size_t new_height = max_y - min_y;
     if (new_width != new_height)

@@ -2,7 +2,7 @@
 
 void RotateImage(Image* img, float angle, float midX, float midY)
 {
-    if (fabs(angle) < (M_PI/180)) return; // Less than 1°
+    if (fabs(angle) < (M_PI / 180.0f)) return; // Less than 1°
     size_t w = img->width, h = img->height;
     unsigned int* dst = calloc(w * h, sizeof(unsigned int));
     float sint = sin(-angle), cost = cos(-angle);
