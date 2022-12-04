@@ -35,7 +35,7 @@ Image* CropImageExact(const Image* src, size_t l, size_t t, size_t r, size_t b);
 
 /*
  * CropRotateImage(const Image* src, float angle, float midX, float midY,
- *           int l, int t, int r, int b) -> Image*
+ *           int left, int top, int right, int bottom) -> Image*
  *
  * Returns a new image that is the result of rotating the given image by `angle`
  * rads around the specified center, filling the missing pixels by black pixels
@@ -45,6 +45,20 @@ Image* CropImageExact(const Image* src, size_t l, size_t t, size_t r, size_t b);
  */
 Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
         int l, int t, int r, int b);
+
+
+/*
+ * DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
+ *      size_t bottom, size_t width, size_t height, unsigned char margin)
+ *      -> Image*
+ *
+ * Returns a new image that is the result of the downscaling (using the box mean
+ * method) of the cropped portion of the src image according to the specified
+ * bounds. Additional margin can be added to the result image, the result width
+ * is (width + 2 * margin) and the result height is (height + 2 * margin).
+ */
+Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
+        size_t bottom, size_t width, size_t height, unsigned char margin);
 
 
 /*

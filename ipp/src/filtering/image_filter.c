@@ -87,6 +87,8 @@ int CleanCell(Image* img, u8* markers)
         {
             if (pow(x - midX, 2) + pow(y - midY, 2) > r_squared)
                 img->pixels[y * img->width + x] = 0;
+            else
+                img->pixels[y * img->width + x] &= 0xFF;
         }
     }
 
@@ -146,7 +148,8 @@ int CleanCell(Image* img, u8* markers)
                 u8 id = markers[y * img->width + x];
                 if (id > 0 && components[id - 1]->size >= target)
                 {
-                    img->pixels[y * img->width + x] = id * 0xFFFFFF / nb_comp;
+                    // use the line below for better visulization
+                    // img->pixels[y * img->width + x] = id*0xFFFFFF/nb_comp;
                 }
                 else
                 {
@@ -198,7 +201,14 @@ Image* PrepareCell(const Image* cell, u8* markers) {
         }
     }
 
-    return CropImageExact(cell, min_x, min_y, max_x, max_y);
+    //return CropImageExact(cell, min_x, min_y, max_x, max_y);
+    Image* r = DownscaleImage(cell, min_x, min_y, max_x, max_y, 28, 28, 0);
+    for (size_t i = 0; i < 28 * 28; i++)
+    {
+        unsigned char val = r->pixels[i];
+        r->pixels[i] = (val << 16) | (val << 8) | val;
+    }
+    return r;
 }
 
 void GrayscaleFilter(Image* image, u8* min, u8* max)
@@ -334,7 +344,8 @@ void AdaptiveThresholding(Image* img, u32* buf, size_t r, float threshold)
                         sum += img->pixels[dy * w + dx] & 0xFF;
                 }
             }
-            float m = (sum / (float)(r * r)) * (1.0 - threshold);
+            float m = threshold > 1 ? (sum / (float)(r * r)) - threshold :
+                (sum / (float)(r * r)) * (1.0 - threshold);
             buf[y * w + x] = (img->pixels[y * w + x] & 0xFF) >= m ?
                 0 : 0xFFFFFF;
         }

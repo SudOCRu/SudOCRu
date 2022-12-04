@@ -116,6 +116,58 @@ Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
     return dst;
 }
 
+#define clamp(x, min, max) ((x)>=(max)?((max)-1):((x)<(min)?(min):(x)))
+
+Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
+        size_t bottom, size_t width, size_t height,  unsigned char margin)
+{
+    size_t w = right - left, h = bottom - top;
+    size_t actual_w = width + margin * 2, actual_h = height + margin * 2;
+    Image* dst = CreateImage(0, actual_w, actual_h, NULL);
+    if (dst == NULL)
+        return NULL;
+
+    if (width > w || height > h)
+    {
+        for (size_t y = 0; y < h; y++)
+        {
+            for (size_t x = 0; x < w; x++)
+            {
+                dst->pixels[(y + margin) * actual_w + x + margin] =
+                    src->pixels[(y + top) * src->width + x + left];
+            }
+        }
+        return dst;
+    }
+
+    // Scaling factos
+    size_t sx = round(w / (float)width), sy = round(h / (float)height);
+    size_t total = sx * sy; // scaled area
+
+    for (size_t y = 0; y < height; y++)
+    {
+        for (size_t x = 0; x < width; x++)
+        {
+            size_t sum = 0;
+
+            for (size_t dy = 0; dy < sy; dy++)
+            {
+                size_t ey = clamp(y * sy + dy + top, 0, src->height);
+                for (size_t dx = 0; dx < sx; dx++)
+                {
+                    size_t ex = clamp(x * sx + left + dx, 0, src->width);
+                    sum += src->pixels[ey * src->width + ex];
+                }
+            }
+
+            unsigned char val = sum / total;
+            dst->pixels[(y + margin) * actual_w + x + margin] = val;
+        }
+    }
+
+    return dst;
+}
+
 Matrix* GetHomographyMatrix(const BBox* from, const BBox* to)
 {
     float a_vals[8 * 8] =
