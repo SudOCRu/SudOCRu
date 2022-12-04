@@ -9,6 +9,8 @@ void RotateImage(Image* image, float angle, float midX, float midY);
 /* Crop the given image by the specified bounds (left, top, right, bottom) */
 Image* CropImage(const Image* src, size_t l, size_t t, size_t r, size_t b);
 
+Image* CropImageExact(const Image* src, size_t l, size_t t, size_t r, size_t b);
+
 /* Rotate the given image by `angle` rads, fills the missing pixels in black
  * and crops the result image according to the specified bounds (left, top,
  * right, bottom).

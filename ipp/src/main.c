@@ -62,6 +62,7 @@ int main(int argc, char** argv)
 
         if (len > 0)
         {
+            u8* tmp = malloc(cells[0]->width * cells[0]->height * sizeof(u8));
             char name[18];
             printf("Extracting cell 0/%lu", len);
             for(size_t i = 0; i < len; i++)
@@ -70,6 +71,10 @@ int main(int argc, char** argv)
                 fflush(stdout);
 
                 SudokuCell* cell = cells[i];
+                if (CleanCell(cell->data, tmp))
+                {
+                    cell->data = PrepareCell(cell->data, tmp);
+                }
                 snprintf(name, sizeof(name), "cells/cell_%02lu.png", i);
                 if (!SaveImageFile(cell->data, name))
                 {
@@ -79,6 +84,7 @@ int main(int argc, char** argv)
             }
             printf("\n");
 
+            free(tmp);
             free(cells);
         }
         else

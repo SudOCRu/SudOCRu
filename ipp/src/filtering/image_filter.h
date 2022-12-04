@@ -9,6 +9,10 @@ typedef unsigned char u8;
 void FilterImage(Image* image, u32* tmp, int flags);
 void BinarizeImage(Image* image, u32* tmp, float threshold);
 
+/* Prepare cell for OCR */
+int CleanCell(Image* img, u8* markers);
+Image* PrepareCell(const Image* cell, u8* markers);
+
 /* Applys a grayscale filter to the image and fills the histogram array */
 void GrayscaleFilter(Image* image, u8* min, u8* max);
 void StretchContrast(Image* img, u8 min, u8 max);

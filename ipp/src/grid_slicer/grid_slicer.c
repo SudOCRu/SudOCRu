@@ -42,7 +42,7 @@ SudokuGrid* ExtractSudoku(Image* org, Image* edges, int threshold, int flags)
 
     if((flags & SC_FLG_ARECTS) != 0)
         RenderRects(edges, rects, rect_count);
-    Rect** best = GetBestRects(rects, rect_count, 50);
+    Rect** best = GetBestRects(rects, rect_count, rect_count / 3);
 
     if ((flags & SC_FLG_PRESTL) != 0)
     {

@@ -1,6 +1,7 @@
 #include "image_filter.h"
 #include "filters.h"
 #include "edge_detection.h"
+#include "../transform/transform.h"
 #include "../utils.h"
 
 void FilterImage(Image* img, u32* tmp, int flags)
@@ -46,6 +47,155 @@ void BinarizeImage(Image* img, u32* tmp, float threshold)
     PrintStage(2, 2, "Dilate (3x3)", 0);
     Dilate(img, tmp, 3);
     PrintStage(2, 2, "Dilate (3x3)", 1);
+}
+
+typedef struct Component {
+    u8 id;
+    size_t size;
+} Component;
+
+#define CheckNeighbour(x, y) (img->pixels[(y) * img->width + (x)] > 0\
+        && markers[(y) * img->width + (x)] == 0)
+
+void FindConnectedPixels(Image* img, u8* markers, size_t x, size_t y,
+        Component* comp)
+{
+    markers[y * img->width + x] = comp->id;
+    comp->size += 1;
+
+    if (x > 0 && CheckNeighbour(x - 1, y))
+        FindConnectedPixels(img, markers, x - 1, y, comp);
+
+    if (x < img->width - 1 && CheckNeighbour(x + 1, y))
+        FindConnectedPixels(img, markers, x + 1, y, comp);
+
+    if (y > 0 && CheckNeighbour(x, y - 1))
+        FindConnectedPixels(img, markers, x, y - 1, comp);
+
+    if (y < img->height-1 && CheckNeighbour(x, y + 1))
+        FindConnectedPixels(img, markers, x, y + 1, comp);
+}
+
+int CleanCell(Image* img, u8* markers)
+{
+    // Apply a circle mask to remove leftover board lines
+    float r_squared = pow(min(img->width * 0.33f, img->height * 0.33f), 2);
+    float midX = img->width / 2.0f, midY = img->height / 2.0f;
+    for (size_t y = 0; y < img->height; y++)
+    {
+        for (size_t x = 0; x < img->width; x++)
+        {
+            if (pow(x - midX, 2) + pow(y - midY, 2) > r_squared)
+                img->pixels[y * img->width + x] = 0;
+        }
+    }
+
+    // Find all the connected components in the image
+    size_t capacity = 4;
+    size_t nb_comp = 0;
+    size_t largest = 1;
+    memset(markers, 0, img->width * img->height * sizeof(u8));
+    Component** components = malloc(capacity * sizeof(Component*));
+
+    for (size_t y = 0; y < img->height; y++)
+    {
+        for (size_t x = 0; x < img->width; x++)
+        {
+            if (CheckNeighbour(x, y))
+            {
+                Component* cur = calloc(1, sizeof(Component));
+                components[nb_comp++] = cur;
+                cur->id = nb_comp;
+                FindConnectedPixels(img, markers, x, y, cur);
+
+                if (cur->size > components[largest - 1]->size)
+                    largest = nb_comp;
+
+                if (nb_comp == capacity)
+                {
+                    capacity *= 2;
+                    components = realloc(components, capacity *
+                            sizeof(Component*));
+                }
+            }
+        }
+    }
+
+    if (nb_comp == 0)
+    {
+        free(components);
+        return 0;
+    }
+
+    size_t target = components[largest - 1]->size * 40 / 100;
+    size_t count = 0;
+    for (size_t i = 0; i < nb_comp; i++)
+    {
+        if (components[i]->size >= target)
+            count += components[i]->size;
+    }
+
+    if (nb_comp > 1 && (count / (M_PI * r_squared) > 0.075f))
+    {
+        // Component decimation
+        for (size_t y = 0; y < img->height; y++)
+        {
+            for (size_t x = 0; x < img->width; x++)
+            {
+                u8 id = markers[y * img->width + x];
+                if (id > 0 && components[id - 1]->size >= target)
+                {
+                    img->pixels[y * img->width + x] = id * 0xFFFFFF / nb_comp;
+                }
+                else
+                {
+                    markers[y * img->width + x] = 0;
+                    img->pixels[y * img->width + x] = 0;
+                }
+            }
+        }
+        free(components);
+        return 1;
+    } else {
+        free(components);
+        return (count / (M_PI * r_squared) > 0.05f);
+    }
+}
+
+Image* PrepareCell(const Image* cell, u8* markers) {
+    size_t min_x = cell->width - 1, min_y = cell->height - 1,
+           max_x = 0, max_y = 0;
+    for (size_t y = 0; y < cell->height; y++)
+    {
+        for (size_t x = 0; x < cell->width; x++)
+        {
+            if (markers[y * cell->width + x] != 0)
+            {
+                min_x = min(min_x, x);
+                min_y = min(min_y, y);
+                max_x = max(max_x, x);
+                max_y = max(max_y, y);
+            }
+        }
+    }
+
+    size_t new_width = max_x - min_x;
+    size_t new_height = max_y - min_y;
+    if (new_width != new_height)
+    {
+        if (new_width > new_height)
+        {
+            size_t diff = new_width - new_height;
+            max_y += diff - diff / 2;
+            min_y -= diff / 2;
+        } else {
+            size_t diff = new_height - new_width;
+            max_x += diff - diff / 2;
+            min_x -= diff / 2;
+        }
+    }
+
+    return CropImageExact(cell, min_x, min_y, max_x, max_y);
 }
 
 void GrayscaleFilter(Image* image, u8* min, u8* max)

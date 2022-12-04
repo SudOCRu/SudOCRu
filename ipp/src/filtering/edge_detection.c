@@ -132,7 +132,7 @@ Image* CannyEdgeDetection(const Image* src, u32* mat)
     if (out == NULL) return NULL;
 
     PrintStage(1, 2, "Gaussian blur (3x3)", 0);
-    GaussianBlur(out, mat, 2, 3);
+    GaussianBlur(out, mat, 1, 5);
     PrintStage(1, 2, "Gaussian blur (3x3)", 1);
 
     memset(mat, 0, len * sizeof(u32));
@@ -145,7 +145,7 @@ Image* CannyEdgeDetection(const Image* src, u32* mat)
 
     PrintStage(3, 3, "Processing edges", 0);
     NonMaximumSuppression(mat, dirs, src->width, src->height);
-    DoubleThresholding(mat, len, max, 0.25, 0.10, 50, 255);
+    DoubleThresholding(mat, len, max, 0.15, 0.15, 50, 255);
     Hysteresis(mat, src->width, src->height, 50, 255);
     PrintStage(3, 3, "Processing edges", 1);
 

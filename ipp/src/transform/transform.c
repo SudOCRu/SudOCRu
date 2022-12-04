@@ -49,6 +49,38 @@ Image* CropImage(const Image* src, size_t l, size_t t, size_t r, size_t b)
     return dst;
 }
 
+Image* CropImageExact(const Image* src, size_t l, size_t t, size_t r, size_t b)
+{
+    if (r <= l || b <= t)
+    {
+        printf("CropImageExact: out of bounds, l=%lu,t=%lu,r=%lu,b=%lu\n",
+                l, t, r, b);
+        return NULL;
+    }
+
+    size_t w = r - l, h = b - t;
+    Image* dst = CreateImage(0, w, h, NULL);
+    if (dst == NULL)
+    {
+        printf("CropImageExact: Not enough memory, width=%lu, height=%lu\n",
+                w, h);
+        return NULL;
+    }
+
+    for (size_t i = 0; i < h; i++)
+    {
+        for (size_t j = 0; j < w; j++)
+        {
+            size_t nx = j + l;
+            size_t ny = i + t;
+            if (ny < src->height && nx < src->width)
+                dst->pixels[i * w + j] = src->pixels[ny * src->width + nx];
+        }
+    }
+
+    return dst;
+}
+
 Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
         int l, int t, int r, int b)
 {
@@ -136,6 +168,11 @@ static inline float DistanceSqrd(int x1, int y1, int x2, int y2)
     return dx * dx + dy * dy;
 }
 
+static inline float Trunc(float a)
+{
+    return a >= 0 ? a : 0;
+}
+
 // Transforms a specific point stored in out_coords (the coordinates of the
 // pixel in the output image to transform) to the new coordinates converted back
 // from homogenous coordinates as (a, b). Note in_coords is used only to avoid
@@ -147,8 +184,8 @@ static inline int TransformPoint(const Matrix* h, const Matrix* out_coords,
         return 0;
 
     float norm = in_coords->m[2];
-    *a = in_coords->m[0] / norm;
-    *b = in_coords->m[1] / norm;
+    *a = Trunc(in_coords->m[0] / norm);
+    *b = Trunc(in_coords->m[1] / norm);
     return 1;
 }
 
