@@ -14,13 +14,13 @@ int LineIntersection(const Line* l1, const Line* l2, int *x, int *y) {
     return 0;
 }
 
-int min4(int a, int b, int c, int d) {
+static inline int min4(int a, int b, int c, int d) {
     int m1 = a < b ? a : b;
     int m2 = c < d ? c : d;
     return m1 < m2 ? m1 : m2;
 }
 
-int max4(int a, int b, int c, int d) {
+static inline int max4(int a, int b, int c, int d) {
     int m1 = a > b ? a : b;
     int m2 = c > d ? c : d;
     return m1 > m2 ? m1 : m2;
@@ -90,54 +90,65 @@ void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b)
 
 BBox* SortBBox(const BBox* bb)
 {
-    BBox* sorted = malloc(sizeof(BBox));
+    if (bb == NULL)
+        return NULL;
+
     int* points = (int*) bb;
-    printf("sorting...\n");
+    BBox* sorted = malloc(sizeof(BBox));
+    if (sorted == NULL)
+        return NULL;
 
-    int minX = points[0], minY = points[1], maxX = 0, maxY = 0;
-    for (size_t i = 0; i < 8; i += 2)
+    int sum_minX = points[0], sum_minY = points[1],
+        sum_maxX = points[0], sum_maxY = points[1];
+
+    int sub_minX = points[0], sub_minY = points[1],
+        sub_maxX = points[0], sub_maxY = points[1];
+    for (size_t i = 2; i < 8; i += 2)
     {
         int x = points[i];
         int y = points[i + 1];
-        if (x + y > maxX + maxY)
+        if (x + y > sum_maxX + sum_maxY)
         {
-            maxX = x;
-            maxY = y;
+            sum_maxX = x;
+            sum_maxY = y;
         }
-        if (x + y < minX + minY)
+        if (x + y < sum_minX + sum_minY)
         {
-            minX = x;
-            minY = y;
+            sum_minX = x;
+            sum_minY = y;
+        }
+        if (x - y > sub_maxX - sub_maxY)
+        {
+            sub_maxX = x;
+            sub_maxY = y;
+        }
+        if (x - y < sub_minX - sub_minY)
+        {
+            sub_minX = x;
+            sub_minY = y;
         }
     }
-    sorted->x1 = minX;
-    sorted->y1 = minY;
-    sorted->x3 = maxX;
-    sorted->y3 = maxY;
 
-    minX = points[0];
-    minY = points[1];
-    maxX = 0;
-    maxY = 0;
-    for (size_t i = 0; i < 8; i += 2)
-    {
-        int x = points[i];
-        int y = points[i + 1];
-        if (x - y > maxX - maxY)
-        {
-            maxX = x;
-            maxY = y;
-        }
-        if (x - y < minX - minY)
-        {
-            minX = x;
-            minY = y;
-        }
-    }
-    sorted->x2 = minX;
-    sorted->y2 = minY;
-    sorted->x4 = maxX;
-    sorted->y4 = maxY;
+    /*
+     The points are sorted like this:
+     (x1, y1) ------------ (x2, y2)
+        |                     |
+        |                     |
+        |                     |
+        |                     |
+        |                     |
+     (x4, y4) ------------ (x3, y3)
+    */
+
+    sorted->x1 = sum_minX;
+    sorted->y1 = sum_minY;
+    sorted->x3 = sum_maxX;
+    sorted->y3 = sum_maxY;
+
+    sorted->x2 = sub_minX;
+    sorted->y2 = sub_minY;
+    sorted->x4 = sub_maxX;
+    sorted->y4 = sub_maxY;
 
     return sorted;
 }

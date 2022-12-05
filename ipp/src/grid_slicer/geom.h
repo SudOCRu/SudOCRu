@@ -116,6 +116,19 @@ void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b);
 int LineIntersection(const Line* l1, const Line* l2, int *x, int *y);
 
 
+/*
+ * SortBBox(const BBox* bb) -> BBox*
+ *
+ * Returns a new bounding box that has its points sorted in a specific order:
+ *
+ *   (x1, y1) ------------ (x2, y2)
+ *      |                     |
+ *      |                     |
+ *      |                     |
+ *      |                     |
+ *      |                     |
+ *   (x4, y4) ------------ (x3, y3)
+ */
 BBox* SortBBox(const BBox* bb);
 
 /* ---------- MEMORY OPERATIONS ---------- */
