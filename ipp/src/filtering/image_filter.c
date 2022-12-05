@@ -138,7 +138,7 @@ int CleanCell(Image* img, u8* markers)
             count += components[i]->size;
     }
 
-    if (nb_comp > 1 && (count / (M_PI * r_squared) > 0.075f))
+    if (nb_comp > 1 && (count / (M_PI * r_squared) > 0.085f))
     {
         // Component decimation: remove any component not large enough
         for (size_t y = 0; y < img->height; y++)

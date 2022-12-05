@@ -220,7 +220,7 @@ static inline float DistanceSqrd(int x1, int y1, int x2, int y2)
     return dx * dx + dy * dy;
 }
 
-static inline float Trunc(float a)
+static inline size_t Trunc(float a)
 {
     return a >= 0 ? a : 0;
 }
@@ -293,7 +293,7 @@ Image* WarpPerspective(const Image* img, BBox* from)
 
             if (b < img->height && a < img->width)
             {
-                out->pixels[y * out->width + x] = img->pixels[b * img->width + a];
+                out->pixels[y * l + x] = img->pixels[b * img->width + a];
             }
         }
     }

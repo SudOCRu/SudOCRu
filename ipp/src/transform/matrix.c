@@ -95,7 +95,7 @@ Matrix* MatMultiply(const Matrix* a, const Matrix* b)
     Matrix* c = malloc(sizeof(Matrix));
     c->rows = a->rows;
     c->cols = b->cols;
-    c->m = malloc(c->cols * c->rows * sizeof(float));
+    c->m = calloc(c->cols * c->rows, sizeof(float));
 
     for(size_t i = 0; i < a->rows; ++i)
     {
