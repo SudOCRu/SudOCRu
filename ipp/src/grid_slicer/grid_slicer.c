@@ -4,7 +4,8 @@
 #include "../utils.h"
 #include "../transform/transform.h"
 
-SudokuGrid* ExtractSudoku(Image* org, Image* edges, int threshold, int flags)
+SudokuGrid* ExtractSudoku(const Image* org, Image* edges, int threshold,
+        int flags)
 {
     // Find all lines
     size_t len = 0;
@@ -99,8 +100,6 @@ SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
         int flags, size_t* out_count)
 {
     BBox* bb = grid->bounds;
-    printf("[(%i, %i), (%i, %i), (%i, %i), (%i, %i)]\n",
-            bb->x1, bb->y1, bb->x2, bb->y2, bb->x3, bb->y3, bb->x4, bb->y4);
     Image* sudoku = WarpPerspective(original, bb);
 
     if (sudoku == NULL)

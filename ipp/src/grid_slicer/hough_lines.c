@@ -234,7 +234,7 @@ unsigned int LongestCut(const unsigned int* pixels, int w, int h,
     return max_cut;
 }
 
-unsigned int RectOccupency(Image* img, Rect* r)
+unsigned int RectOccupency(const Image* img, Rect* r)
 {
     const size_t w = img->width;
     const size_t h = img->height;
@@ -257,7 +257,8 @@ unsigned int RectOccupency(Image* img, Rect* r)
        LongestCut(p, w, h, x4, y4, x2, y2);
 }
 
-Rect** FindRects(Image* img, PSet** pairs, size_t nb_pairs, size_t* found_count)
+Rect** FindRects(const Image* img, PSet** pairs, size_t nb_pairs,
+        size_t* found_count)
 {
     float a90 = M_PI / 2; // 90°
     float Ta = 8 * M_PI / 180; // max angle diff between two orhogonal lines

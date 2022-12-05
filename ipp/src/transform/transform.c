@@ -243,19 +243,20 @@ static inline int TransformPoint(const Matrix* h, const Matrix* out_coords,
 
 Image* WarpPerspective(const Image* img, BBox* from)
 {
-    // TODO: Sort bounding's box points to be always in the same order
     // Calculate the size of the effective square
     float ab = DistanceSqrd(from->x1, from->y1, from->x2, from->y2);
     float cb = DistanceSqrd(from->x2, from->y2, from->x4, from->y4);
     float ad = DistanceSqrd(from->x1, from->y1, from->x3, from->y3);
     float cd = DistanceSqrd(from->x3, from->y3, from->x4, from->y4);
     size_t l = sqrt(fmax(fmax(ab, cb), fmax(ad, cd)));
-    printf("max length = %lu\n", l);
 
     // Find the transformation associated to transform the bounding box in a 
     // square of length l.
-    BBox to = { 0, 0, 0, l, l, 0, l, l };
-    Matrix* h = GetHomographyMatrix(from, &to);
+    BBox to = { 0, 0, 0, l, l, l, l, 0 };
+    // Sort bounding's box points to be always in the same order
+    BBox* sorted = SortBBox(from);
+    Matrix* h = GetHomographyMatrix(sorted, &to);
+    FreeBB(sorted);
     // Convert the homography matrix into a transformation matrix. The
     // conversion is in-place: the 8x1 matrix becomes a 3*3 matrix.
     h->m = realloc(h->m, 3 * 3 * sizeof(float));
@@ -290,7 +291,10 @@ Image* WarpPerspective(const Image* img, BBox* from)
             if(!TransformPoint(h, out_coords, in_coords, &a, &b))
                 continue;
 
-            out->pixels[y * out->width + x] = img->pixels[b * img->width + a];
+            if (b < img->height && a < img->width)
+            {
+                out->pixels[y * out->width + x] = img->pixels[b * img->width + a];
+            }
         }
     }
 

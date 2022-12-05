@@ -85,7 +85,6 @@ int main(int argc, char** argv)
             printf("\n");
 
             free(tmp);
-            free(cells);
         }
         else
         {
@@ -93,6 +92,7 @@ int main(int argc, char** argv)
                    ": No cells were detected :(\n");
         }
 
+        free(cells);
         FreeSudokuGrid(grid);
     } else {
         // load failed

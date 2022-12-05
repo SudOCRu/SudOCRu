@@ -88,6 +88,60 @@ void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b)
     *b = max4(bb->y1, bb->y2, bb->y3, bb->y4);
 }
 
+BBox* SortBBox(const BBox* bb)
+{
+    BBox* sorted = malloc(sizeof(BBox));
+    int* points = (int*) bb;
+    printf("sorting...\n");
+
+    int minX = points[0], minY = points[1], maxX = 0, maxY = 0;
+    for (size_t i = 0; i < 8; i += 2)
+    {
+        int x = points[i];
+        int y = points[i + 1];
+        if (x + y > maxX + maxY)
+        {
+            maxX = x;
+            maxY = y;
+        }
+        if (x + y < minX + minY)
+        {
+            minX = x;
+            minY = y;
+        }
+    }
+    sorted->x1 = minX;
+    sorted->y1 = minY;
+    sorted->x3 = maxX;
+    sorted->y3 = maxY;
+
+    minX = points[0];
+    minY = points[1];
+    maxX = 0;
+    maxY = 0;
+    for (size_t i = 0; i < 8; i += 2)
+    {
+        int x = points[i];
+        int y = points[i + 1];
+        if (x - y > maxX - maxY)
+        {
+            maxX = x;
+            maxY = y;
+        }
+        if (x - y < minX - minY)
+        {
+            minX = x;
+            minY = y;
+        }
+    }
+    sorted->x2 = minX;
+    sorted->y2 = minY;
+    sorted->x4 = maxX;
+    sorted->y4 = maxY;
+
+    return sorted;
+}
+
 void FreeBB(BBox* bb)
 {
     free(bb);

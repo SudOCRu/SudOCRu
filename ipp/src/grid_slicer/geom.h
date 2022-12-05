@@ -115,6 +115,9 @@ void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b);
 */
 int LineIntersection(const Line* l1, const Line* l2, int *x, int *y);
 
+
+BBox* SortBBox(const BBox* bb);
+
 /* ---------- MEMORY OPERATIONS ---------- */
 
 /*
