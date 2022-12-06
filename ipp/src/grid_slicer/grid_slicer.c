@@ -43,7 +43,8 @@ SudokuGrid* ExtractSudoku(const Image* org, Image* edges, int threshold,
 
     if((flags & SC_FLG_ARECTS) != 0)
         RenderRects(edges, rects, rect_count);
-    Rect** best = GetBestRects(rects, rect_count, rect_count / 3);
+    size_t top_count = rect_count / 3;
+    Rect** best = GetBestRects(rects, rect_count, top_count);
 
     if ((flags & SC_FLG_PRESTL) != 0)
     {
@@ -52,9 +53,10 @@ SudokuGrid* ExtractSudoku(const Image* org, Image* edges, int threshold,
         printf("|  i |  color |     area | squareness |   angle |    occ |\n");
         printf("----------------------------------------------------------\n");
     }
+    size_t show_count = min(top_count, 5);
     int colors[5] = { 0x008800, 0xFFAA00, 0xAA00FF, 0xFF00AA, 0x00FFFF };
     char* names[5] = { "green", "orange", "purple", "pink", "cyan" };
-    for(size_t i = 5; i > 0; i--)
+    for(size_t i = show_count; i > 0; i--)
     {
         Rect* r = best[i - 1];
         if (r == NULL) continue;
@@ -70,17 +72,17 @@ SudokuGrid* ExtractSudoku(const Image* org, Image* edges, int threshold,
     }
 
     SudokuGrid* grid = NULL;
-    Rect* candidate = FindSudokuBoard(best, 5);
+    Rect* candidate = FindSudokuBoard(best, top_count);
     if (candidate != NULL)
     {
-        float angle = candidate->ep1->alpha/*fmod(candidate->ep1->alpha, M_PI/2)*/;
-        float angle2 = candidate->ep2->alpha/*fmod(candidate->ep2->alpha, M_PI/2)*/;
+        float angle = candidate->ep1->alpha, angle2 = candidate->ep2->alpha;
 
         printf("=> Found matching Bounding Box:\n");
         printf("   > angle = %f° (%f + 90°)\n", angle * 180 / M_PI,
                 angle2 * 180 / M_PI);
         printf("   > squareness = %f\n", candidate->squareness);
         printf("   > area = %u pix*pix\n", candidate->area);
+        printf("   > longest cut = %u pix\n", candidate->occ);
 
         if ((flags & SC_FLG_PRESTL) != 0)
             RenderRect(edges, 0x00ff00, candidate);
@@ -107,7 +109,7 @@ SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
         printf("<!> Something went wrong when trying to warp perspective."
                 "Trying again with fallback method (auto-rotate).\n");
 
-        float angle = grid->angle;
+        float angle = fmod(grid->angle, M_PI/2);
         float midX = 0, midY = 0;
         GetCenterBB(bb, &midX, &midY);
         RotateBB(bb, -angle, midX, midY);
