@@ -1,6 +1,6 @@
 #pragma once
 #include "image.h"
-#define THRESH_OPTIMAL 0.025
+#define THRESH_OPTIMAL 0.055
 
 typedef unsigned int u32;
 typedef unsigned char u8;

@@ -22,26 +22,28 @@ void FilterImage(Image* img, u32* tmp, int flags)
         printf("Successfully saved grayscale.png\n");
 
     PrintStage(s, t, "Median Filter (5x5)", 0);
-    MedianFilter(img, tmp, 7);
+    MedianFilter(img, tmp, 5);
     PrintStage(s++, t, "Median Filter (5x5)", 1);
 
     PrintStage(s, t, "Bilateral Filter (11x11)", 0);
     BilateralFilter(img, tmp, 11, 55, 55);
     PrintStage(s++, t, "Bilateral Filter (11x11)", 1);
 
+    /*
     if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "smoothed.png"))
         printf("Successfully saved smoothed.png\n");
 
     PrintStage(s, t, "Erode (3x3)", 0);
     Dilate(img, tmp, 3); // Actually Erode because image is not inverted
     PrintStage(s++, t, "Erode (3x3)", 1);
+    */
 }
 
 void BinarizeImage(Image* img, u32* tmp, float threshold)
 {
     PrintStage(1, 2, "Adaptive Thresholding (11x11)", 0);
-    // nominal threshold: -5, optimal: 2.5%
-    AdaptiveThresholding(img, tmp, 11, threshold); 
+    // normal threshold: 2, optimal: 7%
+    AdaptiveThresholding(img, tmp, 15, threshold);
     PrintStage(1, 2, "Adaptive Thresholding (11x11)", 1);
 
     PrintStage(2, 2, "Dilate (3x3)", 0);
@@ -138,7 +140,7 @@ int CleanCell(Image* img, u8* markers)
             count += components[i]->size;
     }
 
-    if (nb_comp > 1 && (count / (M_PI * r_squared) > 0.085f))
+    if (nb_comp > 2 && (count / (M_PI * r_squared) > 0.085f))
     {
         // Component decimation: remove any component not large enough
         for (size_t y = 0; y < img->height; y++)
