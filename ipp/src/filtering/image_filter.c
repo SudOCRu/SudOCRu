@@ -131,8 +131,8 @@ int CleanCell(Image* img, u8* markers)
         return 0;
     }
 
-    // keep all components that are up to 60% smaller than the largest component
-    size_t target = components[largest - 1]->size * 40 / 100; 
+    // keep all components that are up to 50% smaller than the largest component
+    size_t target = components[largest - 1]->size * 50 / 100;
     size_t count = 0;
     for (size_t i = 0; i < nb_comp; i++)
     {
@@ -140,7 +140,7 @@ int CleanCell(Image* img, u8* markers)
             count += components[i]->size;
     }
 
-    if (nb_comp > 2 && (count / (M_PI * r_squared) > 0.085f))
+    if (nb_comp > 2 && (count / (M_PI * r_squared) > 0.125f))
     {
         // Component decimation: remove any component not large enough
         for (size_t y = 0; y < img->height; y++)
@@ -164,7 +164,7 @@ int CleanCell(Image* img, u8* markers)
         return 1;
     } else {
         free(components);
-        return (count / (M_PI * r_squared) > 0.05f);
+        return (count / (M_PI * r_squared) > 0.05f * nb_comp);
     }
 }
 
