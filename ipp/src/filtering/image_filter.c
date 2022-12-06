@@ -140,6 +140,8 @@ int CleanCell(Image* img, u8* markers)
             count += components[i]->size;
     }
 
+    // The total number of pixels within the circle must be >12.5% of the total
+    // area in order to mark this cell as not empty.
     if (nb_comp > 2 && (count / (M_PI * r_squared) > 0.125f))
     {
         // Component decimation: remove any component not large enough
@@ -151,7 +153,7 @@ int CleanCell(Image* img, u8* markers)
                 if (id > 0 && components[id - 1]->size >= target)
                 {
                     // use the line below for better visulization
-                    // img->pixels[y * img->width + x] = id*0xFFFFFF/nb_comp;
+                    // img->pixels[y * img->width + x] = id * 0xFFFFFF/nb_comp;
                 }
                 else
                 {
@@ -168,7 +170,7 @@ int CleanCell(Image* img, u8* markers)
     }
 }
 
-Image* PrepareCell(const Image* cell, u8* markers) {
+Image* PrepareCell(const Image* cell, const u8* markers) {
     size_t min_x = cell->width - 1, min_y = cell->height - 1,
            max_x = 0, max_y = 0;
     // Find the smallest box containg all the components
@@ -186,7 +188,7 @@ Image* PrepareCell(const Image* cell, u8* markers) {
         }
     }
 
-    // Make the cropped image square
+    // Make the cropped image a square
     size_t new_width = max_x - min_x;
     size_t new_height = max_y - min_y;
     if (new_width != new_height)
@@ -203,7 +205,6 @@ Image* PrepareCell(const Image* cell, u8* markers) {
         }
     }
 
-    //return CropImageExact(cell, min_x, min_y, max_x, max_y);
     Image* r = DownscaleImage(cell, min_x, min_y, max_x, max_y, 28, 28, 0);
     for (size_t i = 0; i < 28 * 28; i++)
     {
@@ -315,17 +316,6 @@ u8 ComputeOtsuThreshold(size_t len, const u32 histogram[256])
     return threshold;
 }
 
-void ThresholdImage(Image* image, u8 threshold)
-{
-    size_t len = image->width * image->height;
-
-    for (size_t i = 0; i < len; i++)
-    {
-        u32 c = image->pixels[i];
-        image->pixels[i] = (c & 0xFF) > threshold ? 0 : 0xFFFFFF;
-    }
-}
-
 void AdaptiveThresholding(Image* img, u32* buf, size_t r, float threshold)
 {
     size_t w = img->width, h = img->height;
@@ -354,4 +344,15 @@ void AdaptiveThresholding(Image* img, u32* buf, size_t r, float threshold)
     }
 
     memcpy(img->pixels, buf, w * h * sizeof(u32));
+}
+
+void ThresholdImage(Image* image, u8 threshold)
+{
+    size_t len = image->width * image->height;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        u32 c = image->pixels[i];
+        image->pixels[i] = (c & 0xFF) > threshold ? 0 : 0xFFFFFF;
+    }
 }
