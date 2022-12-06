@@ -88,15 +88,12 @@ void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b)
     *b = max4(bb->y1, bb->y2, bb->y3, bb->y4);
 }
 
-BBox* SortBBox(const BBox* bb)
+void SortBB(BBox* bb)
 {
     if (bb == NULL)
-        return NULL;
+        return;
 
     int* points = (int*) bb;
-    BBox* sorted = malloc(sizeof(BBox));
-    if (sorted == NULL)
-        return NULL;
 
     int sum_minX = points[0], sum_minY = points[1],
         sum_maxX = points[0], sum_maxY = points[1];
@@ -140,17 +137,15 @@ BBox* SortBBox(const BBox* bb)
      (x4, y4) ------------ (x3, y3)
     */
 
-    sorted->x1 = sum_minX;
-    sorted->y1 = sum_minY;
-    sorted->x3 = sum_maxX;
-    sorted->y3 = sum_maxY;
+    bb->x1 = sum_minX;
+    bb->y1 = sum_minY;
+    bb->x3 = sum_maxX;
+    bb->y3 = sum_maxY;
 
-    sorted->x2 = sub_minX;
-    sorted->y2 = sub_minY;
-    sorted->x4 = sub_maxX;
-    sorted->y4 = sub_maxY;
-
-    return sorted;
+    bb->x2 = sub_minX;
+    bb->y2 = sub_minY;
+    bb->x4 = sub_maxX;
+    bb->y4 = sub_maxY;
 }
 
 void FreeBB(BBox* bb)

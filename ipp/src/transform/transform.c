@@ -241,7 +241,7 @@ static inline int TransformPoint(const Matrix* h, const Matrix* out_coords,
     return 1;
 }
 
-Image* WarpPerspective(const Image* img, BBox* from)
+Image* WarpPerspective(const Image* img, const BBox* from)
 {
     // Calculate the size of the effective square
     float ab = DistanceSqrd(from->x1, from->y1, from->x2, from->y2);
@@ -252,11 +252,16 @@ Image* WarpPerspective(const Image* img, BBox* from)
 
     // Find the transformation associated to transform the bounding box in a 
     // square of length l.
+    BBox sorted = {
+        from->x1, from->y1,
+        from->x2, from->y2,
+        from->x3, from->y3,
+        from->x4, from->y4,
+    };
+    SortBB(&sorted);
     BBox to = { 0, 0, 0, l, l, l, l, 0 };
     // Sort bounding's box points to be always in the same order
-    BBox* sorted = SortBBox(from);
-    Matrix* h = GetHomographyMatrix(sorted, &to);
-    FreeBB(sorted);
+    Matrix* h = GetHomographyMatrix(&sorted, &to);
     // Convert the homography matrix into a transformation matrix. The
     // conversion is in-place: the 8x1 matrix becomes a 3*3 matrix.
     h->m = realloc(h->m, 3 * 3 * sizeof(float));

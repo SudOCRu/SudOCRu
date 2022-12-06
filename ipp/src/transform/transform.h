@@ -95,4 +95,4 @@ Matrix* GetHomographyMatrix(const BBox* from, const BBox* to);
  * in the correct order in to prevent unwanted mirroring or rotation, the points
  * must be in the order: (top-left, bottom-left, top-right, bottom-right).
  */
-Image* WarpPerspective(const Image* image, BBox* from);
+Image* WarpPerspective(const Image* image, const BBox* from);

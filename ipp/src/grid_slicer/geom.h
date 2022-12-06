@@ -117,9 +117,10 @@ int LineIntersection(const Line* l1, const Line* l2, int *x, int *y);
 
 
 /*
- * SortBBox(const BBox* bb) -> BBox*
+ * SortBB(BBox* bb)
  *
- * Returns a new bounding box that has its points sorted in a specific order:
+ * Sorts in-place the provided bounding box so that its points are always in a
+ * specific order:
  *
  *   (x1, y1) ------------ (x2, y2)
  *      |                     |
@@ -129,7 +130,7 @@ int LineIntersection(const Line* l1, const Line* l2, int *x, int *y);
  *      |                     |
  *   (x4, y4) ------------ (x3, y3)
  */
-BBox* SortBBox(const BBox* bb);
+void SortBB(BBox* bb);
 
 /* ---------- MEMORY OPERATIONS ---------- */
 
