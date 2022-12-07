@@ -5,6 +5,7 @@
 #include "image.h"
 #include "utils.h"
 #include "filtering/image_filter.h"
+#include "filtering/edge_detection.h"
 #include "grid_slicer/grid_slicer.h"
 
 int ParseFlags(int argc, char** argv);
@@ -28,7 +29,9 @@ int main(int argc, char** argv)
         // load succeeded
         printf("Processing image... (%lux%lu)\n",img->width,img->height);
 
-        FilterImage(img, flags);
+        u32* tmp = calloc(img->width * img->height, sizeof(u32));
+        FilterImage(img, tmp, flags);
+        BinarizeImage(img, tmp, THRESH_OPTIMAL);
 
         if ((flags & SC_FLG_DFIL) != 0 && SaveImageFile(img, "filtered.png"))
         {
@@ -36,7 +39,9 @@ int main(int argc, char** argv)
         }
 
         printf("Detecting edges...\n");
-        Image* edges = CannyEdgeDetection(img);
+
+        Image* edges = CannyEdgeDetection(img, tmp);
+        free(tmp);
 
         if ((flags & SC_FLG_DEDG) != 0 && SaveImageFile(edges, "edges.png"))
         {
@@ -45,7 +50,10 @@ int main(int argc, char** argv)
 
         printf("Extracting cells...\n");
         size_t len = 0;
-        Image** cells = ExtractSudokuCells(img, edges, &len, -50, flags);
+        SudokuGrid* grid = ExtractSudoku(img, edges, -50, flags);
+        if (grid == NULL)
+            errx(EXIT_FAILURE, "Unable to find rects");
+        SudokuCell** cells = ExtractSudokuCells(img, grid, flags, &len);
 
         if ((flags & SC_FLG_DGRD) != 0 && SaveImageFile(edges, "detected.png"))
         {
@@ -54,6 +62,7 @@ int main(int argc, char** argv)
 
         if (len > 0)
         {
+            u8* tmp = malloc(cells[0]->width * cells[0]->height * sizeof(u8));
             char name[18];
             printf("Extracting cell 0/%lu", len);
             for(size_t i = 0; i < len; i++)
@@ -61,23 +70,30 @@ int main(int argc, char** argv)
                 printf("\rExtracting cell %lu/%lu", i + 1, len);
                 fflush(stdout);
 
-                Image* cell = cells[i];
+                SudokuCell* cell = cells[i];
+                if (CleanCell(cell->data, tmp))
+                {
+                    cell->data = PrepareCell(cell->data, tmp);
+                }
                 snprintf(name, sizeof(name), "cells/cell_%02lu.png", i);
-                if (!SaveImageFile(cell, name))
+                if (!SaveImageFile(cell->data, name))
                 {
                     printf("\nError: Could not save %s\n", name);
                 }
-                DestroyImage(cell);
+                FreeSudokuCell(cell);
             }
             printf("\n");
 
-            free(cells);
+            free(tmp);
         }
         else
         {
             printf("Oops... Looks like something went wrong"
                    ": No cells were detected :(\n");
         }
+
+        free(cells);
+        FreeSudokuGrid(grid);
     } else {
         // load failed
         DestroyImage(img);

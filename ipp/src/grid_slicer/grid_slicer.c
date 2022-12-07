@@ -2,16 +2,18 @@
 #include "hough_lines.h"
 #include "renderer.h"
 #include "../utils.h"
+#include "../transform/transform.h"
 
-Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
+SudokuGrid* ExtractSudoku(const Image* org, Image* edges, int threshold,
+        int flags)
 {
     // Find all lines
     size_t len = 0;
     PrintStage(1, 4, "Hough Transform", 0);
-    Line** lines = HoughLines(img, &len, WHITE_EDGE, THETA_STEPS, threshold,
+    Line** lines = HoughLines(edges, &len, WHITE_EDGE, THETA_STEPS, threshold,
             (flags & SC_FLG_DACC) != 0);
     if((flags & SC_FLG_ALINES) != 0)
-        RenderLines(img, 0x0000FF, lines, len);
+        RenderLines(edges, 0x0000FF, lines, len);
     PrintStage(1, 4, "Hough Transform", 1);
 
     // Merge similar lines
@@ -21,7 +23,7 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
     printf(" --> %lu -> %lu", len, fil_len);
     PrintStage(2, 4, "Merge similar lines", 1);
     if((flags & SC_FLG_FLINES) != 0)
-        RenderLines(img, 0xFF0000, filtered, fil_len);
+        RenderLines(edges, 0xFF0000, filtered, fil_len);
 
     // Group parallel lines
     PrintStage(3, 4, "Group Parallel Lines", 0);
@@ -32,7 +34,7 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
 
     PrintStage(4, 4, "Find Rectangles", 0);
     size_t rect_count = 0;
-    Rect** rects = FindRects(psets, nb_psets, &rect_count);
+    Rect** rects = FindRects(org, psets, nb_psets, &rect_count);
     printf(" --> Detected %lu rects", rect_count);
     PrintStage(4, 4, "Find Rectangles", 1);
 
@@ -40,47 +42,74 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
         return NULL;
 
     if((flags & SC_FLG_ARECTS) != 0)
-        RenderRects(img, rects, rect_count);
-    Rect** best = GetBestRects(rects, rect_count, 5);
+        RenderRects(edges, rects, rect_count);
+    size_t top_count = rect_count / 3;
+    Rect** best = GetBestRects(rects, rect_count, top_count);
 
     if ((flags & SC_FLG_PRESTL) != 0)
     {
         printf("Results:\n");
-        printf("-------------------------------------------------\n");
-        printf("|  i |  color |     area | squareness |   angle |\n");
-        printf("-------------------------------------------------\n");
+        printf("----------------------------------------------------------\n");
+        printf("|  i |  color |     area | squareness |   angle |    occ |\n");
+        printf("----------------------------------------------------------\n");
     }
+    size_t show_count = min(top_count, 5);
     int colors[5] = { 0x008800, 0xFFAA00, 0xAA00FF, 0xFF00AA, 0x00FFFF };
     char* names[5] = { "green", "orange", "purple", "pink", "cyan" };
-    for(size_t i = 5; i > 0; i--)
+    for(size_t i = show_count; i > 0; i--)
     {
         Rect* r = best[i - 1];
         if (r == NULL) continue;
         if ((flags & SC_FLG_PRESTL) != 0)
         {
-            printf("| %lu. | %6s | %8u | %10f | %3.2f° |\n", i, names[i - 1],
-                    r->area, r->squareness, (r->ep1->alpha) * 180 / M_PI);
-            printf("-------------------------------------------------\n");
+            printf("| %lu. | %6s | %8u | %10f | %6.2f° | %6u |\n--------------"
+                    "--------------------------------------------\n", i,
+                    names[i - 1], r->area, r->squareness,
+                    (r->ep1->alpha) * 180 / M_PI, r->occ);
         }
         if((flags & SC_FLG_FRECTS) != 0)
-            RenderRect(img, colors[i - 1], r);
+            RenderRect(edges, colors[i - 1], r);
     }
 
-    Image* sudoku = NULL;
-    Rect* candidate = FindSudokuBoard(best, 5);
+    SudokuGrid* grid = NULL;
+    Rect* candidate = FindSudokuBoard(best, top_count);
     if (candidate != NULL)
     {
-        float angle = fmod(candidate->ep1->alpha, M_PI/2);
+        float angle = candidate->ep1->alpha, angle2 = candidate->ep2->alpha;
 
         printf("=> Found matching Bounding Box:\n");
-        printf("   > angle = %f°\n", angle * 180 / M_PI);
+        printf("   > angle = %f° (%f + 90°)\n", angle * 180 / M_PI,
+                angle2 * 180 / M_PI);
         printf("   > squareness = %f\n", candidate->squareness);
         printf("   > area = %u pix*pix\n", candidate->area);
+        printf("   > longest cut = %u pix\n", candidate->occ);
 
         if ((flags & SC_FLG_PRESTL) != 0)
-            RenderRect(img, 0x00ff00, candidate);
+            RenderRect(edges, 0x00ff00, candidate);
 
-        BBox* bb = NewBB(candidate);
+        grid = malloc(sizeof(SudokuGrid));
+        grid->bounds = NewBB(candidate);
+        grid->angle = angle;
+    }
+
+    FreeRects(rects, rect_count);
+    FreePSets(psets, nb_psets);
+    FreeLines(lines, len);
+    return grid;
+}
+
+SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
+        int flags, size_t* out_count)
+{
+    BBox* bb = grid->bounds;
+    Image* sudoku = WarpPerspective(original, bb);
+
+    if (sudoku == NULL)
+    {
+        printf("<!> Something went wrong when trying to warp perspective."
+                "Trying again with fallback method (auto-rotate).\n");
+
+        float angle = fmod(grid->angle, M_PI/2);
         float midX = 0, midY = 0;
         GetCenterBB(bb, &midX, &midY);
         RotateBB(bb, -angle, midX, midY);
@@ -99,28 +128,19 @@ Image* ExtractSudoku(Image* original, Image* img, int threshold, int flags)
         }
 
         sudoku = CropRotateImage(original, -angle, midX, midY, l, t, r, b);
-        if (SaveImageFile(sudoku, "sudoku.png"))
-            printf("Successfully wrote sudoku.png\n");
-
-        FreeBB(bb);
     }
 
-    FreeRects(rects, rect_count);
-    FreePSets(psets, nb_psets);
-    FreeLines(lines, len);
-    return sudoku;
-}
-
-Image** ExtractSudokuCells(Image* original, Image* img, size_t* out_count,
-        int threshold, int flags)
-{
-    *out_count = 0;
-    Image* sudoku = ExtractSudoku(original, img, threshold, flags);
     if (sudoku == NULL)
+    {
+        printf("<!> Something went wrong when cropping sudoku\n");
         return NULL;
+    }
+
+    if (SaveImageFile(sudoku, "sudoku.png"))
+        printf("Successfully wrote sudoku.png\n");
 
     size_t vcells = 9, hcells = 9;
-    Image** cells = malloc(vcells * hcells * sizeof(Image*));
+    SudokuCell** cells = malloc(vcells * hcells * sizeof(Image*));
     if (cells == NULL)
         return NULL;
 
@@ -135,11 +155,33 @@ Image** ExtractSudokuCells(Image* original, Image* img, size_t* out_count,
             if (r >= sudoku->width) r = sudoku->width - 1;
             size_t b = (i + 1) * stepY;
             if (b >= sudoku->height) b = sudoku->height - 1;
-            cells[i * hcells + j] =
-                CropImage(sudoku, j * stepX, i * stepY, r, b);
+
+            SudokuCell* cell = malloc(sizeof(SudokuCell));
+            cell->x = j * stepX;
+            cell->y = i * stepY;
+            cell->width = stepX;
+            cell->height = stepY;
+            cell->data = CropImage(sudoku, cell->x, cell->y, r, b);
+            cells[i * hcells + j] = cell;
         }
     }
     *out_count = vcells * hcells;
 
     return cells;
+}
+
+void FreeSudokuCell(SudokuCell* cell)
+{
+    if (cell == NULL)
+        return;
+    DestroyImage(cell->data);
+    free(cell);
+}
+
+void FreeSudokuGrid(SudokuGrid* grid)
+{
+    if (grid == NULL)
+        return;
+    FreeBB(grid->bounds);
+    free(grid);
 }

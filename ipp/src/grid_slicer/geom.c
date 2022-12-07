@@ -14,13 +14,13 @@ int LineIntersection(const Line* l1, const Line* l2, int *x, int *y) {
     return 0;
 }
 
-int min4(int a, int b, int c, int d) {
+static inline int min4(int a, int b, int c, int d) {
     int m1 = a < b ? a : b;
     int m2 = c < d ? c : d;
     return m1 < m2 ? m1 : m2;
 }
 
-int max4(int a, int b, int c, int d) {
+static inline int max4(int a, int b, int c, int d) {
     int m1 = a > b ? a : b;
     int m2 = c > d ? c : d;
     return m1 > m2 ? m1 : m2;
@@ -37,6 +37,16 @@ BBox* NewBB(Rect* r)
     const Line* l3 = r->ep2->l1;
     const Line* l4 = r->ep2->l2;
 
+    /*
+     (x1, y1) --- [l1] --- (x3, y3)
+        |                     |
+        |                     |
+       [l3]                 [l4]
+        |                     |
+        |                     |
+     (x2, y2) --- [l2] --- (x4, y4)
+     */
+
     LineIntersection(l1, l3, &bb->x1, &bb->y1);
     LineIntersection(l2, l3, &bb->x2, &bb->y2);
     LineIntersection(l1, l4, &bb->x3, &bb->y3);
@@ -51,7 +61,8 @@ void GetCenterBB(BBox* bb, float* centerX, float* centerY)
     *centerY = (bb->y1 + bb->y2 + bb->y3 + bb->y4) / 4.0f;
 }
 
-void RotatePoint(int* x, int* y, float cx, float cy, float cost, float sint)
+static inline void RotatePoint(int* x, int* y, float cx, float cy, float cost,
+        float sint)
 {
     float nx = cost * ((float)*x - cx) - sint * ((float)*y - cy) + cx;
     float ny = sint * ((float)*x - cx) + cost * ((float)*y - cy) + cy;
@@ -75,6 +86,66 @@ void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b)
     *t = min4(bb->y1, bb->y2, bb->y3, bb->y4);
     *r = max4(bb->x1, bb->x2, bb->x3, bb->x4);
     *b = max4(bb->y1, bb->y2, bb->y3, bb->y4);
+}
+
+void SortBB(BBox* bb)
+{
+    if (bb == NULL)
+        return;
+
+    int* points = (int*) bb;
+
+    int sum_minX = points[0], sum_minY = points[1],
+        sum_maxX = points[0], sum_maxY = points[1];
+
+    int sub_minX = points[0], sub_minY = points[1],
+        sub_maxX = points[0], sub_maxY = points[1];
+    for (size_t i = 2; i < 8; i += 2)
+    {
+        int x = points[i];
+        int y = points[i + 1];
+        if (x + y > sum_maxX + sum_maxY)
+        {
+            sum_maxX = x;
+            sum_maxY = y;
+        }
+        if (x + y < sum_minX + sum_minY)
+        {
+            sum_minX = x;
+            sum_minY = y;
+        }
+        if (x - y > sub_maxX - sub_maxY)
+        {
+            sub_maxX = x;
+            sub_maxY = y;
+        }
+        if (x - y < sub_minX - sub_minY)
+        {
+            sub_minX = x;
+            sub_minY = y;
+        }
+    }
+
+    /*
+     The points are sorted like this:
+     (x1, y1) ------------ (x2, y2)
+        |                     |
+        |                     |
+        |                     |
+        |                     |
+        |                     |
+     (x4, y4) ------------ (x3, y3)
+    */
+
+    bb->x1 = sum_minX;
+    bb->y1 = sum_minY;
+    bb->x3 = sum_maxX;
+    bb->y3 = sum_maxY;
+
+    bb->x2 = sub_minX;
+    bb->y2 = sub_minY;
+    bb->x4 = sub_maxX;
+    bb->y4 = sub_maxY;
 }
 
 void FreeBB(BBox* bb)
