@@ -1,5 +1,6 @@
 BUILD := bin
 TARGET := ipp
+LIBNAME := lib$(TARGET).a
 TEST_TARGET := $(BUILD)/$(TARGET)_tests
 GENERATED_FILES := grayscale.png median.png edges.png filtered.png acc.png \
 		   detected.png rotated.png sudoku.png cells/
@@ -51,8 +52,13 @@ $(shell mkdir -p $(SRCDIRS:%=$(BUILD)/%))
 all: $(TARGET)
 	@mkdir -p cells
 
+lib: $(BUILD)/$(LIBNAME)
+
 $(TARGET): $(OFILES)
 	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+
+$(BUILD)/$(LIBNAME): $(OFILES)
+	ar -rc $@ $^
 
 $(BUILD)/tests/%.o: tests/%.c
 	$(V)$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) $(TESTFLAGS)
@@ -69,6 +75,6 @@ $(TEST_TARGET): $(SRCFILES) $(TESTOFILES)
 test: $(TEST_TARGET)
 	@./$(TEST_TARGET)
 
-.PHONY: all clean test
+.PHONY: all clean test lib
 
 -include $(DFILES)

@@ -1,0 +1,58 @@
+BUILD := bin
+TARGET := sudocru
+LIB_FOLDER := $(BUILD)/shared
+LIB := $(LIB_FOLDER)/libipp.a
+
+CC := gcc
+CPPFLAGS = -MMD $(INDIRS)
+CFLAGS = -Wall -Wextra -D__NO_INLINE__ `pkg-config --cflags sdl2 SDL2_image gtk+-3.0`
+LDFLAGS := `pkg-config --libs sdl2 SDL2_image gtk+-3.0` -L$(LIB_FOLDER)
+LDLIBS :=  $(addprefix -l,\
+	m \
+	ipp \
+)
+
+RELEASE := 0
+ifneq ($(RELEASE), 0)
+	CFLAGS += -O3 -flto
+	LDFLAGS += -flto
+else
+	CFLAGS += -Og -g -fsanitize=address,undefined
+	LDFLAGS += -fsanitize=address,undefined
+	CPPFLAGS += -DDEBUG
+endif
+
+INDIRS := $(addprefix -I, \
+	src \
+	../ipp/src \
+	../solver/src \
+	../ocr/src \
+)
+
+MAINS := $(BUILD)/src/main.o
+CFILES := $(shell find src -name "*.c" $(TEST_FILES_OPTS))
+OFILES := $(CFILES:%.c=$(BUILD)/%.o)
+SRCFILES := $(filter-out $(MAINS),$(OFILES))
+DFILES := $(OFILES:%.o=%.d)
+
+SRCDIRS := $(shell find . -type d -not -path "*$(BUILD)*")
+$(shell mkdir -p $(BUILD)/shared $(SRCDIRS:%=$(BUILD)/%))
+
+all: $(TARGET)
+
+$(LIB):
+	make -C ../ipp lib
+	cp ../ipp/bin/libipp.a bin/shared/libipp.a
+
+$(TARGET): $(OFILES)
+	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+
+$(BUILD)/%.o: %.c $(LIB)
+	$(V)$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
+
+clean:
+	rm -rf $(BUILD) $(TARGET)
+
+.PHONY: all clean test
+
+-include $(DFILES)

@@ -3,8 +3,9 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkWindow" id="AboutUsPopup">
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">About Us</property>
+    <property name="resizable">False</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -66,9 +67,8 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="CellModifPopup">
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">Modify Cell</property>
-    <property name="resizable">False</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -128,8 +128,9 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="FileChooserWindow">
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">Choose a File</property>
+    <property name="resizable">False</property>
     <property name="window_position">center-always</property>
     <child type="titlebar">
       <placeholder/>
@@ -170,8 +171,9 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="FileSaverWindow">
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">Save Generated Sudoku</property>
+    <property name="resizable">False</property>
     <property name="window_position">center-always</property>
     <child type="titlebar">
       <placeholder/>
@@ -214,8 +216,9 @@ JAMET Kévin</property>
   <object class="GtkWindow" id="MainWindow">
     <property name="width_request">1200</property>
     <property name="height_request">800</property>
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">SudOCRu</property>
+    <property name="resizable">False</property>
     <property name="icon">logo.jpg</property>
     <child type="titlebar">
       <placeholder/>
@@ -332,8 +335,9 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="OCRCorrection">
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">OCR Correction</property>
+    <property name="resizable">False</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1291,7 +1295,7 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="ProcessingPopup">
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">OCR Processing...</property>
     <property name="resizable">False</property>
     <property name="deletable">False</property>
@@ -1356,8 +1360,9 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="ResizingWindow">
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">Resize Image</property>
+    <property name="resizable">False</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1428,8 +1433,9 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="SaveWindow">
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">Sudoku Solved Preview</property>
+    <property name="resizable">False</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1486,7 +1492,7 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="SolvingPopup">
-    <property name="can_focus">False</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">Solving Sudoku...</property>
     <property name="resizable">False</property>
     <property name="deletable">False</property>
@@ -1551,8 +1557,9 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="ThresholdWindow">
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes"> Set Threshold Level</property>
+    <property name="visible">True</property>
+    <property name="title" translatable="yes">Set Threshold Level</property>
+    <property name="resizable">False</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1574,7 +1581,7 @@ Wait few moments</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="valign">center</property>
+                <property name="valign">start</property>
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
                 <property name="margin_top">10</property>
@@ -1582,13 +1589,14 @@ Wait few moments</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">2</property>
+                <property name="top_attach">3</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="ThresholdLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="valign">center</property>
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
                 <property name="label" translatable="yes">Chose Threshold Level</property>
@@ -1597,19 +1605,6 @@ Wait few moments</property>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScale" id="ThresholdScale">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="halign">center</property>
-                <property name="orientation">vertical</property>
-                <property name="round_digits">1</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
               </packing>
             </child>
             <child>
@@ -1627,7 +1622,46 @@ Wait few moments</property>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">0</property>
-                <property name="height">3</property>
+                <property name="height">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="ApplyButton">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="valign">end</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
+                <child>
+                  <object class="GtkSpinner" id="ApplyButtonLoading">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="active">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScale" id="ThresholdScale">
+                <property name="height_request">175</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="halign">center</property>
+                <property name="orientation">vertical</property>
+                <property name="round_digits">1</property>
+                <property name="value_pos">bottom</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
               </packing>
             </child>
           </object>
