@@ -76,10 +76,13 @@ double GetWeight(Layer* layer, int in, int out){
     return layer->weights[GetFlatIndex(layer, in, out)];
 }
 
-void CalculateOutputLayerNodeValues(LayerLearnData* layerLearnData, double expectedOutputs[]){
+void CalculateOutputLayerNodeValues(LayerLearnData* layerLearnData,
+        double expectedOutputs[]){
     for (int i = 0; i < layerLearnData->nodeValuesLength; i++){
-        double costDerivative = CostDerivative(layerLearnData->activations[i], expectedOutputs[i]);
-        double activateDerivate = DerivativeActivate(layerLearnData->weights, i);
+        double costDerivative = CostDerivative(layerLearnData->activations[i],
+                expectedOutputs[i]);
+        double activateDerivate =
+            DerivativeActivate(layerLearnData->weights, i);
         layerLearnData->nodeValues[i] = costDerivative * activateDerivate;
     }
 }
@@ -109,24 +112,6 @@ double* LearnOutputs(Layer* layer, double inputs[], LayerLearnData* learnData){
 
     for (int i = 0; i < learnData->activationsLength; i++){
         learnData->activations[i] = Activate(learnData->weights, i);
-    }
-
-    return learnData->activations;
-}
-
-double* LearnOutputsOL(Layer* layer, double inputs[], LayerLearnData* learnData){
-    learnData->inputs = inputs;
-
-    for (int out = 0; out < layer->numNodesOut; out++){
-        double inputWeight = layer->biases[out];
-        for (int in = 0; in < layer->numNodesIn; in++){
-            inputWeight += inputs[in] * GetWeight(layer, in, out);
-        }
-        learnData->weights[out] = inputWeight;
-    }
-
-    for (int i = 0; i < learnData->activationsLength; i++){
-        learnData->activations[i] = SoftMax(learnData->weights, learnData->activationsLength, i);
     }
 
     return learnData->activations;
@@ -173,7 +158,8 @@ void UpdateGradients(Layer* layer, LayerLearnData* layerLearnData){
         double nodeValue = layerLearnData->nodeValues[out];
         for (int in = 0; in < layer->numNodesIn; in++){
             double derivativeCWW = layerLearnData->inputs[in] * nodeValue;
-            layer->costGradientW[GetFlatIndex(layer, in, out)] += derivativeCWW;
+            layer->costGradientW[GetFlatIndex(layer, in, out)] +=
+                derivativeCWW;
         }
     }
 
@@ -182,7 +168,11 @@ void UpdateGradients(Layer* layer, LayerLearnData* layerLearnData){
     }
 }
 
-void CalculateHiddenLayerNodeValues(Layer* layer, LayerLearnData* learnData, Layer* oldLayer, double oldNodeValues[], int oldNodeValuesLength){
+void CalculateHiddenLayerNodeValues(Layer* layer,
+        LayerLearnData* learnData,
+        Layer* oldLayer,
+        double oldNodeValues[],
+        int oldNodeValuesLength){
     for (int i = 0; i < layer->numNodesOut; i++){
         double newValue = 0;
         for (int old = 0; old < oldNodeValuesLength; old++){

@@ -55,9 +55,14 @@ void DestroyLayerLearnData(LayerLearnData* learnData);
 
 //NeuralNetwork methods
 
-void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData, int trainingDataLength, double learnRate);
+void Learn(NeuralNetwork* neuralNetwork,
+        DataPoint **trainingData,
+        int trainingDataLength,
+        double learnRate);
 
-void LearnGradients(NeuralNetwork* neuralNetwork, DataPoint* data, NetworkLearnData* learnData);
+void LearnGradients(NeuralNetwork* neuralNetwork,
+        DataPoint* data,
+        NetworkLearnData* learnData);
 
 double *ProcessOutputs(NeuralNetwork* neuralNetwork, double inputs[]);
 

@@ -34,7 +34,9 @@ unsigned char* readLabels(FILE *file, size_t nbImg){
     return labels;
 }
 
-DataPoint **generateSample(char *dataFileName, char *resultsFileName, int *nbImg){
+DataPoint **generateSample(char *dataFileName,
+        char *resultsFileName,
+        int *nbImg){
     FILE *data = fopen(dataFileName, "rb");
     int *skip = malloc(sizeof(int));
     int t = fread(skip, sizeof(int), 1, data);
