@@ -191,7 +191,74 @@ PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len)
     return pairs;
 }
 
-Rect** FindRects(PSet** pairs, size_t nb_pairs, size_t* found_count)
+unsigned int LongestCut(const unsigned int* pixels, int w, int h,
+        int x0, int y0, int x1, int y1)
+{
+    size_t max_cut = 0;
+    size_t cut = 0;
+    int dx = abs(x1 - x0);
+    int sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0);
+    int sy = y0 < y1 ? 1 : -1;
+    int error = dx + dy;
+
+    while (1)
+    {
+        if (y0 >= 0 && y0 < h && x0 >= 0 && x0 < w)
+        {
+            if (pixels[y0 * w + x0] > 0)
+            {
+                if (cut > max_cut) max_cut = cut;
+                cut = 0;
+            } else {
+                cut += 1;
+            }
+        }
+        if (x0 == x1 && y0 == y1)
+            break;
+        int e2 = 2 * error;
+        if (e2 >= dy)
+        {
+            if (x0 == x1) break;
+            error += dy;
+            x0 += sx;
+        }
+        if (e2 <= dx)
+        {
+            if (y0 == y1) break;
+            error += dx;
+            y0 += sy;
+        }
+    }
+    if (cut > max_cut) max_cut = cut;
+    return max_cut;
+}
+
+unsigned int RectOccupency(const Image* img, Rect* r)
+{
+    const size_t w = img->width;
+    const size_t h = img->height;
+    const unsigned int* p = img->pixels;
+
+    const Line* l1 = r->ep1->l1;
+    const Line* l2 = r->ep1->l2;
+    const Line* l3 = r->ep2->l1;
+    const Line* l4 = r->ep2->l2;
+    int x1, y1, x2, y2, x3, y3, x4, y4;
+
+    LineIntersection(l1, l3, &x1, &y1);
+    LineIntersection(l2, l3, &x2, &y2);
+    LineIntersection(l1, l4, &x3, &y3);
+    LineIntersection(l2, l4, &x4, &y4);
+
+   return LongestCut(p, w, h, x1, y1, x2, y2) + 
+       LongestCut(p, w, h, x1, y1, x3, y3) +
+       LongestCut(p, w, h, x4, y4, x2, y2) +
+       LongestCut(p, w, h, x4, y4, x2, y2);
+}
+
+Rect** FindRects(const Image* img, PSet** pairs, size_t nb_pairs,
+        size_t* found_count)
 {
     float a90 = M_PI / 2; // 90°
     float Ta = 8 * M_PI / 180; // max angle diff between two orhogonal lines
@@ -222,17 +289,14 @@ Rect** FindRects(PSet** pairs, size_t nb_pairs, size_t* found_count)
                 rect->ep2 = ep2;
                 rect->area = round(a * b);
                 rect->squareness = squareness;
+                rect->occ = RectOccupency(img, rect);
+
                 rects[rect_count++] = rect;
                 if (rect_count == alloc_size)
                 {
                     size_t size = alloc_size + alloc_size/2;
                     rects = realloc(rects, sizeof(Rect*) * size);
                     alloc_size = size;
-                    /*
-                    *found_count = rect_count;
-                    printf("rect_count (max) = %lu\n", rect_count);
-                    return rects;
-                    */
                 }
             }
         }
@@ -254,7 +318,7 @@ Rect** GetBestRects(Rect** rects, size_t len, size_t keep)
         if (j < keep)
         {
             if (top[j] != NULL && top[j]->area == cand->area)
-                    continue;
+                continue;
             for(size_t k = keep - 1; k > j; k--)
                 top[k] = top[k - 1];
             top[j] = cand;
@@ -263,17 +327,22 @@ Rect** GetBestRects(Rect** rects, size_t len, size_t keep)
     return top;
 }
 
+static inline float CalcScore(Rect* r)
+{
+    return pow(r->squareness, 3) * sqrt(r->area) * (1 - r->occ / r->area);
+}
+
 Rect* FindSudokuBoard(Rect** rects, size_t rect_count)
 {
     if (rect_count == 0) return NULL;
 
     Rect* max = rects[0];
-    float m_score = max->squareness * max->squareness * max->area;
+    float m_score = CalcScore(max);
     for (size_t i = 1; i < rect_count; i++)
     {
         Rect* rect = rects[i];
         if (rect == NULL) continue;
-        float score = rect->squareness * rect->squareness * rect->area;
+        float score = CalcScore(rect);
         if (score > m_score)
         {
             m_score = score;
