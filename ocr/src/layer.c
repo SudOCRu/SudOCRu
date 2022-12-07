@@ -37,13 +37,31 @@ void DestroyLayer(Layer *layer){
     free(layer);
 }
 
-double Activate(double x){
-    return 1 / (1 + exp(-x));
+double Activate(double *x, size_t i){
+    return 1 / (1 + exp(-x[i]));
 }
 
-double DerivativeActivate(double x){
-    double activation = Activate(x);
+double DerivativeActivate(double *x, size_t i){
+    double activation = Activate(x, i);
     return activation * (1 - activation);
+}
+
+double SoftMax(double z[], size_t len, size_t j){
+    double result = exp(z[j]);
+    double diviser = 0;
+    for (size_t i = 0; i < len; i++){
+        diviser += exp(z[i]);
+    }
+    return result/diviser;
+}
+
+double DerivativeSoftMax(double z[], size_t len, size_t i){
+    double expSum = 0;
+    for (size_t i = 0; i < len; i++){
+        expSum += exp(z[i]);
+    }
+    double ex = exp(z[i]);
+    return (ex*expSum - ex*ex) / (expSum*expSum);
 }
 
 double CostDerivative(double output, double expectedOutput){
@@ -58,13 +76,10 @@ double GetWeight(Layer* layer, int in, int out){
     return layer->weights[GetFlatIndex(layer, in, out)];
 }
 
-void CalculateOutputLayerNodeValues(LayerLearnData* layerLearnData,
-        double expectedOutputs[]){
+void CalculateOutputLayerNodeValues(LayerLearnData* layerLearnData, double expectedOutputs[]){
     for (int i = 0; i < layerLearnData->nodeValuesLength; i++){
-        double costDerivative = CostDerivative(layerLearnData->activations[i],
-                expectedOutputs[i]);
-        double activateDerivate = DerivativeActivate(layerLearnData
-                ->weights[i]);
+        double costDerivative = CostDerivative(layerLearnData->activations[i], expectedOutputs[i]);
+        double activateDerivate = DerivativeActivate(layerLearnData->weights, i);
         layerLearnData->nodeValues[i] = costDerivative * activateDerivate;
     }
 }
@@ -93,7 +108,25 @@ double* LearnOutputs(Layer* layer, double inputs[], LayerLearnData* learnData){
     }
 
     for (int i = 0; i < learnData->activationsLength; i++){
-        learnData->activations[i] = Activate(learnData->weights[i]);
+        learnData->activations[i] = Activate(learnData->weights, i);
+    }
+
+    return learnData->activations;
+}
+
+double* LearnOutputsOL(Layer* layer, double inputs[], LayerLearnData* learnData){
+    learnData->inputs = inputs;
+
+    for (int out = 0; out < layer->numNodesOut; out++){
+        double inputWeight = layer->biases[out];
+        for (int in = 0; in < layer->numNodesIn; in++){
+            inputWeight += inputs[in] * GetWeight(layer, in, out);
+        }
+        learnData->weights[out] = inputWeight;
+    }
+
+    for (int i = 0; i < learnData->activationsLength; i++){
+        learnData->activations[i] = SoftMax(learnData->weights, learnData->activationsLength, i);
     }
 
     return learnData->activations;
@@ -108,10 +141,28 @@ double *CalculateOutputs(Layer* layer, double* inputs){
         }
         inputWeights[out] = inputWeight;
     }
-
+    
     inputs = realloc(inputs, layer->numNodesOut * sizeof(double));
     for (int output = 0; output < layer->numNodesOut; output++){
-        inputs[output] = Activate(inputWeights[output]);
+        inputs[output] = Activate(inputWeights, output);
+    }
+
+    return inputs;
+}
+
+double *CalculateOutputsOL(Layer* layer, double* inputs){
+    double inputWeights[layer->numNodesOut];
+    for (int out = 0; out < layer->numNodesOut; out++){
+        double inputWeight = layer->biases[out];
+        for (int in = 0; in < layer->numNodesIn; in++){
+            inputWeight += inputs[in] * GetWeight(layer, in, out);
+        }
+        inputWeights[out] = inputWeight;
+    }
+    
+    inputs = realloc(inputs, layer->numNodesOut * sizeof(double));
+    for (int output = 0; output < layer->numNodesOut; output++){
+        inputs[output] = SoftMax(inputWeights, layer->numNodesOut, output);
     }
 
     return inputs;
@@ -131,14 +182,13 @@ void UpdateGradients(Layer* layer, LayerLearnData* layerLearnData){
     }
 }
 
-void CalculateHiddenLayerNodeValues(Layer* layer, LayerLearnData* learnData,
-        Layer* oldLayer, double oldNodeValues[], int oldNodeValuesLength){
+void CalculateHiddenLayerNodeValues(Layer* layer, LayerLearnData* learnData, Layer* oldLayer, double oldNodeValues[], int oldNodeValuesLength){
     for (int i = 0; i < layer->numNodesOut; i++){
         double newValue = 0;
         for (int old = 0; old < oldNodeValuesLength; old++){
             newValue += GetWeight(oldLayer, i, old) * oldNodeValues[old];
         }
-        newValue *= DerivativeActivate(learnData->weights[i]);
+        newValue *= DerivativeActivate(learnData->weights, i);
         learnData->nodeValues[i] = newValue;
     }
 }
