@@ -229,12 +229,8 @@ NeuralNetwork *ReadNetwork(char *fileName){
     return network;
 }
 
-unsigned char ReadDigit(const double* pixels, NeuralNetwork *network){
-    double *copy = calloc(28*28,sizeof(double));
-    for(size_t i = 0; i < 28*28; i++){
-        copy[i] = pixels[i];
-    }
-    double* results = ProcessOutputs(network, copy);
+unsigned char ReadDigit(double* pixels, NeuralNetwork *network){
+    double* results = ProcessOutputs(network, pixels);
     unsigned char max = 0;
     for(unsigned char i = 1; i < 10; i++){
         if (results[i] > results[max]){
@@ -242,6 +238,5 @@ unsigned char ReadDigit(const double* pixels, NeuralNetwork *network){
         }
     }
     DestroyNeuralNetwork(network);
-    free(copy);
     return max;
 }
