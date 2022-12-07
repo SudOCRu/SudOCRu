@@ -69,3 +69,7 @@ double *ProcessOutputs(NeuralNetwork* neuralNetwork, double inputs[]);
 void SaveNetwork(NeuralNetwork *network, char *fileName);
 
 NeuralNetwork *ReadNetwork(char *fileName);
+
+//Access
+
+unsigned char ReadDigit(const double* pixels);

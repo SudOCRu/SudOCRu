@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <unistd.h>
 
 LayerLearnData* CreateLayerLearnData(Layer *layer){
     LayerLearnData* learnData = malloc(sizeof(LayerLearnData));
@@ -226,4 +227,25 @@ NeuralNetwork *ReadNetwork(char *fileName){
         free(biases);
     }
     return network;
+}
+
+unsigned char ReadDigit(const double* pixels){
+    if (access("network", F_OK) != 0)
+        return 10;
+
+    double *copy = calloc(28*28,sizeof(double));
+    for(size_t i = 0; i < 28*28; i++){
+        copy[i] = pixels[i];
+    }
+    NeuralNetwork *network = ReadNetwork("network");
+    double* results = ProcessOutputs(network, copy);
+    unsigned char max = 0;
+    for(unsigned char i = 1; i < 10; i++){
+        if (results[i] > results[max]){
+            max = i;
+        }
+    }
+    DestroyNeuralNetwork(network);
+    free(copy);
+    return max;
 }
