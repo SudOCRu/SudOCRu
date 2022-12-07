@@ -1,6 +1,5 @@
 #pragma once
 #include "image.h"
-#define clamp(x, min, max) ((x)>=(max)?((max)-1):((x)<(min)?(min):(x)))
 
 typedef unsigned int u32;
 typedef unsigned char u8;

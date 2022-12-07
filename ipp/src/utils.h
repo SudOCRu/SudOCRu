@@ -21,5 +21,6 @@
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
+#define clamp(x, min, max) ((x)>=(max)?((max)-1):((x)<(min)?(min):(x)))
 
 void PrintStage(unsigned char id, unsigned char total, char* stage, int ok);

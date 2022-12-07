@@ -29,10 +29,10 @@ void FilterImage(Image* img, u32* tmp, int flags)
     BilateralFilter(img, tmp, 11, 55, 55);
     PrintStage(s++, t, "Bilateral Filter (11x11)", 1);
 
-    /*
     if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "smoothed.png"))
         printf("Successfully saved smoothed.png\n");
 
+    /*
     PrintStage(s, t, "Erode (3x3)", 0);
     Dilate(img, tmp, 3); // Actually Erode because image is not inverted
     PrintStage(s++, t, "Erode (3x3)", 1);
@@ -41,10 +41,10 @@ void FilterImage(Image* img, u32* tmp, int flags)
 
 void BinarizeImage(Image* img, u32* tmp, float threshold)
 {
-    PrintStage(1, 2, "Adaptive Thresholding (11x11)", 0);
+    PrintStage(1, 2, "Adaptive Thresholding (15x15)", 0);
     // normal threshold: 2, optimal: 7%
     AdaptiveThresholding(img, tmp, 15, threshold);
-    PrintStage(1, 2, "Adaptive Thresholding (11x11)", 1);
+    PrintStage(1, 2, "Adaptive Thresholding (15x15)", 1);
 
     PrintStage(2, 2, "Dilate (3x3)", 0);
     Dilate(img, tmp, 3);
@@ -132,17 +132,24 @@ int CleanCell(Image* img, u8* markers)
     }
 
     // keep all components that are up to 50% smaller than the largest component
-    size_t target = components[largest - 1]->size * 50 / 100;
+    size_t target = components[largest - 1]->size * 35 / 100;
+    size_t total_size = 0;
     size_t count = 0;
     for (size_t i = 0; i < nb_comp; i++)
     {
         if (components[i]->size >= target)
-            count += components[i]->size;
+        {
+            total_size += components[i]->size;
+            count++;
+        }
     }
 
     // The total number of pixels within the circle must be >12.5% of the total
     // area in order to mark this cell as not empty.
-    if (nb_comp > 2 && (count / (M_PI * r_squared) > 0.125f))
+    //printf("components: %lu/%lu\n", count, nb_comp);
+    //printf("fill rate: %lu (%f%%)\n", total_size,
+    //        (total_size / (M_PI * r_squared)) * 100.0f);
+    if ((total_size / (M_PI * r_squared) > 0.10f))
     {
         // Component decimation: remove any component not large enough
         for (size_t y = 0; y < img->height; y++)
@@ -150,7 +157,7 @@ int CleanCell(Image* img, u8* markers)
             for (size_t x = 0; x < img->width; x++)
             {
                 u8 id = markers[y * img->width + x];
-                if (id > 0 && components[id - 1]->size >= target)
+                if (id > 0 && (components[id - 1]->size >= target))
                 {
                     // use the line below for better visulization
                     // img->pixels[y * img->width + x] = id * 0xFFFFFF/nb_comp;
@@ -164,10 +171,9 @@ int CleanCell(Image* img, u8* markers)
         }
         free(components);
         return 1;
-    } else {
-        free(components);
-        return (count / (M_PI * r_squared) > 0.05f * nb_comp);
     }
+    free(components);
+    return /*(total_size / (M_PI * r_squared) > 0.05f)*/0;
 }
 
 Image* PrepareCell(const Image* cell, const u8* markers) {
@@ -325,15 +331,14 @@ void AdaptiveThresholding(Image* img, u32* buf, size_t r, float threshold)
     {
         for (size_t x = side; x < w - side; x++)
         {
-            float sum = 0;
+            size_t sum = 0;
             size_t endX = x + side;
             size_t endY = y + side;
             for (size_t dy = y - side; dy <= endY; dy++)
             {
                 for (size_t dx = x - side; dx <= endX; dx++)
                 {
-                    if (dy >= 0 && dx >= 0 && dy < h && dx < w)
-                        sum += img->pixels[dy * w + dx] & 0xFF;
+                    sum += img->pixels[dy * w + dx] & 0xFF;
                 }
             }
             float m = threshold > 1 ? (sum / (float)(r * r)) - threshold :
