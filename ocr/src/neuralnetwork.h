@@ -72,4 +72,4 @@ NeuralNetwork *ReadNetwork(char *fileName);
 
 //Access
 
-unsigned char ReadDigit(const double* pixels);
+unsigned char ReadDigit(const double* pixels, NeuralNetwork *network);
