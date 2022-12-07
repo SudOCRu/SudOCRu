@@ -34,6 +34,7 @@ unsigned char *readLabels(char *name){
 
     int re = fread(&magic, sizeof(unsigned int), 1, file);
     re = fread(&size, sizeof(unsigned int), 1, file);
+    re++;
 
     Convert(&magic);
     Convert(&size);
@@ -62,6 +63,7 @@ unsigned char *readImages(char *name){
     re = fread(&size, sizeof(unsigned int), 1, file);
     re = fread(&rows, sizeof(unsigned int), 1, file);
     re = fread(&columns, sizeof(unsigned int), 1, file);
+    re++;
 
     Convert(&magic);
     Convert(&size);
@@ -76,7 +78,7 @@ unsigned char *readImages(char *name){
 
     int bufferSize = rows*columns;
 
-    for (int j = 0; j < size/bufferSize; j++){
+    for (unsigned int j = 0; j < size/bufferSize; j++){
         unsigned char buffer[bufferSize];
         re = fread(buffer, sizeof(buffer), 1, file);
         for (int i = 0; i < bufferSize; i++){
@@ -140,12 +142,12 @@ DataPoint **GenerateXorData(){
     True1[1] = 0;
     False1[0] = 0;
     False1[1] = 1;
-    
+
     True2[0] = 1;
     True2[1] = 0;
     False2[0] = 0;
     False2[1] = 1;
-    
+
     double *t1 = calloc(2, sizeof(double));
     t1[0] = 0;
     t1[1] = 0;
@@ -159,7 +161,6 @@ DataPoint **GenerateXorData(){
     t4[0] = 1;
     t4[1] = 1;
 
-    
     DataPoint *data1 = CreateDatapoint(t1, False1);
     DataPoint *data2 = CreateDatapoint(t2, True1);
     DataPoint *data3 = CreateDatapoint(t3, True2);

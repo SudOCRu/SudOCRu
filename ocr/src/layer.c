@@ -108,7 +108,7 @@ double *CalculateOutputs(Layer* layer, double* inputs){
         }
         inputWeights[out] = inputWeight;
     }
-    
+
     inputs = realloc(inputs, layer->numNodesOut * sizeof(double));
     for (int output = 0; output < layer->numNodesOut; output++){
         inputs[output] = Activate(inputWeights[output]);

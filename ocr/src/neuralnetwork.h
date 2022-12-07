@@ -4,10 +4,10 @@
 typedef struct LayerLearnData {
     double* inputs;
     int inputsLength;
-    
+
     double* weights;
     int weightsLength;
-    
+
     double* activations;
     int activationsLength;
 

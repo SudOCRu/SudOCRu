@@ -13,12 +13,12 @@ typedef struct SudokuGrid {
 } SudokuGrid;
 
 Line** HoughLines(const Image* img, size_t* found_count, int white_edge,
-        size_t theta_steps, int threshold);
+        size_t theta_steps, int threshold, int save);
 
 Line** AverageLines(Line** lines, size_t len, size_t* out_len);
 
 PSet** GroupParallelLines(Line** lines, size_t len, size_t* out_len);
-Rect** FindRects(Image* img, PSet** pairs, size_t len, size_t* found_count);
+Rect** FindRects(PSet** pairs, size_t len, size_t* found_count);
 
 Rect** GetBestRects(Rect** rects, size_t len, size_t keep);
-Rect* FindSudokuBoard(Image* image, Rect** rects, size_t rect_count);
+Rect* FindSudokuBoard(Rect** rects, size_t rect_count);

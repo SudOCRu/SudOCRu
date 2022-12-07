@@ -4,7 +4,7 @@
 /*
  * RenderLine(Image* image, unsigned int color, Line* line) -> void
  *
- * Renders the line line in the specified `color` using the Bresenham's 
+ * Renders the line line in the specified `color` using the Bresenham's
  * drawing line algorithm. Any part of the line outside of the image's bounds,
  * is omitted.
  *

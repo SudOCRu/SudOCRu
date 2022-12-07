@@ -28,31 +28,58 @@ int max4(int a, int b, int c, int d) {
 
 BBox* NewBB(Rect* r)
 {
+    BBox* bb = malloc(sizeof(BBox));
+    if (bb == NULL)
+        return NULL;
+
     const Line* l1 = r->ep1->l1;
     const Line* l2 = r->ep1->l2;
     const Line* l3 = r->ep2->l1;
     const Line* l4 = r->ep2->l2;
 
-    int p1_x = 0, p1_y = 0;
-    LineIntersection(l1, l3, &p1_x, &p1_y);
+    LineIntersection(l1, l3, &bb->x1, &bb->y1);
+    LineIntersection(l2, l3, &bb->x2, &bb->y2);
+    LineIntersection(l1, l4, &bb->x3, &bb->y3);
+    LineIntersection(l2, l4, &bb->x4, &bb->y4);
 
-    int p2_x = 0, p2_y = 0;
-    LineIntersection(l2, l3, &p2_x, &p2_y);
-
-    int p3_x = 0, p3_y = 0;
-    LineIntersection(l1, l4, &p3_x, &p3_y);
-
-    int p4_x = 0, p4_y = 0;
-    LineIntersection(l2, l4, &p4_x, &p4_y);
-
-    BBox* bb = malloc(sizeof(BBox*));
-    if (bb == NULL)
-        return NULL;
-    bb->x1 = min4(p1_x, p2_x, p3_x, p4_x);
-    bb->y1 = min4(p1_y, p2_y, p3_y, p4_y);
-    bb->x2 = max4(p1_x, p2_x, p3_x, p4_x);
-    bb->y2 = max4(p1_y, p2_y, p3_y, p4_y);
     return bb;
+}
+
+void GetCenterBB(BBox* bb, float* centerX, float* centerY)
+{
+    *centerX = (bb->x1 + bb->x2 + bb->x3 + bb->x4) / 4.0f;
+    *centerY = (bb->y1 + bb->y2 + bb->y3 + bb->y4) / 4.0f;
+}
+
+void RotatePoint(int* x, int* y, float cx, float cy, float cost, float sint)
+{
+    float nx = cost * ((float)*x - cx) - sint * ((float)*y - cy) + cx;
+    float ny = sint * ((float)*x - cx) + cost * ((float)*y - cy) + cy;
+    *x = nx;
+    *y = ny;
+}
+
+void RotateBB(BBox* bb, float angle, float centerX, float centerY)
+{
+    if (fabs(angle) < (M_PI/180)) return; // Less than 1°
+    float cost = cos(angle), sint = sin(angle);
+    RotatePoint(&bb->x1, &bb->y1, centerX, centerY, cost, sint);
+    RotatePoint(&bb->x2, &bb->y2, centerX, centerY, cost, sint);
+    RotatePoint(&bb->x3, &bb->y3, centerX, centerY, cost, sint);
+    RotatePoint(&bb->x4, &bb->y4, centerX, centerY, cost, sint);
+}
+
+void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b)
+{
+    *l = min4(bb->x1, bb->x2, bb->x3, bb->x4);
+    *t = min4(bb->y1, bb->y2, bb->y3, bb->y4);
+    *r = max4(bb->x1, bb->x2, bb->x3, bb->x4);
+    *b = max4(bb->y1, bb->y2, bb->y3, bb->y4);
+}
+
+void FreeBB(BBox* bb)
+{
+    free(bb);
 }
 
 void FreeLine(Line* line)
