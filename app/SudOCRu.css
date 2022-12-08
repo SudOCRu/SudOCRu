@@ -1,5 +1,12 @@
 /* https://docs.gtk.org/gtk3/css-properties.html#background-properties */
 
+button{
+    background : #fdf2e9;
+    color: #1a5276;
+    border: 2px solid   #e59866;
+}
+
+
 /*
 window {
     background-color: black;
@@ -15,3 +22,4 @@ button {
 GtkPaned {
     background-color: blue;
 }*/
+
