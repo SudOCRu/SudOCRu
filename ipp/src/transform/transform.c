@@ -140,7 +140,7 @@ Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
         return dst;
     }
 
-    // Scaling factos
+    // Scaling factors
     size_t sx = round(w / (float)width), sy = round(h / (float)height);
     size_t total = sx * sy; // scaled area
 
@@ -148,7 +148,9 @@ Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
     {
         for (size_t x = 0; x < width; x++)
         {
-            size_t sum = 0;
+            unsigned int sum_r = 0;
+            unsigned int sum_g = 0;
+            unsigned int sum_b = 0;
 
             for (size_t dy = 0; dy < sy; dy++)
             {
@@ -156,11 +158,16 @@ Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
                 for (size_t dx = 0; dx < sx; dx++)
                 {
                     size_t ex = clamp(x * sx + left + dx, 0, src->width);
-                    sum += src->pixels[ey * src->width + ex];
+                    unsigned int col = src->pixels[ey * src->width + ex];
+                    sum_b += (col      ) & 0xFF;
+                    sum_g += (col >>  8) & 0xFF;
+                    sum_r += (col >> 16) & 0xFF;
                 }
             }
 
-            unsigned char val = sum / total;
+            unsigned int val = ((sum_r / total) << 16) |
+                               ((sum_g / total) << 8) |
+                               (sum_b / total);
             dst->pixels[(y + margin) * actual_w + x + margin] = val;
         }
     }
