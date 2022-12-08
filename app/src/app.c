@@ -136,13 +136,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (img->height > 1000)
+    if (img->height > 800)
     {
-        size_t new_height = 1000;
-        size_t new_width = img->width * new_height / img->height;
-        // why the function I wrote is doing a weird thing (try new_height=600)
         Image* downscaled = DownscaleImage(img, 0, 0, img->width, img->height,
-                new_width, new_height, 0);
+                img->width / 2, img->height / 2, 0);
         DestroyImage(img);
         img = downscaled;
     }
