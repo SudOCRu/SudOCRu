@@ -5,7 +5,7 @@ void DrawThresholdImage(SudOCRu* app)
 {
     GtkImage* processed_display = GTK_IMAGE(gtk_builder_get_object(app->ui,
                  "ThresholdImage"));
-    SDL_Surface* surf = ImageAsSurface(app->processed_image);
+    SDL_Surface* surf = ImageAsSurface(app->thresholded_image);
     CopySurfaceToGdkImage(surf, processed_display);
     SDL_FreeSurface(surf);
 }
@@ -29,6 +29,10 @@ gboolean DoneRethreshold(gpointer user_data)
     }
     gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "ApplyButtonLoading")));
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "ApplyButton")), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "NextButton")), TRUE);
     free(task);
     return G_SOURCE_REMOVE;
 }
@@ -38,8 +42,8 @@ gpointer ThreadRethresholdImage(gpointer thr_data) {
     SudOCRu* app = task->app;
     const Image* img = app->processed_image;
 
-    app->thresholded_image =
-        LoadRawImage(img->pixels, img->width, img->height, NULL);
+    memcpy(app->thresholded_image->pixels, img->pixels,
+            img->width * img->height * sizeof(u32));
     BinarizeImage(app->thresholded_image, app->tmp_buffer, task->threshold
             / 100.0);
     task->result = 0;
@@ -58,6 +62,11 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
     GtkWidget* loader = GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "ApplyButtonLoading"));
     gtk_widget_show(loader);
+
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "ApplyButton")), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "NextButton")), FALSE);
 
     g_thread_new("rethreshold", ThreadRethresholdImage, task);
     return TRUE;
@@ -81,7 +90,7 @@ void ShowThresholding(SudOCRu* app)
 
     DrawThresholdImage(app);
 
-    gtk_range_set_range(GTK_RANGE(scale), 0, 20);
+    gtk_range_set_range(GTK_RANGE(scale), 0.5, 30);
     gtk_range_set_round_digits(GTK_RANGE(scale), 2);
     gtk_range_set_value(GTK_RANGE(scale), THRESH_OPTIMAL * 100.0);
 

@@ -51,9 +51,13 @@ gpointer ThreadProcessImage(gpointer thr_data) {
                     img->height * sizeof(unsigned int));
         }
         FilterImage(img, app->tmp_buffer, 0);
+
+        if (app->processed_image != NULL) free(app->processed_image);
+        if (app->thresholded_image != NULL) free(app->thresholded_image);
+
         app->processed_image = img;
         app->thresholded_image =
-            LoadRawImage(img->pixels, img->width, img->height, NULL);
+            LoadBufImage(img->pixels, img->width, img->height, NULL);
         BinarizeImage(app->thresholded_image, app->tmp_buffer, THRESH_OPTIMAL);
     }
     task->result = status;
