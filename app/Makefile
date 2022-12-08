@@ -1,7 +1,7 @@
 BUILD := bin
 TARGET := sudocru
 LIB_FOLDER := $(BUILD)/shared
-LIB := $(LIB_FOLDER)/libipp.a
+LIB := $(LIB_FOLDER)/libipp.a $(LIB_FOLDER)/libsolver.a
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
@@ -10,6 +10,7 @@ LDFLAGS := `pkg-config --libs sdl2 SDL2_image gtk+-3.0` -L$(LIB_FOLDER)
 LDLIBS :=  $(addprefix -l,\
 	m \
 	ipp \
+	solver \
 )
 
 RELEASE := 0
@@ -41,8 +42,10 @@ $(shell mkdir -p $(BUILD)/shared $(SRCDIRS:%=$(BUILD)/%))
 all: $(TARGET)
 
 $(LIB):
-	make -C ../ipp lib
-	cp ../ipp/bin/libipp.a bin/shared/libipp.a
+	make -C ../ipp lib RELEASE=$(RELEASE)
+	@cp ../ipp/bin/libipp.a bin/shared/libipp.a
+	make -C ../solver lib RELEASE=$(RELEASE)
+	@cp ../solver/bin/libsolver.a bin/shared/libsolver.a
 
 $(TARGET): $(OFILES)
 	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)

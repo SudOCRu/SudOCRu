@@ -54,11 +54,11 @@ all: $(TARGET)
 
 lib: $(BUILD)/$(LIBNAME)
 
+$(BUILD)/$(LIBNAME): $(SRCFILES)
+	ar -rc $@ $^
+
 $(TARGET): $(OFILES)
 	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-
-$(BUILD)/$(LIBNAME): $(OFILES)
-	ar -rc $@ $^
 
 $(BUILD)/tests/%.o: tests/%.c
 	$(V)$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) $(TESTFLAGS)
