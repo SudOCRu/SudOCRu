@@ -2,31 +2,18 @@
 
 void CopySurfaceToGdkImage(SDL_Surface *surface, GtkImage* image)
 {
-    Uint32 src_format;
-    Uint32 dst_format;
-
-    GdkPixbuf *pixbuf;
-    gboolean has_alpha;
-    int rowstride;
-    guchar *pixels;
-
-    //GtkWidget *image;
-
     // select format
-    src_format = surface->format->format;
-    has_alpha = SDL_ISPIXELFORMAT_ALPHA(src_format);
-    if (has_alpha) {
-        dst_format = SDL_PIXELFORMAT_RGBA32;
-    }
-    else {
-        dst_format = SDL_PIXELFORMAT_RGB24;
-    }
+    Uint32 src_format = surface->format->format;
+    gboolean has_alpha = SDL_ISPIXELFORMAT_ALPHA(src_format);
+
+    Uint32 dst_format = has_alpha ?
+        SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24;
 
     // create pixbuf
-    pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, has_alpha, 8,
+    GdkPixbuf *pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, has_alpha, 8,
                              surface->w, surface->h);
-    rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-    pixels = gdk_pixbuf_get_pixels (pixbuf);
+    int rowstride = gdk_pixbuf_get_rowstride (pixbuf);
+    guchar *pixels = gdk_pixbuf_get_pixels (pixbuf);
 
     // copy pixels
     SDL_LockSurface(surface);
@@ -40,6 +27,4 @@ void CopySurfaceToGdkImage(SDL_Surface *surface, GtkImage* image)
 
     // release our reference to the pixbuf
     g_object_unref (pixbuf);
-
-    //return image;
 }
