@@ -29,3 +29,7 @@ typedef struct SudOCRu {
 } SudOCRu;
 
 void SetupMainWindow(SudOCRu* app);
+
+gboolean hide_window(GtkWidget *widget, GdkEvent *event, gpointer data);
+void ShowLoadingDialog(SudOCRu* app);
+void ShowThresholding(SudOCRu* app);
