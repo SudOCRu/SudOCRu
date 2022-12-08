@@ -32,4 +32,6 @@ void SetupMainWindow(SudOCRu* app);
 
 gboolean hide_window(GtkWidget *widget, GdkEvent *event, gpointer data);
 void ShowLoadingDialog(SudOCRu* app);
+void ShowErrorMessage(SudOCRu* app, const char* error_type,
+        const char* error_desc);
 void ShowThresholding(SudOCRu* app);

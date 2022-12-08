@@ -13,9 +13,13 @@ gboolean DoneProcessing(gpointer user_data)
     SudOCRu* app = task->app;
     gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
             "ProcessingPopup")));
-    if (task->result)
+    if (!task->result)
     {
         ShowThresholding(app);
+    } else {
+        char code[4];
+        snprintf(code, sizeof(code), "E%02i", task->result);
+        ShowErrorMessage(app, (const char*)&code, "Unable to load image");
     }
     g_free(task->name);
     free(task);
@@ -51,13 +55,8 @@ gpointer ThreadProcessImage(gpointer thr_data) {
         app->thresholded_image =
             LoadRawImage(img->pixels, img->width, img->height, NULL);
         BinarizeImage(app->thresholded_image, app->tmp_buffer, THRESH_OPTIMAL);
-        task->result = 1;
     }
-    else
-    {
-        printf("Error loading image\n");
-        task->result = 0;
-    }
+    task->result = status;
     gdk_threads_add_idle(DoneProcessing, task);
     return NULL;
 }
@@ -70,6 +69,7 @@ void WaitFor(struct ProcessImageTask* task)
 
 void ShowImportFileDialog(GtkButton *button, gpointer user_data)
 {
+    GTK_BUTTON(button);
     SudOCRu* app = user_data;
 
     GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
@@ -102,6 +102,7 @@ void ShowImportFileDialog(GtkButton *button, gpointer user_data)
 
 void ShowAboutDialog(GtkButton *button, gpointer user_data)
 {
+    GTK_BUTTON(button);
     SudOCRu* app = user_data;
     GtkWindow* dialog = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "AboutUsPopup"));
