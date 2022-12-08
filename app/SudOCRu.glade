@@ -216,7 +216,7 @@ JAMET Kévin</property>
   <object class="GtkWindow" id="MainWindow">
     <property name="width_request">1200</property>
     <property name="height_request">800</property>
-    <property name="visible">False</property>
+    <property name="visible">True</property>
     <property name="title" translatable="yes">SudOCRu</property>
     <property name="resizable">False</property>
     <property name="icon">logo.jpg</property>
@@ -248,7 +248,7 @@ JAMET Kévin</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="SettingsButton">
+              <object class="GtkButton" id="AboutUsButton">
                 <property name="label" translatable="yes">About</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -1557,7 +1557,7 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="ThresholdWindow">
-    <property name="visible">True</property>
+    <property name="visible">False</property>
     <property name="title" translatable="yes">Set Threshold Level</property>
     <property name="resizable">False</property>
     <child type="titlebar">
@@ -1638,9 +1638,16 @@ Wait few moments</property>
                 <property name="margin_bottom">10</property>
                 <child>
                   <object class="GtkSpinner" id="ApplyButtonLoading">
-                    <property name="visible">True</property>
+                    <property name="visible">False</property>
                     <property name="can_focus">False</property>
                     <property name="active">True</property>
+                  </object>
+                  <object class="GtkLabel" id="ApplyThresholdLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="valign">center</property>
+                    <property name="label" translatable="yes">Apply</property>
+                    <property name="justify">center</property>
                   </object>
                 </child>
               </object>
