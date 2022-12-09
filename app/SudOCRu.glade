@@ -282,7 +282,7 @@ JAMET Kévin</property>
         <property name="margin_top">50</property>
         <property name="margin_bottom">50</property>
         <child>
-          <object class="GtkButton" id="LoadFileButton1">
+          <object class="GtkButton" id="LoadFileButton">
             <property name="label" translatable="yes">Load File</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -298,7 +298,7 @@ JAMET Kévin</property>
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="AboutUsButton1">
+          <object class="GtkButton" id="AboutUsButton">
             <property name="label" translatable="yes">About</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
