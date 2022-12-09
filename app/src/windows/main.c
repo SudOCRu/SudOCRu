@@ -1,5 +1,5 @@
 #include "windows.h"
-#include <pthread.h>
+#include "../utils.h"
 
 struct ProcessImageTask {
     SudOCRu* app;
@@ -72,7 +72,8 @@ gpointer ThreadProcessImage(gpointer thr_data) {
 
 void WaitFor(struct ProcessImageTask* task)
 {
-    ShowLoadingDialog(task->app);
+    ShowLoadingDialog(task->app, "ProcessingPopup");
+    PrintProcedure("Image Processing");
     g_thread_new("process_image", ThreadProcessImage, task);
 }
 

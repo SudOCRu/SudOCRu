@@ -28,3 +28,26 @@ void CopySurfaceToGdkImage(SDL_Surface *surface, GtkImage* image)
     // release our reference to the pixbuf
     g_object_unref (pixbuf);
 }
+
+const char IND_LOAD[] = "..";
+const char IND_OK[] = "\033[32;1mOK\033[0m";
+
+void PrintProcedure(const char* name)
+{
+    printf("\xF0\x9F\xA6\x90 \033[31;1m\xC2\xBB\033[0m Running"
+            " \033[35;1m%s\033[0m\n", name);
+}
+
+void PrintStage(unsigned char id, unsigned char t, const char* stage, int ok)
+{
+    const char* indicator = ok ? IND_OK : IND_LOAD;
+    if (ok)
+    {
+        printf("\r%hhu/%hhu [%s] %s\n", id, t, indicator, stage);
+    }
+    else
+    {
+        printf("%hhu/%hhu [%s] %s", id, t, indicator, stage);
+        fflush(stdout);
+    }
+}

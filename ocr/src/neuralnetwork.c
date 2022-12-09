@@ -237,6 +237,5 @@ unsigned char ReadDigit(double* pixels, NeuralNetwork *network){
             max = i;
         }
     }
-    DestroyNeuralNetwork(network);
     return max;
 }

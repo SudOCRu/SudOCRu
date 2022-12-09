@@ -1,9 +1,10 @@
 BUILD := bin
 TARGET := ocr
+LIBNAME := lib$(TARGET).a
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
-CFLAGS = -Wall -Wextra -pthread -D__NO_INLINE__
+CFLAGS = -Wall -Wextra -D__NO_INLINE__
 LDFLAGS :=
 LDLIBS :=  $(addprefix -l,\
 	m \
@@ -11,35 +12,41 @@ LDLIBS :=  $(addprefix -l,\
 
 RELEASE := 0
 ifneq ($(RELEASE), 0)
-	CFLAGS += -O3 -flto
+	CFLAGS += -O2 -flto
 	LDFLAGS += -flto
 else
-	CFLAGS += -g -fsanitize=address,undefined
+	CFLAGS += -Og -g -fsanitize=address,undefined
 	LDFLAGS += -fsanitize=address,undefined
 	CPPFLAGS += -DDEBUG
 endif
 
 INDIRS := $(addprefix -I, \
 	src \
-	src/utils \
 )
 
-CFILES := $(shell find . -name "*.c")
+MAINS := $(BUILD)/src/main.o
+
+CFILES := $(shell find src -name "*.c")
 OFILES := $(CFILES:%.c=$(BUILD)/%.o)
-DFILES := $(OFILES:%.o=%.d)
+SRCFILES := $(filter-out $(MAINS),$(OFILES))
+DFILES := $(OFILES:%.o=%.d) $(TESTOFILES:%.o=%.d)
 
 SRCDIRS := $(shell find . -type d -not -path "*$(BUILD)*")
 $(shell mkdir -p $(SRCDIRS:%=$(BUILD)/%))
 
 all: $(TARGET)
 
+lib: $(BUILD)/$(LIBNAME)
+	@cp src/network $(BUILD)/ocr_weights.bin
+
+$(BUILD)/$(LIBNAME): $(SRCFILES)
+	ar -rc $@ $^
+
 $(TARGET): $(OFILES)
 	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-	$(call printtask,Linking,$@)
 
 $(BUILD)/%.o: %.c
 	$(V)$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
-	$(call printtask,Compiling,$<)
 
 clean:
 	rm -rf $(BUILD) $(TARGET)

@@ -16,10 +16,9 @@ void DrawImage(Image* img, GtkImage* to)
     SDL_FreeSurface(surf);
 }
 
-void ShowLoadingDialog(SudOCRu* app)
+void ShowLoadingDialog(SudOCRu* app, char* name)
 {
-    GtkWindow* dialog = GTK_WINDOW(gtk_builder_get_object(app->ui,
-                "ProcessingPopup"));
+    GtkWindow* dialog = GTK_WINDOW(gtk_builder_get_object(app->ui, name));
 
     gtk_window_set_destroy_with_parent(dialog, TRUE);
     gtk_window_set_modal(dialog, TRUE);

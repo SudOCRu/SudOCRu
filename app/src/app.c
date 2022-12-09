@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include "utils.h"
 #include "windows/windows.h"
+#include <neuralnetwork.h>
 
 void SudOCRu_init(SudOCRu* ins, GtkBuilder* ui)
 {
@@ -15,6 +16,7 @@ void SudOCRu_init(SudOCRu* ins, GtkBuilder* ui)
     ins->grid = NULL;
     ins->sudoku = NULL;
     ins->ui = ui;
+    ins->nn = NULL;
 }
 
 void SudOCRu_destroy(SudOCRu* app)
@@ -37,7 +39,7 @@ void SetupStyle()
             g_file_new_for_path("SudOCRu.css"), &error);
     if (error != 0)
     {
-        printf("Error loading css\n");
+        printf("<!> Error loading css\n");
     }
 
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
@@ -54,7 +56,7 @@ int main()
     GError* error = NULL;
     if (gtk_builder_add_from_file(builder, "SudOCRu.glade", &error) == 0)
     {
-        g_printerr("Error loading file: %s\n", error->message);
+        g_printerr("Error loading layout file: %s\n", error->message);
         g_clear_error(&error);
         return 1;
     }

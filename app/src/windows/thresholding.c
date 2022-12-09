@@ -1,4 +1,5 @@
 #include "windows.h"
+#include "../utils.h"
 #include <filtering/edge_detection.h>
 
 struct RethresholdTask {
@@ -94,6 +95,7 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "NextButton")), FALSE);
 
+    PrintProcedure("Thresholding");
     g_thread_new("rethreshold", ThreadRethresholdImage, task);
     return TRUE;
 }
@@ -137,6 +139,7 @@ gpointer ThreadDetectGrid(gpointer thr_data) {
         return NULL;
     }
 
+    printf("Finding grid...\n");
     SudokuGrid* grid = ExtractSudoku(img, edges, -50, 0);
     if (grid == NULL)
     {
@@ -147,7 +150,6 @@ gpointer ThreadDetectGrid(gpointer thr_data) {
     app->grid = grid;
     task->result = 0;
     gdk_threads_add_idle(DoneGridDetection, task);
-    printf("Grid found!\n");
     return NULL;
 }
 
@@ -163,6 +165,7 @@ gboolean RunGridDetection(GtkButton* button, gpointer user_data)
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "NextButton")), FALSE);
 
+    PrintProcedure("Grid Detection");
     g_thread_new("detect_grid", ThreadDetectGrid, task);
     return TRUE;
 }

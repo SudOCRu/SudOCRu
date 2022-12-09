@@ -90,7 +90,7 @@ int CleanCell(Image* img, u8* markers)
             if (pow(x - midX, 2) + pow(y - midY, 2) > r_squared)
                 img->pixels[y * img->width + x] = 0;
             else
-                img->pixels[y * img->width + x] &= 0xFF;
+                img->pixels[y * img->width + x] &= 0xFFFFFF;
         }
     }
 

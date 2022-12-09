@@ -126,11 +126,11 @@ void ShowOCRResults(SudOCRu* app)
         SudokuCell* cell = app->cells[details->id];
         if (cell->value != 0) {
             snprintf(digit, sizeof(digit), "%hhu", cell->value);
+            gtk_button_set_label(details->button, digit);
             gtk_style_context_add_class(ctx, "colored");
         } else {
             gtk_style_context_remove_class(ctx, "colored");
         }
-        gtk_button_set_label(details->button, digit);
         g_signal_connect(GTK_WIDGET(iter->data),
                 "clicked", G_CALLBACK(EditCell), details);
     }

@@ -1,7 +1,7 @@
 BUILD := bin
 TARGET := sudocru
 LIB_FOLDER := $(BUILD)/shared
-LIB := $(LIB_FOLDER)/libipp.a $(LIB_FOLDER)/libsolver.a
+LIB := $(LIB_FOLDER)/libipp.a $(LIB_FOLDER)/libsolver.a $(LIB_FOLDER)/libocr.a
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
@@ -10,6 +10,7 @@ LDFLAGS := `pkg-config --libs sdl2 SDL2_image gtk+-3.0` -L$(LIB_FOLDER)
 LDLIBS :=  $(addprefix -l,\
 	m \
 	ipp \
+	ocr \
 	solver \
 )
 
@@ -26,8 +27,8 @@ endif
 INDIRS := $(addprefix -I, \
 	src \
 	../ipp/src \
-	../solver/src \
 	../ocr/src \
+	../solver/src \
 )
 
 MAINS := $(BUILD)/src/main.o
@@ -46,6 +47,9 @@ $(LIB):
 	@cp ../ipp/bin/libipp.a bin/shared/libipp.a
 	make -C ../solver lib RELEASE=$(RELEASE)
 	@cp ../solver/bin/libsolver.a bin/shared/libsolver.a
+	make -C ../ocr lib RELEASE=$(RELEASE)
+	@cp ../ocr/bin/libocr.a bin/shared/libocr.a
+	@cp ../ocr/bin/ocr_weights.bin bin/ocr_weights.bin
 
 $(TARGET): $(OFILES)
 	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
