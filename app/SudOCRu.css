@@ -3,7 +3,12 @@
 button{
     background : #fdf2e9;
     color: #1a5276;
-    border: 2px solid   #e59866;
+    border: 2px solid #e59866;
+}
+
+
+.digit_input{
+    font-size: 32px;
 }
 
 

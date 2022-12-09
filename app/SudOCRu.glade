@@ -105,6 +105,10 @@ JAMET Kévin</property>
               <object class="GtkImage" id="CellImage">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
                 <property name="pixbuf">imgs/logo.jpg</property>
               </object>
               <packing>
@@ -120,6 +124,13 @@ JAMET Kévin</property>
                 <property name="margin_right">10</property>
                 <property name="margin_top">10</property>
                 <property name="margin_bottom">10</property>
+                <property name="max_length">1</property>
+                <property name="width_chars">3</property>
+                <property name="max_width_chars">1</property>
+                <property name="input_purpose">digits</property>
+                <style>
+                  <class name="digit_input"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">1</property>
