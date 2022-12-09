@@ -21,6 +21,7 @@ void SudOCRu_destroy(SudOCRu* app)
     DestroyImage(app->original_image);
     DestroyImage(app->processed_image);
     DestroyImage(app->thresholded_image);
+    DestroyImage(app->cropped_grid);
     DestroySudoku(app->sudoku);
     FreeSudokuGrid(app->grid);
     free(app->tmp_buffer);

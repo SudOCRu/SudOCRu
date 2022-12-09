@@ -99,7 +99,7 @@ SudokuGrid* ExtractSudoku(const Image* org, Image* edges, int threshold,
 }
 
 SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
-        int flags, size_t* out_count)
+        int flags, size_t* out_count, Image** out_sudoku)
 {
     BBox* bb = grid->bounds;
     Image* sudoku = WarpPerspective(original, bb);
@@ -136,8 +136,9 @@ SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
         return NULL;
     }
 
-    if (SaveImageFile(sudoku, "sudoku.png"))
+    if (flags != 0 && SaveImageFile(sudoku, "sudoku.png"))
         printf("Successfully wrote sudoku.png\n");
+    *out_sudoku = sudoku;
 
     size_t vcells = 9, hcells = 9;
     SudokuCell** cells = malloc(vcells * hcells * sizeof(Image*));
@@ -162,6 +163,7 @@ SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
             cell->width = stepX;
             cell->height = stepY;
             cell->data = CropImage(sudoku, cell->x, cell->y, r, b);
+            cell->value = 0;
             cells[i * hcells + j] = cell;
         }
     }

@@ -7,7 +7,7 @@ gboolean RunOCR(GtkButton* button, gpointer user_data)
     SudOCRu* app = user_data;
 
     app->cells = ExtractSudokuCells(app->thresholded_image, app->grid, 0,
-            &app->cells_len);
+            &app->cells_len, &app->cropped_grid);
 
     ShowOCRResults(app);
     gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,

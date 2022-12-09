@@ -35,9 +35,10 @@ gpointer ThreadProcessImage(gpointer thr_data) {
     Image* img = LoadImageFile(file, &status);
     if (img != NULL && status == ImageOk)
     {
-        if (app->original_image != NULL) free(app->original_image);
-        if (app->processed_image != NULL) free(app->processed_image);
-        if (app->thresholded_image != NULL) free(app->thresholded_image);
+        if (app->original_image != NULL) DestroyImage(app->original_image);
+        if (app->processed_image != NULL) DestroyImage(app->processed_image);
+        if (app->thresholded_image != NULL) DestroyImage(app->thresholded_image);
+        if (app->cropped_grid != NULL) DestroyImage(app->cropped_grid);
 
         if (img->height > 800)
         {

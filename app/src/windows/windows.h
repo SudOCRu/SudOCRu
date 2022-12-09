@@ -28,6 +28,7 @@ typedef struct SudOCRu {
     Sudoku* sudoku;
     size_t cells_len;
     SudokuCell** cells;
+    Image* cropped_grid;
 
     GtkBuilder* ui;
 } SudOCRu;
