@@ -67,15 +67,8 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
     SudOCRu* app = user_data;
     struct RethresholdTask* task = malloc(sizeof(struct RethresholdTask));
     task->app = app;
-    task->threshold = gtk_range_get_value(
+    task->threshold =gtk_range_get_value(
             GTK_RANGE(gtk_builder_get_object(app->ui, "ThresholdScale")));
-
-    /*
-    GtkWidget* loader = GTK_WIDGET(gtk_builder_get_object(app->ui,
-                 "ApplyButtonLoading"));
-    gtk_widget_show(loader);
-    gtk_spinner_start(GTK_SPINNER(loader));
-    */
 
     GtkButton* apply =
         GTK_BUTTON(gtk_builder_get_object(app->ui, "ApplyButton"));
@@ -94,6 +87,7 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
     gtk_widget_set_halign(spinner, GTK_ALIGN_FILL);
     gtk_widget_set_valign(spinner, GTK_ALIGN_FILL);
     gtk_widget_show_all(spinner);
+    gtk_spinner_start(GTK_SPINNER(spinner));
     gtk_container_add(container, spinner);
 
     gtk_widget_set_sensitive(GTK_WIDGET(apply), FALSE);

@@ -26,6 +26,8 @@ typedef struct SudOCRu {
 
     SudokuGrid* grid;
     Sudoku* sudoku;
+    size_t cells_len;
+    SudokuCell** cells;
 
     GtkBuilder* ui;
 } SudOCRu;
@@ -40,3 +42,4 @@ void ShowErrorMessage(SudOCRu* app, const char* error_type,
         const char* error_desc);
 void ShowThresholding(SudOCRu* app);
 void ShowGridDetection(SudOCRu* app);
+void ShowOCRResults(SudOCRu* app);
