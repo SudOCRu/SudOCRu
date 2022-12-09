@@ -1,16 +1,45 @@
 /* https://docs.gtk.org/gtk3/css-properties.html#background-properties */
 
-button{
-    background : #fdf2e9;
-    color: #1a5276;
-    border: 2px solid #e59866;
+button {
+    background-image: none;
+    color: #fff;
+    background-color: #1134C7;
+    border-radius: 8px;
+    border: 2px solid rgba(0, 0, 0, 0);
+    font-size: 14px;
+    text-shadow: none;
 }
 
+button:hover {
+    border: 2px solid #889ae3;
+}
 
-.digit_input{
+button:focus {
+    border: 2px solid #d9def6;
+}
+
+button.cell {
+    background-color: #ebebeb;
+    color: #333333;
+    border-radius: 0;
+    border: 1px solid #dedfdc;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+button.cell.colored {
+    background-color: #ffd9c7;
+    border: none;
+    color: #fe6117;
+}
+
+button.cell:hover {
+    background-color: #dedfdc;
+}
+
+.digit_input {
     font-size: 32px;
 }
-
 
 /*
 window {
