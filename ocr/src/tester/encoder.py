@@ -6,6 +6,11 @@ from subprocess import run
 from tkinter import *
 from PIL import Image,ImageTk
 
+class Tester:
+    def __init__(self, paths):
+        self.i = 1
+        self.paths = paths
+
 def writeTrainingSet():
     samples_base = "train/"
     samples_paths = []
@@ -15,7 +20,7 @@ def writeTrainingSet():
     
     num = []
     pixs = []
-    with open('training', 'wb') as f:
+    with open('../training', 'wb') as f:
         for folder in samples_paths:
             for image_path in os.listdir(folder):
                 image_path = os.path.join(folder, image_path)
@@ -38,7 +43,7 @@ def writeTrainingSet():
         f.write(bytearray(pixs))
 
 
-    with open('labels', 'wb') as f:
+    with open('../labels', 'wb') as f:
         f.write((2049).to_bytes(4, byteorder='little', signed=True))
         f.write((len(num)).to_bytes(4, byteorder='little', signed=True))
         f.write(bytearray(num))
@@ -47,7 +52,7 @@ def writeTrainingSet():
 def grayscaleImage(imagePath):
     img = Image.open(imagePath)
     bands = img.getbands()
-    with open('data', 'wb') as f:
+    with open('../data', 'wb') as f:
         for i in range(img.width*img.height):
             x,y = i%img.width, i//img.width
             if bands == ('P',):
@@ -69,24 +74,28 @@ if len(sys.argv) < 2:
 
 index = 0
 
+def nextImage(t : Tester, label : Label, label2 : Label, labelpath : Label, dirs):
+    if t.i < len(dirs):
+        grayscaleImage(os.path.join(t.paths, dirs[t.i]))
+        os.chdir("../")
+        v = run(['./tests', 'eval'])
+        os.chdir("tester")
+        img = ImageTk.PhotoImage(Image.open(os.path.join(t.paths, dirs[t.i])))
+        label2["text"]=str(v.returncode)
+        labelpath["text"]=dirs[t.i]
+        label.configure(image=img)
+        label.image = img
+        t.i+=1
+    else:
+        labelpath["text"]="All images readed"
 
 
 if sys.argv[1] == 'test' and len(sys.argv) == 3:
     grayscaleImage(sys.argv[2])
-    #v = os.system('./tests eval')
+    os.chdir("../")
     v = run(['./tests', 'eval'])
     print("result = ",str(v.returncode))
-    window = Tk(className='Neural network result')
-    window.geometry("200x200")
-    frame = Frame(window)
-    frame.pack()
-    frame.place(anchor='center',relx=0.5,rely=0.5)
-    img = ImageTk.PhotoImage(Image.open(sys.argv[2]))
-    label = Label(frame, image=img)
-    label.pack()
-    label2 = Label(frame, text=str(v.returncode))
-    label2.pack()
-    window.mainloop()
+    os.chdir("tester")
 elif sys.argv[1] == 'train':
     writeTrainingSet()
 elif sys.argv[1] == 'suit' and len(sys.argv) == 3:
@@ -98,40 +107,24 @@ elif sys.argv[1] == 'suit' and len(sys.argv) == 3:
     frame.pack()
     frame.place(anchor='center',relx=0.5,rely=0.5)
 
-    i = 0
-    global feur
-    label2 = None
-    def executeOneSuit():
-        grayscaleImage(os.path.join(sys.argv[2], dirs[i]))
-        v = run(['./tests', 'eval'])
-        img = ImageTk.PhotoImage(Image.open(os.path.join(sys.argv[2], dirs[i])))
-        if label != None:
-            label.destroy()
-        if label2 != None:
-            label2.destroy()
-        label = Label(frame, image=img)
-        label.pack()
-        label2 = Label(frame, text=str(v.returncode))
-        label2.pack()
+    grayscaleImage(os.path.join(sys.argv[2], dirs[0]))
     
-    next = Button(text="Next",command=executeOneSuit)
+    os.chdir("../")
+    v = run(['./tests', 'eval'])
+    os.chdir("tester")
+    img = ImageTk.PhotoImage(Image.open(os.path.join(sys.argv[2], dirs[0])))
+    
+    labelpath = Label(frame, text=dirs[0])
+    labelpath.pack()
+    label = Label(frame, image=img)
+    label.pack()
+    label2 = Label(frame, text=str(v.returncode))
+    label2.pack()
+    a = Tester(sys.argv[2])
+    
+    next = Button(text="Next",command=lambda: nextImage(a, label, label2, labelpath, dirs))
     next.pack()
-    executeOneSuit()
     window.mainloop()
-        
-    for path in os.listdir(sys.argv[2]):
-        grayscaleImage(os.path.join(sys.argv[2], path))
-        print(os.path.join(sys.argv[2], path))
-        os.system('./tests eval')
-        print()
-        
-    executeOneSuit(sys.argv[2])
-
-    for path in os.listdir(sys.argv[2]):
-        grayscaleImage(os.path.join(sys.argv[2], path))
-        print(os.path.join(sys.argv[2], path))
-        os.system('./tests eval')
-        print()
 
 et = time.time()
 print('Executions time:',(et-st)*1000,'ms')
