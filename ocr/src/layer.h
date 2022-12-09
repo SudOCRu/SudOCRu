@@ -12,5 +12,8 @@ double *CalculateOutputs(Layer* layer, double inputs[]);
 
 void UpdateGradients(Layer* layer, LayerLearnData* layerLearnData);
 
-void CalculateHiddenLayerNodeValues(Layer* layer, LayerLearnData* learnData,
-        Layer* oldLayer, double oldNodeValues[], int oldNodeValuesLength);
+void CalculateHiddenLayerNodeValues(Layer* layer,
+        LayerLearnData* learnData,
+        Layer* oldLayer,
+        double oldNodeValues[],
+        int oldNodeValuesLength);
