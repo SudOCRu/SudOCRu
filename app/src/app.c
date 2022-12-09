@@ -16,6 +16,16 @@ void SudOCRu_init(SudOCRu* ins, GtkBuilder* ui)
     ins->ui = ui;
 }
 
+void SudOCRu_destroy(SudOCRu* app)
+{
+    DestroyImage(app->original_image);
+    DestroyImage(app->processed_image);
+    DestroyImage(app->thresholded_image);
+    DestroySudoku(app->sudoku);
+    FreeSudokuGrid(app->grid);
+    free(app->tmp_buffer);
+}
+
 void SetupStyle()
 {
     GtkCssProvider *provider = gtk_css_provider_new();
@@ -52,5 +62,6 @@ int main()
     SetupMainWindow(&state);
 
     gtk_main();
+    SudOCRu_destroy(&state);
     return 0;
 }

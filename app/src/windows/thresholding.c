@@ -37,8 +37,7 @@ gboolean DoneRethreshold(gpointer user_data)
     GtkWidget* label = gtk_label_new("Apply");
     gtk_widget_set_halign(label, GTK_ALIGN_FILL);
     gtk_widget_set_valign(label, GTK_ALIGN_FILL);
-    gtk_widget_set_hexpand(label, TRUE);
-    gtk_widget_set_vexpand(label, TRUE);
+    gtk_widget_show_all(label);
     gtk_container_add(container, label);
 
     gtk_widget_set_sensitive(GTK_WIDGET(apply), TRUE);
@@ -94,8 +93,7 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
     GtkWidget* spinner = gtk_spinner_new();
     gtk_widget_set_halign(spinner, GTK_ALIGN_FILL);
     gtk_widget_set_valign(spinner, GTK_ALIGN_FILL);
-    gtk_widget_set_hexpand(spinner, TRUE);
-    gtk_widget_set_vexpand(spinner, TRUE);
+    gtk_widget_show_all(spinner);
     gtk_container_add(container, spinner);
 
     gtk_widget_set_sensitive(GTK_WIDGET(apply), FALSE);
