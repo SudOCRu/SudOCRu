@@ -48,26 +48,25 @@ gboolean EditCell(GtkButton* button, gpointer user_data)
     GtkEntry* num_input = GTK_ENTRY(gtk_builder_get_object(app->ui,
                 "CellTextBox"));
 
-    DrawImage(app->cells[details->id]->data, display);
-
-    char name[14];
-    snprintf(name, sizeof(name), "Edit Cell %02hhu", details->id);
-
     SudokuCell* cell = app->cells[details->id];
+    DrawImage(cell->data, display);
     char digit[3] = { 0, };
     if (cell->value != 0)
         snprintf(digit, sizeof(digit), "%hhu", cell->value);
     gtk_entry_set_text(num_input, digit);
 
+    char name[14];
+    snprintf(name, sizeof(name), "Edit Cell %02hhu", details->id);
+
     gtk_window_set_title(dialog, name);
     gtk_window_set_destroy_with_parent(dialog, TRUE);
     gtk_window_set_modal(dialog, TRUE);
-    gtk_window_set_keep_above(dialog, TRUE);
     g_signal_connect(G_OBJECT(save), "clicked", G_CALLBACK(SaveCell), details);
     g_signal_connect(G_OBJECT(dialog),
         "delete-event", G_CALLBACK(hide_window), NULL);
     g_signal_connect(dialog, "destroy", G_CALLBACK(hide_window), NULL);
     gtk_widget_show(GTK_WIDGET(dialog));
+    gtk_window_set_keep_above(dialog, TRUE);
     return TRUE;
 }
 

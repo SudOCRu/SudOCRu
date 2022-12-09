@@ -3,7 +3,7 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkWindow" id="AboutUsPopup">
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
     <property name="title" translatable="yes">About Us</property>
     <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
@@ -69,8 +69,8 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="CellModifPopup">
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Modify Cell</property>
+    <property name="can_focus">True</property>
+    <property name="title" translatable="yes">Edit Cell</property>
     <property name="window_position">center-on-parent</property>
     <property name="gravity">center</property>
     <child type="titlebar">
@@ -143,7 +143,7 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="ErrorPopup">
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
     <property name="title" translatable="yes">Error</property>
     <property name="resizable">False</property>
     <property name="window_position">center-always</property>
@@ -162,8 +162,8 @@ JAMET Kévin</property>
         <property name="margin_bottom">10</property>
         <property name="column_homogeneous">True</property>
         <child>
-          <object class="GtkButton" id="CancelSolvingButton1">
-            <property name="label" translatable="yes">Cancel</property>
+          <object class="GtkButton" id="CloseErrorButton">
+            <property name="label" translatable="yes">Close</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -269,7 +269,7 @@ JAMET Kévin</property>
     <property name="width_request">1200</property>
     <property name="height_request">800</property>
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
     <property name="title" translatable="yes">SudOCRu</property>
     <property name="resizable">False</property>
     <property name="window_position">center-always</property>
@@ -390,8 +390,8 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="OCRCorrection">
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes">OCR Correction</property>
+    <property name="can_focus">True</property>
+    <property name="title" translatable="yes">OCR Results</property>
     <property name="resizable">False</property>
     <property name="window_position">center-always</property>
     <property name="gravity">center</property>
@@ -1352,7 +1352,7 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="OCRPopup">
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
     <property name="title" translatable="yes">Processing Image...</property>
     <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
@@ -1419,7 +1419,7 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="ProcessingPopup">
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
     <property name="title" translatable="yes">Processing Image...</property>
     <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
@@ -1486,8 +1486,8 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="ResizingWindow">
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Resize Image</property>
+    <property name="can_focus">True</property>
+    <property name="title" translatable="yes">Grid Detection Results</property>
     <property name="resizable">False</property>
     <property name="window_position">center-always</property>
     <property name="gravity">center</property>
@@ -1561,7 +1561,7 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="SaveWindow">
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
     <property name="title" translatable="yes">Sudoku Solved Preview</property>
     <property name="resizable">False</property>
     <property name="window_position">center-always</property>
@@ -1622,7 +1622,7 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="SolvingPopup">
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
     <property name="title" translatable="yes">Solving Sudoku...</property>
     <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
@@ -1689,7 +1689,7 @@ Wait few moments</property>
     </child>
   </object>
   <object class="GtkWindow" id="ThresholdWindow">
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
     <property name="title" translatable="yes">Set Threshold Level</property>
     <property name="resizable">False</property>
     <property name="window_position">center-always</property>
