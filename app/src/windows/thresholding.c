@@ -21,10 +21,27 @@ gboolean DoneRethreshold(gpointer user_data)
     {
         ShowErrorMessage(app, "Runtime error", "Unable to threshold image");
     }
-    gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
-                 "ApplyButtonLoading")));
-    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
-                 "ApplyButton")), TRUE);
+    GtkButton* apply =
+        GTK_BUTTON(gtk_builder_get_object(app->ui, "ApplyButton"));
+
+    GtkContainer* container = GTK_CONTAINER(apply);
+    GList *children, *iter;
+
+    children = gtk_container_get_children(container);
+    for(iter = children; iter != NULL; iter = g_list_next(iter))
+    {
+        gtk_container_remove(container, GTK_WIDGET(iter->data));
+    }
+    g_list_free(children);
+
+    GtkWidget* label = gtk_label_new("Apply");
+    gtk_widget_set_halign(label, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(label, GTK_ALIGN_FILL);
+    gtk_widget_set_hexpand(label, TRUE);
+    gtk_widget_set_vexpand(label, TRUE);
+    gtk_container_add(container, label);
+
+    gtk_widget_set_sensitive(GTK_WIDGET(apply), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "NextButton")), TRUE);
     free(task);
@@ -54,13 +71,34 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
     task->threshold = gtk_range_get_value(
             GTK_RANGE(gtk_builder_get_object(app->ui, "ThresholdScale")));
 
+    /*
     GtkWidget* loader = GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "ApplyButtonLoading"));
     gtk_widget_show(loader);
     gtk_spinner_start(GTK_SPINNER(loader));
+    */
 
-    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
-                 "ApplyButton")), FALSE);
+    GtkButton* apply =
+        GTK_BUTTON(gtk_builder_get_object(app->ui, "ApplyButton"));
+
+    GtkContainer* container = GTK_CONTAINER(apply);
+    GList *children, *iter;
+
+    children = gtk_container_get_children(container);
+    for (iter = children; iter != NULL; iter = g_list_next(iter))
+    {
+        gtk_container_remove(container, GTK_WIDGET(iter->data));
+    }
+    g_list_free(children);
+
+    GtkWidget* spinner = gtk_spinner_new();
+    gtk_widget_set_halign(spinner, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(spinner, GTK_ALIGN_FILL);
+    gtk_widget_set_hexpand(spinner, TRUE);
+    gtk_widget_set_vexpand(spinner, TRUE);
+    gtk_container_add(container, spinner);
+
+    gtk_widget_set_sensitive(GTK_WIDGET(apply), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "NextButton")), FALSE);
 
