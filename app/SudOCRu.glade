@@ -1729,7 +1729,6 @@ Wait few moments</property>
             <child>
               <object class="GtkButton" id="ApplyButton">
                 <property name="visible">True</property>
-                <property name="sensitive">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="valign">end</property>
@@ -1738,10 +1737,10 @@ Wait few moments</property>
                 <property name="margin_top">10</property>
                 <property name="margin_bottom">10</property>
                 <child>
-                  <object class="GtkSpinner" id="ApplyButtonLoading">
+                  <object class="GtkLabel" id="ApplyButtonLoading">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="active">True</property>
+                    <property name="label" translatable="yes">Apply</property>
                   </object>
                 </child>
               </object>
@@ -1757,6 +1756,7 @@ Wait few moments</property>
                 <property name="can_focus">True</property>
                 <property name="halign">center</property>
                 <property name="orientation">vertical</property>
+                <property name="inverted">True</property>
                 <property name="round_digits">1</property>
                 <property name="value_pos">bottom</property>
               </object>
