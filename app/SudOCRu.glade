@@ -6,6 +6,8 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">About Us</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -69,6 +71,8 @@ JAMET Kévin</property>
   <object class="GtkWindow" id="CellModifPopup">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Modify Cell</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -131,7 +135,9 @@ JAMET Kévin</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Error</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-always</property>
     <property name="deletable">False</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -255,7 +261,9 @@ JAMET Kévin</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">SudOCRu</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-always</property>
     <property name="icon">logo.jpg</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -374,6 +382,8 @@ JAMET Kévin</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">OCR Correction</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-always</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1334,7 +1344,9 @@ JAMET Kévin</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Processing Image...</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-on-parent</property>
     <property name="deletable">False</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1399,7 +1411,9 @@ Wait few moments</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Processing Image...</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-on-parent</property>
     <property name="deletable">False</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1464,6 +1478,8 @@ Wait few moments</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Resize Image</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-always</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1537,6 +1553,8 @@ Wait few moments</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Sudoku Solved Preview</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-always</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1596,7 +1614,9 @@ Wait few moments</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Solving Sudoku...</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-on-parent</property>
     <property name="deletable">False</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -1661,6 +1681,8 @@ Wait few moments</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Set Threshold Level</property>
     <property name="resizable">False</property>
+    <property name="window_position">center-always</property>
+    <property name="gravity">center</property>
     <child type="titlebar">
       <placeholder/>
     </child>
