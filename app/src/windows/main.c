@@ -55,6 +55,7 @@ gpointer ThreadProcessImage(gpointer thr_data) {
             app->tmp_buffer = realloc(app->tmp_buffer, img->width *
                     img->height * sizeof(unsigned int));
         }
+        app->cropped_grid = NULL;
         app->original_image = img;
         app->processed_image =
             LoadBufImage(img->pixels, img->width, img->height, NULL);

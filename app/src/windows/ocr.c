@@ -14,6 +14,8 @@ gboolean SaveCell(GtkButton* button, gpointer user_data)
 
     GtkEntry* num_input = GTK_ENTRY(gtk_builder_get_object(app->ui,
                 "CellTextBox"));
+    GtkStyleContext* ctx = gtk_widget_get_style_context(
+            GTK_WIDGET(details->button));
     const gchar *text = gtk_entry_get_text(num_input);
     if (text[0] >= '0' && text[0] <= '9')
     {
@@ -23,8 +25,25 @@ gboolean SaveCell(GtkButton* button, gpointer user_data)
         if (cell->value != 0)
             snprintf(digit, sizeof(digit), "%hhu", cell->value);
         gtk_button_set_label(details->button, digit);
+        gtk_style_context_add_class(ctx, "colored");
+    } else {
+        gtk_style_context_remove_class(ctx, "colored");
     }
 
+    GtkButton* save = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                "SaveCellButton"));
+    g_signal_handlers_disconnect_by_func(save, G_CALLBACK(SaveCell), details);
+    gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
+        "CellModifPopup")));
+    return TRUE;
+}
+
+gboolean CloseEditCell(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+    UNUSED(widget);
+    UNUSED(event);
+    struct CellDetails* details = user_data;
+    SudOCRu* app = details->app;
     GtkButton* save = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "SaveCellButton"));
     g_signal_handlers_disconnect_by_func(save, G_CALLBACK(SaveCell), details);
@@ -54,6 +73,7 @@ gboolean EditCell(GtkButton* button, gpointer user_data)
     if (cell->value != 0)
         snprintf(digit, sizeof(digit), "%hhu", cell->value);
     gtk_entry_set_text(num_input, digit);
+    gtk_entry_set_alignment(num_input, 0.5);
 
     char name[14];
     snprintf(name, sizeof(name), "Edit Cell %02hhu", details->id);
@@ -63,8 +83,7 @@ gboolean EditCell(GtkButton* button, gpointer user_data)
     gtk_window_set_modal(dialog, TRUE);
     g_signal_connect(G_OBJECT(save), "clicked", G_CALLBACK(SaveCell), details);
     g_signal_connect(G_OBJECT(dialog),
-        "delete-event", G_CALLBACK(hide_window), NULL);
-    g_signal_connect(dialog, "destroy", G_CALLBACK(hide_window), NULL);
+        "delete-event", G_CALLBACK(CloseEditCell), details);
     gtk_widget_show(GTK_WIDGET(dialog));
     gtk_window_set_keep_above(dialog, TRUE);
     return TRUE;
@@ -88,6 +107,7 @@ void ShowOCRResults(SudOCRu* app)
     GtkContainer* container = GTK_CONTAINER(gtk_builder_get_object(app->ui,
                 "CellGrid"));
     GList *children, *iter;
+    GtkStyleContext *ctx;
 
     children = gtk_container_get_children(container);
     unsigned char i = 80;
@@ -99,9 +119,17 @@ void ShowOCRResults(SudOCRu* app)
         details->id = i--;
         details->button = GTK_BUTTON(iter->data);
 
+        ctx = gtk_widget_get_style_context(iter->data);
+        gtk_style_context_add_class(ctx, "cell");
+        gtk_button_set_relief(details->button, GTK_RELIEF_NONE);
+
         SudokuCell* cell = app->cells[details->id];
-        if (cell->value != 0)
+        if (cell->value != 0) {
             snprintf(digit, sizeof(digit), "%hhu", cell->value);
+            gtk_style_context_add_class(ctx, "colored");
+        } else {
+            gtk_style_context_remove_class(ctx, "colored");
+        }
         gtk_button_set_label(details->button, digit);
         g_signal_connect(GTK_WIDGET(iter->data),
                 "clicked", G_CALLBACK(EditCell), details);
