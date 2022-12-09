@@ -10,6 +10,7 @@ void SudOCRu_init(SudOCRu* ins, GtkBuilder* ui)
     ins->original_image = NULL;
     ins->processed_image = NULL;
     ins->thresholded_image = NULL;
+    ins->cropped_grid = NULL;
     ins->tmp_buffer = NULL;
     ins->grid = NULL;
     ins->sudoku = NULL;

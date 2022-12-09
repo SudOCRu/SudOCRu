@@ -34,6 +34,9 @@ void ShowGridDetection(SudOCRu* app)
 
     g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
     g_signal_connect(next, "clicked", G_CALLBACK(RunOCR), app);
+    g_signal_connect(G_OBJECT(win),
+        "delete-event", G_CALLBACK(hide_window), NULL);
+    g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
 
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);
