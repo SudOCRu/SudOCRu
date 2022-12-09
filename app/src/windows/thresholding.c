@@ -1,14 +1,5 @@
 #include "windows.h"
-#include "../utils.h"
-
-void DrawThresholdImage(SudOCRu* app)
-{
-    GtkImage* processed_display = GTK_IMAGE(gtk_builder_get_object(app->ui,
-                 "ThresholdImage"));
-    SDL_Surface* surf = ImageAsSurface(app->thresholded_image);
-    CopySurfaceToGdkImage(surf, processed_display);
-    SDL_FreeSurface(surf);
-}
+#include <filtering/edge_detection.h>
 
 struct RethresholdTask {
     SudOCRu* app;
@@ -22,9 +13,12 @@ gboolean DoneRethreshold(gpointer user_data)
     SudOCRu* app = task->app;
     if (!task->result)
     {
-        DrawThresholdImage(app);
+        GtkImage* img = GTK_IMAGE(gtk_builder_get_object(app->ui,
+                    "ThresholdImage"));
+        DrawImage(app->thresholded_image, img);
     }
-    else {
+    else
+    {
         ShowErrorMessage(app, "Runtime error", "Unable to threshold image");
     }
     gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
@@ -53,6 +47,7 @@ gpointer ThreadRethresholdImage(gpointer thr_data) {
 
 gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
 {
+    UNUSED(button);
     SudOCRu* app = user_data;
     struct RethresholdTask* task = malloc(sizeof(struct RethresholdTask));
     task->app = app;
@@ -62,6 +57,7 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
     GtkWidget* loader = GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "ApplyButtonLoading"));
     gtk_widget_show(loader);
+    gtk_spinner_start(GTK_SPINNER(loader));
 
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "ApplyButton")), FALSE);
@@ -69,6 +65,75 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
                  "NextButton")), FALSE);
 
     g_thread_new("rethreshold", ThreadRethresholdImage, task);
+    return TRUE;
+}
+
+struct DetectGridTask {
+    SudOCRu* app;
+    int result;
+};
+
+gboolean DoneGridDetection(gpointer user_data)
+{
+    struct DetectGridTask* task = user_data;
+    SudOCRu* app = task->app;
+    if (!task->result)
+    {
+        gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
+            "ThresholdWindow")));
+        ShowGridDetection(app);
+    }
+    else {
+        ShowErrorMessage(app, "Runtime error", "Unable to detect grid");
+    }
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "ApplyButton")), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "NextButton")), TRUE);
+    free(task);
+    return G_SOURCE_REMOVE;
+}
+
+gpointer ThreadDetectGrid(gpointer thr_data) {
+    struct DetectGridTask* task = thr_data;
+    SudOCRu* app = task->app;
+    const Image* img = app->processed_image;
+
+    Image* edges = CannyEdgeDetection(app->thresholded_image, app->tmp_buffer);
+    if (edges == NULL)
+    {
+        task->result = 1;
+        gdk_threads_add_idle(DoneGridDetection, task);
+        return NULL;
+    }
+
+    SudokuGrid* grid = ExtractSudoku(img, edges, -50, 0);
+    if (grid == NULL)
+    {
+        task->result = 2;
+        gdk_threads_add_idle(DoneGridDetection, task);
+        return NULL;
+    }
+    app->grid = grid;
+    task->result = 0;
+    gdk_threads_add_idle(DoneGridDetection, task);
+    printf("Grid found!\n");
+    return NULL;
+}
+
+gboolean RunGridDetection(GtkButton* button, gpointer user_data)
+{
+    UNUSED(button);
+    SudOCRu* app = user_data;
+    struct DetectGridTask* task = malloc(sizeof(struct DetectGridTask));
+    task->app = app;
+
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "ApplyButton")), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "NextButton")), FALSE);
+
+    g_thread_new("detect_grid", ThreadDetectGrid, task);
     return TRUE;
 }
 
@@ -82,13 +147,16 @@ void ShowThresholding(SudOCRu* app)
                  "ThresholdScale"));
     GtkButton* apply = GTK_BUTTON(gtk_builder_get_object(app->ui,
                  "ApplyButton"));
+    GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                 "NextButton"));
 
     GtkWindowGroup* grp = gtk_window_get_group(main);
     gtk_window_group_add_window(grp, win);
-    gtk_window_set_screen(main, gdk_screen_get_default());
     gtk_window_set_screen(win, gdk_screen_get_default());
 
-    DrawThresholdImage(app);
+    GtkImage* img = GTK_IMAGE(gtk_builder_get_object(app->ui,
+                "ThresholdImage"));
+    DrawImage(app->thresholded_image, img);
 
     gtk_range_set_range(GTK_RANGE(scale), 0.5, 30);
     gtk_range_set_round_digits(GTK_RANGE(scale), 2);
@@ -98,6 +166,7 @@ void ShowThresholding(SudOCRu* app)
         "delete-event", G_CALLBACK(hide_window), NULL);
     g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
     g_signal_connect(apply, "clicked", G_CALLBACK(ApplyThreshold), app);
+    g_signal_connect(next, "clicked", G_CALLBACK(RunGridDetection), app);
 
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);

@@ -9,6 +9,7 @@ void SudOCRu_init(SudOCRu* ins, GtkBuilder* ui)
     ins->current_window = LOAD_IMAGE;
     ins->processed_image = NULL;
     ins->thresholded_image = NULL;
+    ins->tmp_buffer = NULL;
     ins->grid = NULL;
     ins->sudoku = NULL;
     ins->ui = ui;
@@ -31,7 +32,7 @@ void SetupStyle()
             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 
-int main(int argc, char* argv[])
+int main()
 {
     gtk_init(NULL, NULL);
     GtkBuilder* builder = gtk_builder_new();

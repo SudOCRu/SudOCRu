@@ -7,6 +7,7 @@
 #include <solver.h>
 #include <gtk/gtk.h>
 #include <SDL2/SDL.h>
+#define UNUSED(x) (void)(x)
 
 typedef enum SudOCRuWindowKind {
     LOAD_IMAGE,
@@ -19,6 +20,7 @@ typedef struct SudOCRu {
     SudOCRuWindowKind current_window;
 
     u32* tmp_buffer;
+    Image* original_image;
     Image* processed_image;
     Image* thresholded_image;
 
@@ -31,7 +33,10 @@ typedef struct SudOCRu {
 void SetupMainWindow(SudOCRu* app);
 
 gboolean hide_window(GtkWidget *widget, GdkEvent *event, gpointer data);
+void DrawImage(Image* img, GtkImage* to);
+
 void ShowLoadingDialog(SudOCRu* app);
 void ShowErrorMessage(SudOCRu* app, const char* error_type,
         const char* error_desc);
 void ShowThresholding(SudOCRu* app);
+void ShowGridDetection(SudOCRu* app);

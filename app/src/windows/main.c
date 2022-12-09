@@ -35,6 +35,10 @@ gpointer ThreadProcessImage(gpointer thr_data) {
     Image* img = LoadImageFile(file, &status);
     if (img != NULL && status == ImageOk)
     {
+        if (app->original_image != NULL) free(app->original_image);
+        if (app->processed_image != NULL) free(app->processed_image);
+        if (app->thresholded_image != NULL) free(app->thresholded_image);
+
         if (img->height > 800)
         {
             Image* downscaled = DownscaleImage(img, 0, 0, img->width,
@@ -50,14 +54,13 @@ gpointer ThreadProcessImage(gpointer thr_data) {
             app->tmp_buffer = realloc(app->tmp_buffer, img->width *
                     img->height * sizeof(unsigned int));
         }
-        FilterImage(img, app->tmp_buffer, 0);
-
-        if (app->processed_image != NULL) free(app->processed_image);
-        if (app->thresholded_image != NULL) free(app->thresholded_image);
-
-        app->processed_image = img;
-        app->thresholded_image =
+        app->original_image = img;
+        app->processed_image =
             LoadBufImage(img->pixels, img->width, img->height, NULL);
+        FilterImage(app->processed_image, app->tmp_buffer, 0);
+
+        app->thresholded_image = LoadBufImage(app->processed_image->pixels,
+            app->processed_image->width, app->processed_image->height, NULL);
         BinarizeImage(app->thresholded_image, app->tmp_buffer, THRESH_OPTIMAL);
     }
     task->result = status;
@@ -73,7 +76,7 @@ void WaitFor(struct ProcessImageTask* task)
 
 void ShowImportFileDialog(GtkButton *button, gpointer user_data)
 {
-    GTK_BUTTON(button);
+    UNUSED(button);
     SudOCRu* app = user_data;
 
     GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
@@ -81,7 +84,7 @@ void ShowImportFileDialog(GtkButton *button, gpointer user_data)
     GtkFileChooserNative *dialog = gtk_file_chooser_native_new("Choose a file",
             GTK_WINDOW(win), 
             GTK_FILE_CHOOSER_ACTION_OPEN,
-            "Cancel", "Open");
+            "Open", "Cancel");
 
     GtkFileFilter *filter = gtk_file_filter_new();
     gtk_file_filter_set_name(filter, "Images (png, jpg)");
@@ -106,7 +109,7 @@ void ShowImportFileDialog(GtkButton *button, gpointer user_data)
 
 void ShowAboutDialog(GtkButton *button, gpointer user_data)
 {
-    GTK_BUTTON(button);
+    UNUSED(button);
     SudOCRu* app = user_data;
     GtkWindow* dialog = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "AboutUsPopup"));

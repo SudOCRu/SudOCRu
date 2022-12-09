@@ -1,9 +1,19 @@
 #include "windows.h"
+#include "../utils.h"
 
 gboolean hide_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+    UNUSED(event);
+    UNUSED(data);
     gtk_widget_hide(widget);
     return TRUE;
+}
+
+void DrawImage(Image* img, GtkImage* to)
+{
+    SDL_Surface* surf = ImageAsSurface(img);
+    CopySurfaceToGdkImage(surf, to);
+    SDL_FreeSurface(surf);
 }
 
 void ShowLoadingDialog(SudOCRu* app)
