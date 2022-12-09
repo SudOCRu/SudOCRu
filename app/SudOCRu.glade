@@ -267,7 +267,8 @@ JAMET Kévin</property>
     </child>
   </object>
   <object class="GtkWindow" id="MainWindow">
-    <property name="can_focus">False</property>
+    <property name="visible">True</property>
+    <property name="can_focus">True</property>
     <property name="title" translatable="yes">SudOCRu</property>
     <child type="titlebar">
       <placeholder/>
