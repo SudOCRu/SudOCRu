@@ -108,7 +108,7 @@ def MaxImage(f : ImageFont, text):
     size = f.size
     l, t, r, b = 0, 0, 0, 0
     iterations = 0
-    while (b-t) != 28:
+    while (b-t) != 28 and iterations < 1000:
         size += 1
         f = ImageFont.truetype(f.path, size)
         l, t, r, b = drawer.textbbox((-l, -t), text, font=f)
@@ -131,7 +131,7 @@ def SaveImageWithRotations(img : Image, j, currPath):
 
 def test(fontPaths):
     fonts = []
-    size = 20
+    size = 10
     for fontPath in fontPaths:
         fonts.append(ImageFont.truetype(fontPath, size))
     
@@ -140,7 +140,9 @@ def test(fontPaths):
         if not os.path.exists(currPath):
             os.mkdir(currPath)
         j = 0
+        print("writing image: ", str(i))
         for font in fonts:
+            print("using font: ",font.path)
             img = MaxImage(font, str(i))
             j = SaveImageWithRotations(img, j, currPath)
             new = img.transform(img.size, Image.AFFINE, (1, 0, 0, 0, 1, -3))
