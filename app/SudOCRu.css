@@ -132,23 +132,8 @@ button.cell.colored:hover {
 /*     ERROR POPUP      */
 /*   ----------------   */
 
-.ThresholdSlider{
-    color: #e98500;
+scale trough highlight {
+    background: #fe8e06;
+    background-image:none;
+    border: none;
 }
-
-/*
-window {
-    background-color: black;
-}
-
-button {
-    background-color: #1134C7;
-    color: #A9A9A9;
-    padding: 4px;
-    border: 2px solid red;
-}
-
-GtkPaned {
-    background-color: blue;
-}*/
-

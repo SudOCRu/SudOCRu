@@ -290,6 +290,7 @@ JAMET Kévin</property>
     <property name="can_focus">True</property>
     <property name="title" translatable="yes">SudOCRu</property>
     <property name="resizable">False</property>
+    <property name="icon">imgs/logo.png</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -445,6 +446,8 @@ JAMET Kévin</property>
                 <property name="column_homogeneous">True</property>
                 <child>
                   <object class="GtkButton" id="Cell0">
+                    <property name="width_request">40</property>
+                    <property name="height_request">10</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
