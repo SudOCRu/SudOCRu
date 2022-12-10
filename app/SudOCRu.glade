@@ -43,6 +43,9 @@ EL ALAOUI EL AOUFOUSSI Mehdi
 JAMAI HAMZA
 JAMET Kévin</property>
             <property name="justify">center</property>
+            <style>
+              <class name="text"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -62,6 +65,7 @@ JAMET Kévin</property>
             <property name="margin_bottom">10</property>
             <style>
               <class name="ClassicButton"/>
+              <class name="text"/>
             </style>
           </object>
           <packing>
@@ -198,6 +202,7 @@ JAMET Kévin</property>
             <property name="label" translatable="yes">ErrorDescription</property>
             <style>
               <class name="ErrorDescription"/>
+              <class name="text"/>
             </style>
           </object>
           <packing>
@@ -217,6 +222,7 @@ JAMET Kévin</property>
             </attributes>
             <style>
               <class name="ErrorType"/>
+              <class name="text"/>
             </style>
           </object>
           <packing>
@@ -315,6 +321,7 @@ JAMET Kévin</property>
             <property name="margin_bottom">10</property>
             <style>
               <class name="MainButton"/>
+              <class name="text"/>
             </style>
           </object>
           <packing>
@@ -335,6 +342,7 @@ JAMET Kévin</property>
             <property name="margin_bottom">10</property>
             <style>
               <class name="ClassicButton"/>
+              <class name="text"/>
             </style>
           </object>
           <packing>
@@ -370,6 +378,9 @@ JAMET Kévin</property>
             <attributes>
               <attribute name="font-desc" value="Serif Bold Italic 32"/>
             </attributes>
+            <style>
+              <class name="text"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -427,6 +438,7 @@ JAMET Kévin</property>
                 <property name="margin_right">10</property>
                 <style>
                   <class name="MainButton"/>
+                  <class name="text"/>
                 </style>
               </object>
               <packing>
@@ -1391,6 +1403,9 @@ JAMET Kévin</property>
             <property name="label" translatable="yes">Extracting Sudoku grid from image...
 Wait few moments</property>
             <property name="justify">center</property>
+            <style>
+              <class name="text"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -1458,6 +1473,9 @@ Wait few moments</property>
             <property name="label" translatable="yes">SudOCRu processing...
 Wait few moments</property>
             <property name="justify">center</property>
+            <style>
+              <class name="text"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -1517,6 +1535,7 @@ Wait few moments</property>
                 <property name="margin_bottom">10</property>
                 <style>
                   <class name="MainButton"/>
+                  <class name="text"/>
                 </style>
               </object>
               <packing>
@@ -1532,6 +1551,9 @@ Wait few moments</property>
                 <property name="margin_right">10</property>
                 <property name="label" translatable="yes">Resizing Image</property>
                 <property name="justify">center</property>
+                <style>
+                  <class name="text"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1597,6 +1619,7 @@ Wait few moments</property>
                 <property name="margin_bottom">10</property>
                 <style>
                   <class name="MainButton"/>
+                  <class name="text"/>
                 </style>
               </object>
               <packing>
@@ -1669,6 +1692,9 @@ Wait few moments</property>
             <property name="label" translatable="yes">Sudoku is being solved...
 Wait few moments</property>
             <property name="justify">center</property>
+            <style>
+              <class name="text"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -1728,6 +1754,7 @@ Wait few moments</property>
                 <property name="margin_bottom">10</property>
                 <style>
                   <class name="MainButton"/>
+                  <class name="text"/>
                 </style>
               </object>
               <packing>
@@ -1744,6 +1771,9 @@ Wait few moments</property>
                 <property name="margin_right">10</property>
                 <property name="label" translatable="yes">Chose Threshold Level</property>
                 <property name="justify">center</property>
+                <style>
+                  <class name="text"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1784,6 +1814,9 @@ Wait few moments</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Apply</property>
+                    <style>
+                      <class name="text"/>
+                    </style>
                   </object>
                 </child>
                 <style>
