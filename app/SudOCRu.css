@@ -79,28 +79,35 @@ window{
 button.cell {
     background-color: #ebebeb;
     color: #333333;
+    border: 1px solid #ebebeb;
     border-radius: 0px;
     font-size: 18px;
     font-weight: bold;
 }
 
 button.cell.colored {
-    background-color: #ffeacd;
-    color: #b46800;
+    background-color: #ffedd7;
+    color: #fe8e06;
+    border: 1px solid #ffedd7;
+    border-radius: 0px;
     font-size: 18px;
     font-weight: bold;
 }
 
 button.cell:hover {
-    background-color: #fff0dc;
+    background-color: #e0e0e0;
     color: #333333;
+    border: 1px solid #e0e0e0;
+    border-radius: 0px;
     font-size: 18px;
     font-weight: bold;
 }
 
 button.cell.colored:hover {
-    background-color: #ffc87b;
-    color: #00425c;
+    background-color: #ffdaac;
+    color: #cf7200;
+    border: 1px solid  #ffdaac;
+    border-radius: 0px;
     font-size: 18px;
     font-weight: bold;
 }
@@ -119,6 +126,14 @@ button.cell.colored:hover {
 
 .digit_input {
     font-size: 32px;
+}
+
+/*   ----------------   */
+/*     ERROR POPUP      */
+/*   ----------------   */
+
+.ThresholdSlider{
+    color: #e98500;
 }
 
 /*
