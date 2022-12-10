@@ -5,8 +5,8 @@ LIB := $(LIB_FOLDER)/libipp.a $(LIB_FOLDER)/libsolver.a $(LIB_FOLDER)/libocr.a
 
 CC := gcc
 CPPFLAGS = -MMD $(INDIRS)
-CFLAGS = -Wall -Wextra -D__NO_INLINE__ `pkg-config --cflags sdl2 SDL2_image gtk+-3.0`
-LDFLAGS := `pkg-config --libs sdl2 SDL2_image gtk+-3.0` -L$(LIB_FOLDER)
+CFLAGS = -Wall -Wextra -D__NO_INLINE__ `pkg-config --cflags sdl2 SDL2_image SDL2_ttf gtk+-3.0`
+LDFLAGS := `pkg-config --libs sdl2 SDL2_image SDL2_ttf gtk+-3.0` -L$(LIB_FOLDER)
 LDLIBS :=  $(addprefix -l,\
 	m \
 	ipp \

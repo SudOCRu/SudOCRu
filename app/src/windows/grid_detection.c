@@ -11,11 +11,10 @@ gboolean DoneOCR(gpointer user_data)
 {
     struct OCRTask* task = user_data;
     SudOCRu* app = task->app;
-    gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
-        "ResizingWindow")));
-    gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui, "OCRPopup")));
+    HideWindow(app, "OCRPopup");
     if (!task->result)
     {
+        HideWindow(app, "ResizingWindow");
         ShowOCRResults(app);
     } else {
         char code[4];

@@ -37,6 +37,8 @@ Image* CreateImage(unsigned int col, size_t w, size_t h,
  * */
 Image* LoadImageFile(const char* path, ImageStatus* out_status);
 
+Image* SurfaceAsImage(SDL_Surface* surf);
+
 /* Creates an SDL Surface from the `src` image. If the operation fails this
  * function returns the NULl pointer.
  */

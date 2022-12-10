@@ -111,8 +111,7 @@ gboolean DoneGridDetection(gpointer user_data)
     SudOCRu* app = task->app;
     if (!task->result)
     {
-        gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
-            "ThresholdWindow")));
+        HideWindow(app, "ThresholdWindow");
         ShowGridDetection(app);
     }
     else {

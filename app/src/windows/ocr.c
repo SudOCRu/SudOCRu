@@ -1,4 +1,6 @@
 #include "windows.h"
+#include <solver.h>
+#include "../utils.h"
 
 struct CellDetails {
     SudOCRu* app;
@@ -36,8 +38,7 @@ gboolean SaveCell(GtkButton* button, gpointer user_data)
     GtkButton* save = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "SaveCellButton"));
     g_signal_handlers_disconnect_by_func(save, G_CALLBACK(SaveCell), details);
-    gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
-        "CellModifPopup")));
+    HideWindow(app, "CellModifPopup");
     return TRUE;
 }
 
@@ -50,8 +51,7 @@ gboolean CloseEditCell(GtkWidget *widget, GdkEvent *event, gpointer user_data)
     GtkButton* save = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "SaveCellButton"));
     g_signal_handlers_disconnect_by_func(save, G_CALLBACK(SaveCell), details);
-    gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui,
-        "CellModifPopup")));
+    HideWindow(app, "CellModifPopup");
     return TRUE;
 }
 
@@ -92,12 +92,91 @@ gboolean EditCell(GtkButton* button, gpointer user_data)
     return TRUE;
 }
 
+struct SolveTask {
+    SudOCRu* app;
+    int result;
+};
+
+gboolean DoneSolve(gpointer user_data)
+{
+    struct SolveTask* task = user_data;
+    SudOCRu* app = task->app;
+    HideWindow(app, "SolvingPopup");
+    if (!task->result)
+    {
+        HideWindow(app, "OCRCorrection");
+        ShowSolveResults(app);
+    } else {
+        char code[4];
+        snprintf(code, sizeof(code), "E%02i", task->result);
+        ShowErrorMessage(app, (const char*)&code, "Unable to solve sudoku");
+    }
+    free(task);
+    return G_SOURCE_REMOVE;
+}
+
+gpointer ThreadSolveSudoku(gpointer thr_data)
+{
+    struct SolveTask* task = thr_data;
+    SudOCRu* app = task->app;
+
+    PrintStage(1, 2, "Preparing sudoku", 0);
+    u8 cells[81];
+    for (size_t i = 0; i < sizeof(cells); i++)
+    {
+        cells[i] = app->cells[i]->value;
+    }
+    app->sudoku = CreateSudoku((const u8*)&cells, 9, 3);
+    int isSolvable = IsSudokuValid(app->sudoku);
+    if (isSolvable != 1)
+    {
+        task->result = isSolvable;
+        gdk_threads_add_idle(DoneSolve, task);
+        return NULL;
+    }
+    PrintStage(1, 2, "Preparing sudoku", 1);
+
+    PrintStage(2, 2, "Solving sudoku", 0);
+    int solved = Backtracking(app->sudoku, 0);
+    if (solved != 1)
+    {
+        task->result = solved;
+        gdk_threads_add_idle(DoneSolve, task);
+        return NULL;
+    }
+    PrintStage(2, 2, "Solving sudoku", 1);
+    PrintBoard(app->sudoku);
+
+    task->result = 0;
+    gdk_threads_add_idle(DoneSolve, task);
+    return NULL;
+}
+
+gboolean RunSudokuSolver(GtkButton* button, gpointer user_data)
+{
+    SudOCRu* app = user_data;
+    UNUSED(button);
+
+    struct SolveTask* task = malloc(sizeof(struct SolveTask));
+    task->app = app;
+
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "OCRNextButton")), FALSE);
+    ShowLoadingDialog(app, "SolvingPopup");
+
+    PrintProcedure("Sudoku Solver");
+    g_thread_new("sudoku_solver", ThreadSolveSudoku, task);
+    return TRUE;
+}
+
 void SetupOCRResults(SudOCRu* app)
 {
     GtkWindow* main = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "MainWindow"));
     GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "OCRCorrection"));
+    GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                "OCRNextButton"));
 
     GtkWindowGroup* grp = gtk_window_get_group(main);
     gtk_window_group_add_window(grp, win);
@@ -130,6 +209,7 @@ void SetupOCRResults(SudOCRu* app)
     g_signal_connect(G_OBJECT(win),
         "delete-event", G_CALLBACK(hide_window), NULL);
     g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
+    g_signal_connect(next, "clicked", G_CALLBACK(RunSudokuSolver), app);
 
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);

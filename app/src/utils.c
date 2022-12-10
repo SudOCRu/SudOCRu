@@ -41,9 +41,13 @@ void PrintProcedure(const char* name)
 void PrintStage(unsigned char id, unsigned char t, const char* stage, int ok)
 {
     const char* indicator = ok ? IND_OK : IND_LOAD;
-    if (ok)
+    if (ok == 1)
     {
         printf("\r%hhu/%hhu [%s] %s\n", id, t, indicator, stage);
+    } else if (ok == 2)
+    {
+        printf("\r%hhu/%hhu [%s] %s", id, t, indicator, stage);
+        fflush(stdout);
     }
     else
     {
