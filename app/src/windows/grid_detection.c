@@ -82,17 +82,6 @@ gboolean RunOCR(GtkButton* button, gpointer user_data)
     return TRUE;
 }
 
-void redraw_item(GtkDrawingArea *area, GdkRectangle *old, GdkRectangle *new)
-{
-    // Determines the part of the area to redraw.
-    // (The union of the previous and new positions of the disc.)
-    gdk_rectangle_union(old, new, old);
-
-    // Redraws the disc.
-    gtk_widget_queue_draw_area(GTK_WIDGET(area),
-        old->x, old->y, old->width, old->height);
-}
-
 static inline void RenderPoint(cairo_t* cr, int x, int y)
 {
     cairo_set_source_rgb(cr, 254.0f / 255.0f, 97.0f / 255.0f, 23.0f / 255.0f);
@@ -106,45 +95,44 @@ static inline void RenderPoint(cairo_t* cr, int x, int y)
     cairo_stroke(cr);
 }
 
+struct DraggableBB {
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+    int x3;
+    int y3;
+    int x4;
+    int y4;
+    int scaledDown;
+    SudOCRu* app;
+};
+
 gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
     UNUSED(widget);
-    SudOCRu* r = user_data;
-    SudokuGrid* grid = r->grid;
-    if (grid == NULL)
+    struct DraggableBB* dbb = user_data;
+    SudOCRu* app = dbb->app;
+    if (app->grid == NULL)
         return FALSE;
-    BBox* bb = grid->bounds;
-    BBox sorted = {
-        bb->x1, bb->y1,
-        bb->x2, bb->y2,
-        bb->x3, bb->y3,
-        bb->x4, bb->y4,
-    };
-    SortBB(&sorted);
-    if (r->original_image->height > 800)
-    {
-        int* arr = (int*) &sorted;
-        for (size_t i = 0; i < 8; i++)
-            arr[i] /= 2;
-    }
 
     // Sets the background to white.
     cairo_set_source_rgba(cr, 1, 1, 1, 0);
     cairo_paint(cr);
 
     cairo_set_source_rgb(cr, 254.0f / 255.0f, 97.0f / 255.0f, 23.0f / 255.0f);
-    cairo_set_line_width (cr, 4);
-    cairo_move_to(cr, sorted.x1, sorted.y1);
-    cairo_line_to(cr, sorted.x2, sorted.y2);
-    cairo_line_to(cr, sorted.x3, sorted.y3);
-    cairo_line_to(cr, sorted.x4, sorted.y4);
-    cairo_line_to(cr, sorted.x1, sorted.y1);
+    cairo_set_line_width(cr, 4);
+    cairo_move_to(cr, dbb->x1, dbb->y1);
+    cairo_line_to(cr, dbb->x2, dbb->y2);
+    cairo_line_to(cr, dbb->x3, dbb->y3);
+    cairo_line_to(cr, dbb->x4, dbb->y4);
+    cairo_line_to(cr, dbb->x1, dbb->y1);
     cairo_stroke(cr);
 
-    RenderPoint(cr, sorted.x1, sorted.y1);
-    RenderPoint(cr, sorted.x2, sorted.y2);
-    RenderPoint(cr, sorted.x3, sorted.y3);
-    RenderPoint(cr, sorted.x4, sorted.y4);
+    RenderPoint(cr, dbb->x1, dbb->y1);
+    RenderPoint(cr, dbb->x2, dbb->y2);
+    RenderPoint(cr, dbb->x3, dbb->y3);
+    RenderPoint(cr, dbb->x4, dbb->y4);
 
     return TRUE;
 }
@@ -158,22 +146,41 @@ void SetupGridDetection(SudOCRu* app)
     GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "ResizingNextButton"));
 
-    GtkDrawingArea* area =
-        GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "ResizeArea"));
-
     GtkWindowGroup* grp = gtk_window_get_group(main);
     gtk_window_group_add_window(grp, win);
     gtk_window_set_screen(win, gdk_screen_get_default());
 
-    g_signal_connect(area, "draw", G_CALLBACK(on_draw), app);
-    g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
     g_signal_connect(next, "clicked", G_CALLBACK(RunOCR), app);
-    g_signal_connect(G_OBJECT(win),
-        "delete-event", G_CALLBACK(hide_window), NULL);
-    g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
 
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);
+}
+
+gboolean DestroyDraggableBB(GtkWidget* widget, gpointer user_data)
+{
+    UNUSED(widget);
+    free(user_data);
+    return TRUE;
+}
+
+gboolean StopDraggableBB(GtkWidget* widget, GdkEvent *e, gpointer user_data)
+{
+    UNUSED(e);
+    struct DraggableBB* dbb = user_data;
+    SudOCRu* app = dbb->app;
+    GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
+                "ResizingWindow"));
+    GtkDrawingArea* area =
+        GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "ResizeArea"));
+
+    g_signal_handlers_disconnect_by_func(G_OBJECT(win),
+            G_CALLBACK(StopDraggableBB), dbb);
+    g_signal_handlers_disconnect_by_func(win,
+            G_CALLBACK(DestroyDraggableBB), dbb);
+    g_signal_handlers_disconnect_by_func(area, G_CALLBACK(on_draw), dbb);
+    gtk_widget_hide(widget);
+    free(user_data);
+    return TRUE;
 }
 
 void ShowGridDetection(SudOCRu* app)
@@ -182,7 +189,38 @@ void ShowGridDetection(SudOCRu* app)
                 "ResizingWindow"));
     GtkImage* img = GTK_IMAGE(gtk_builder_get_object(app->ui,
                 "ResizingImage"));
+    GtkDrawingArea* area =
+        GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "ResizeArea"));
+
     DrawImage(app->original_image, img);
+
+    BBox* bb = app->grid->bounds;
+    BBox sorted = {
+        bb->x1, bb->y1,
+        bb->x2, bb->y2,
+        bb->x3, bb->y3,
+        bb->x4, bb->y4,
+    };
+    SortBB(&sorted);
+
+    struct DraggableBB* dbb = malloc(sizeof(struct DraggableBB));
+    dbb->app = app;
+    dbb->scaledDown = 0;
+    if (app->original_image->height > 800)
+    {
+        dbb->scaledDown = 1;
+        int* arr = (int*) &sorted;
+        for (size_t i = 0; i < 8; i++)
+        {
+            arr[i] /= 2;
+        }
+    }
+    memcpy(dbb, &sorted, 8 * sizeof(int));
+
+    g_signal_connect(G_OBJECT(win),
+        "delete-event", G_CALLBACK(StopDraggableBB), dbb);
+    g_signal_connect(win, "destroy", G_CALLBACK(DestroyDraggableBB), dbb);
+    g_signal_connect(area, "draw", G_CALLBACK(on_draw), dbb);
 
     gtk_widget_show(GTK_WIDGET(win));
     gtk_window_set_keep_above(win, TRUE);
