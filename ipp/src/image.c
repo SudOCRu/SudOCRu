@@ -29,6 +29,44 @@ Image* CreateImage(unsigned int col, size_t w, size_t h,
     return img;
 }
 
+Image* SurfaceAsImage(SDL_Surface* surf)
+{
+    SDL_Surface* f = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGB888, 0);
+    if (f == NULL)
+    {
+        return NULL;
+    }
+    SDL_FreeSurface(surf);
+
+    Uint32* pixels = f->pixels;
+    size_t len = f->w * f->h;
+    unsigned int* out_pixels = malloc(len * sizeof(unsigned int));
+
+    if (out_pixels == NULL)
+    {
+        return NULL;
+    }
+
+    Image* img = malloc(sizeof(Image));
+    if (img == NULL)
+    {
+        return NULL;
+    }
+    img->width = f->w;
+    img->height = f->h;
+    img->pixels = out_pixels;
+
+    SDL_LockSurface(f);
+    for(size_t i = 0; i < len; i++)
+    {
+        out_pixels[i] = pixels[i];
+    }
+    SDL_UnlockSurface(f);
+    SDL_FreeSurface(f);
+
+    return img;
+}
+
 Image* LoadImageFile(const char* path, ImageStatus* out_status)
 {
     SDL_Surface* surf = IMG_Load(path);

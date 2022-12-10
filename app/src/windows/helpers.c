@@ -30,8 +30,13 @@ gboolean CloseErrorMessage(GtkButton* button, gpointer user_data)
 {
     UNUSED(button);
     SudOCRu* app = user_data;
-    gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui, "ErrorPopup")));
+    HideWindow(app, "ErrorPopup");
     return TRUE;
+}
+
+void HideWindow(SudOCRu* app, const char* name)
+{
+    gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(app->ui, name)));
 }
 
 void ShowErrorMessage(SudOCRu* app, const char* error_type,

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <err.h>
 #include "utils.h"
 #include "windows/windows.h"
 #include <neuralnetwork.h>
@@ -12,6 +14,7 @@ void SudOCRu_init(SudOCRu* app, GtkBuilder* ui)
     SetupThresholding(app);
     SetupGridDetection(app);
     SetupOCRResults(app);
+    SetupSolveResults(app);
 }
 
 void SudOCRu_destroy(SudOCRu* app)
@@ -61,6 +64,10 @@ int main()
     printf("\xF0\x9F\xA6\x90 \033[31;1m\xC2\xBB\033[0m Starting "
             "\033[35;1mGUI\033[0m...");
     fflush(stdout);
+
+    if (TTF_Init() == -1) {
+        errx(EXIT_FAILURE, "TTF_Init: %s\n", TTF_GetError());
+    }
 
     gtk_init(NULL, NULL);
     GtkBuilder* builder = gtk_builder_new();
