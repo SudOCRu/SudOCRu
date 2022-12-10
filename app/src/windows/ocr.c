@@ -22,10 +22,13 @@ gboolean SaveCell(GtkButton* button, gpointer user_data)
         SudokuCell* cell = app->cells[details->id];
         cell->value = text[0] - '0';
         char digit[3] = { 0, };
-        if (cell->value != 0)
+        if (cell->value != 0) {
             snprintf(digit, sizeof(digit), "%hhu", cell->value);
+            gtk_style_context_add_class(ctx, "colored");
+        } else {
+            gtk_style_context_remove_class(ctx, "colored");
+        }
         gtk_button_set_label(details->button, digit);
-        gtk_style_context_add_class(ctx, "colored");
     } else {
         gtk_style_context_remove_class(ctx, "colored");
     }
@@ -89,7 +92,7 @@ gboolean EditCell(GtkButton* button, gpointer user_data)
     return TRUE;
 }
 
-void ShowOCRResults(SudOCRu* app)
+void SetupOCRResults(SudOCRu* app)
 {
     GtkWindow* main = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "MainWindow"));
@@ -100,10 +103,6 @@ void ShowOCRResults(SudOCRu* app)
     gtk_window_group_add_window(grp, win);
     gtk_window_set_screen(win, gdk_screen_get_default());
 
-    GtkImage* img = GTK_IMAGE(gtk_builder_get_object(app->ui,
-                "OCRImage"));
-    DrawImage(app->cropped_grid, img);
-
     GtkContainer* container = GTK_CONTAINER(gtk_builder_get_object(app->ui,
                 "CellGrid"));
     GList *children, *iter;
@@ -111,7 +110,6 @@ void ShowOCRResults(SudOCRu* app)
 
     children = gtk_container_get_children(container);
     unsigned char i = 80;
-    char digit[3] = { 0, };
     for(iter = children; iter != NULL; iter = g_list_next(iter))
     {
         struct CellDetails* details = malloc(sizeof(struct CellDetails));
@@ -121,16 +119,9 @@ void ShowOCRResults(SudOCRu* app)
 
         ctx = gtk_widget_get_style_context(iter->data);
         gtk_style_context_add_class(ctx, "cell");
+        gtk_style_context_remove_class(ctx, "colored");
         gtk_button_set_relief(details->button, GTK_RELIEF_NONE);
 
-        SudokuCell* cell = app->cells[details->id];
-        if (cell->value != 0) {
-            snprintf(digit, sizeof(digit), "%hhu", cell->value);
-            gtk_button_set_label(details->button, digit);
-            gtk_style_context_add_class(ctx, "colored");
-        } else {
-            gtk_style_context_remove_class(ctx, "colored");
-        }
         g_signal_connect(GTK_WIDGET(iter->data),
                 "clicked", G_CALLBACK(EditCell), details);
     }
@@ -142,6 +133,43 @@ void ShowOCRResults(SudOCRu* app)
 
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);
-    gtk_window_set_keep_above(win, TRUE);
+}
+
+void ShowOCRResults(SudOCRu* app)
+{
+    GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
+                "OCRCorrection"));
+
+    GtkImage* img = GTK_IMAGE(gtk_builder_get_object(app->ui,
+                "OCRImage"));
+    DrawImage(app->cropped_grid, img);
+
+    GtkContainer* container = GTK_CONTAINER(gtk_builder_get_object(app->ui,
+                "CellGrid"));
+    GtkButton* but;
+    GList *children, *iter;
+    GtkStyleContext *ctx;
+
+    children = gtk_container_get_children(container);
+    unsigned char i = 80;
+    char digit[3] = { 0, };
+    for(iter = children; iter != NULL; iter = g_list_next(iter))
+    {
+        ctx = gtk_widget_get_style_context(iter->data);
+        but = GTK_BUTTON(iter->data);
+
+        SudokuCell* cell = app->cells[i--];
+        if (cell->value != 0) {
+            snprintf(digit, sizeof(digit), "%hhu", cell->value);
+            gtk_button_set_label(but, digit);
+            gtk_style_context_add_class(ctx, "colored");
+        } else {
+            gtk_button_set_label(but, "");
+            gtk_style_context_remove_class(ctx, "colored");
+        }
+    }
+    g_list_free(children);
+
     gtk_widget_show(GTK_WIDGET(win));
+    gtk_window_set_keep_above(win, TRUE);
 }
