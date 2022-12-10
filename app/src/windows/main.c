@@ -47,6 +47,7 @@ gpointer ThreadProcessImage(gpointer thr_data) {
                 FreeSudokuCell(app->cells[i]);
             }
             free(app->cells);
+            app->cells = NULL;
         }
         app->cells_len = 0;
         DestroyImage(app->cropped_grid);

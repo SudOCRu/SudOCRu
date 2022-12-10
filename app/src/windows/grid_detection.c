@@ -82,7 +82,6 @@ gboolean RunOCR(GtkButton* button, gpointer user_data)
     return TRUE;
 }
 
-/*
 void redraw_item(GtkDrawingArea *area, GdkRectangle *old, GdkRectangle *new)
 {
     // Determines the part of the area to redraw.
@@ -94,24 +93,61 @@ void redraw_item(GtkDrawingArea *area, GdkRectangle *old, GdkRectangle *new)
         old->x, old->y, old->width, old->height);
 }
 
-gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static inline void RenderPoint(cairo_t* cr, int x, int y)
 {
-    SudOCRu* r = user_data;
-    if (r->grid == NULL)
-        return FALSE;
-
-    // Sets the background to white.
-    cairo_set_source_rgb(cr, 1, 1, 1);
-    cairo_paint(cr);
-
-    // Draws the rectangle in red.
-    cairo_set_source_rgb(cr, 1, 0, 0);
-    cairo_rectangle(cr, r->x, r->y, r->width, r->height);
+    cairo_set_source_rgb(cr, 254.0f / 255.0f, 97.0f / 255.0f, 23.0f / 255.0f);
+    cairo_arc(cr, x, y, 9, 0.0, 2.0 * M_PI);
     cairo_fill(cr);
 
-    // Propagates the signal.
-    return FALSE;
-}*/
+    cairo_set_source_rgba(cr, 254.0f / 255.0f, 142.0f / 255.0f, 6.0f / 255.0f,
+            0.64f);
+    cairo_set_line_width (cr, 2);
+    cairo_arc(cr, x, y, 10, 0.0, 2.0 * M_PI);
+    cairo_stroke(cr);
+}
+
+gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    UNUSED(widget);
+    SudOCRu* r = user_data;
+    SudokuGrid* grid = r->grid;
+    if (grid == NULL)
+        return FALSE;
+    BBox* bb = grid->bounds;
+    BBox sorted = {
+        bb->x1, bb->y1,
+        bb->x2, bb->y2,
+        bb->x3, bb->y3,
+        bb->x4, bb->y4,
+    };
+    SortBB(&sorted);
+    if (r->original_image->height > 800)
+    {
+        int* arr = (int*) &sorted;
+        for (size_t i = 0; i < 8; i++)
+            arr[i] /= 2;
+    }
+
+    // Sets the background to white.
+    cairo_set_source_rgba(cr, 1, 1, 1, 0);
+    cairo_paint(cr);
+
+    cairo_set_source_rgb(cr, 254.0f / 255.0f, 97.0f / 255.0f, 23.0f / 255.0f);
+    cairo_set_line_width (cr, 4);
+    cairo_move_to(cr, sorted.x1, sorted.y1);
+    cairo_line_to(cr, sorted.x2, sorted.y2);
+    cairo_line_to(cr, sorted.x3, sorted.y3);
+    cairo_line_to(cr, sorted.x4, sorted.y4);
+    cairo_line_to(cr, sorted.x1, sorted.y1);
+    cairo_stroke(cr);
+
+    RenderPoint(cr, sorted.x1, sorted.y1);
+    RenderPoint(cr, sorted.x2, sorted.y2);
+    RenderPoint(cr, sorted.x3, sorted.y3);
+    RenderPoint(cr, sorted.x4, sorted.y4);
+
+    return TRUE;
+}
 
 void SetupGridDetection(SudOCRu* app)
 {
@@ -122,16 +158,14 @@ void SetupGridDetection(SudOCRu* app)
     GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "ResizingNextButton"));
 
-    /*
     GtkDrawingArea* area =
-        GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "area"));
-        */
+        GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "ResizeArea"));
 
     GtkWindowGroup* grp = gtk_window_get_group(main);
     gtk_window_group_add_window(grp, win);
     gtk_window_set_screen(win, gdk_screen_get_default());
 
-    //g_signal_connect(area, "draw", G_CALLBACK(on_draw), &game);
+    g_signal_connect(area, "draw", G_CALLBACK(on_draw), app);
     g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
     g_signal_connect(next, "clicked", G_CALLBACK(RunOCR), app);
     g_signal_connect(G_OBJECT(win),
