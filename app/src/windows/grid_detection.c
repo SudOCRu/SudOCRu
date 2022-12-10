@@ -88,9 +88,8 @@ static inline void RenderPoint(cairo_t* cr, int x, int y)
     cairo_arc(cr, x, y, 9, 0.0, 2.0 * M_PI);
     cairo_fill(cr);
 
-    cairo_set_source_rgba(cr, 254.0f / 255.0f, 142.0f / 255.0f, 6.0f / 255.0f,
-            0.64f);
-    cairo_set_line_width (cr, 2);
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_set_line_width (cr, 3);
     cairo_arc(cr, x, y, 10, 0.0, 2.0 * M_PI);
     cairo_stroke(cr);
 }
@@ -256,6 +255,7 @@ gboolean StopDraggableBB(GtkWidget* widget, GdkEvent *e, gpointer user_data)
     g_signal_handlers_disconnect_by_func(win,
             G_CALLBACK(DestroyDraggableBB), dbb);
     g_signal_handlers_disconnect_by_func(area, G_CALLBACK(on_draw), dbb);
+    g_signal_handlers_disconnect_by_func(area, G_CALLBACK(MouseMove), dbb);
     g_signal_handlers_disconnect_by_func(area, G_CALLBACK(MouseDown), dbb);
     g_signal_handlers_disconnect_by_func(area, G_CALLBACK(MouseUp), dbb);
     gtk_widget_hide(widget);
