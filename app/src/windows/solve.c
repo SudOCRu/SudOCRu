@@ -49,27 +49,31 @@ Image* ReconstructGrid(SudOCRu* app)
     PrintProcedure("Grid Reconstruction");
 
     PrintStage(1, 2, "Preparing", 0);
-    TTF_Font* font = TTF_OpenFont("fonts/Lemon-Regular.ttf", 32);
-    if (font == NULL)
+    int size = app->cells[0]->height / 1.6f;
+    TTF_Font* font = TTF_OpenFont("fonts/Lemon-Regular.ttf", size);
+    TTF_Font* font_outline = TTF_OpenFont("fonts/Lemon-Regular.ttf", size);
+    if (font == NULL || font_outline == NULL)
     {
         printf(".. Eror loading font!\n");
         return NULL;
     }
-    SDL_Color col = {254, 142, 6, 0};
+
+    SDL_Color col = { 254, 142, 6, 255 };
+    TTF_SetFontOutline(font_outline, 2); 
+    SDL_Color col_outline = { 151, 84, 2, 255 };
 
     Image* cropped = app->cropped_grid;
     Invert(cropped);
 
     SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0,
-            cropped->width,
-            cropped->height,
+            cropped->width, cropped->height,
             32, SDL_PIXELFORMAT_RGB888);
     PrintStage(1, 2, "Preparing", 1);
 
     PrintStage(2, 2, "Rendering", 0);
     char digit[3] = { 0, };
     char message[16] = { 0, };
-    SDL_Surface* digit_surf;
+    SDL_Surface* digit_surf, *outline;
     SDL_Rect dst;
     for (size_t i = 0; i < app->cells_len; i++)
     {
@@ -86,6 +90,12 @@ Image* ReconstructGrid(SudOCRu* app)
             dst.w = cell->width;
             dst.h = cell->height;
             SDL_BlitSurface(digit_surf, NULL, surf, &dst);
+
+            outline = TTF_RenderText_Solid(font_outline, digit, col_outline); 
+            dst.x = cell->x + cell->width / 2 - outline->w / 2;
+            dst.y = cell->y + cell->height / 2 - outline->h / 2;
+            SDL_BlitSurface(outline, NULL, surf, &dst);
+
             SDL_FreeSurface(digit_surf);
         }
     }
