@@ -35,10 +35,21 @@ gpointer ThreadProcessImage(gpointer thr_data) {
     Image* img = LoadImageFile(file, &status);
     if (img != NULL && status == ImageOk)
     {
-        if (app->original_image != NULL) DestroyImage(app->original_image);
-        if (app->processed_image != NULL) DestroyImage(app->processed_image);
-        if (app->thresholded_image != NULL) DestroyImage(app->thresholded_image);
-        if (app->cropped_grid != NULL) DestroyImage(app->cropped_grid);
+        DestroyImage(app->original_image);
+        DestroyImage(app->processed_image);
+        DestroyImage(app->thresholded_image);
+        FreeSudokuGrid(app->grid);
+        DestroySudoku(app->sudoku);
+        if (app->cells != NULL)
+        {
+            for (size_t i = 0; i < app->cells_len; i++)
+            {
+                FreeSudokuCell(app->cells[i]);
+            }
+            free(app->cells);
+        }
+        app->cells_len = 0;
+        DestroyImage(app->cropped_grid);
 
         if (img->height > 800)
         {

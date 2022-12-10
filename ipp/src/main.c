@@ -53,11 +53,17 @@ int main(int argc, char** argv)
         SudokuGrid* grid = ExtractSudoku(img, edges, -50, flags);
         if (grid == NULL)
             errx(EXIT_FAILURE, "Unable to find rects");
-        SudokuCell** cells = ExtractSudokuCells(img, grid, flags, &len);
 
         if ((flags & SC_FLG_DGRD) != 0 && SaveImageFile(edges, "detected.png"))
         {
             printf("Successfully wrote detected.png\n");
+        }
+
+        Image* crop;
+        SudokuCell** cells = ExtractSudokuCells(img, grid, flags, &len, &crop);
+        if (SaveImageFile(crop, "sudoku.png"))
+        {
+            printf("Successfully wrote sudoku.png\n");
         }
 
         if (len > 0)
