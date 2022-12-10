@@ -79,11 +79,15 @@ int main(int argc, char** argv)
                 SudokuCell* cell = cells[i];
                 if (CleanCell(cell->data, tmp))
                 {
+                    Image* cropped = CreateImage(0, 28, 28, NULL);
                     double* values = PrepareCell(cell->data, tmp);
                     for (size_t i = 0; i < 28 * 28; i++)
                     {
-                        cell->data->pixels[i] = values[i] * 0xFFFFFF;
+                        cropped->pixels[i] = values[i] * 0xFFFFFF;
                     }
+                    DestroyImage(cell->data);
+                    free(values);
+                    cell->data = cropped;
                 }
                 snprintf(name, sizeof(name), "cells/cell_%02lu.png", i);
                 if (!SaveImageFile(cell->data, name))
