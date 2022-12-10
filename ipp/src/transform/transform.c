@@ -315,3 +315,64 @@ Image* WarpPerspective(const Image* img, const BBox* from)
     DestroyMatrix(h);
     return out;
 }
+
+int UnwarpPerspective(const Image* src, const BBox* from, const Image* dst,
+        const BBox* to)
+{
+    // Find the transformation associated to transform the bounding box in a 
+    // square of length l.
+    BBox sorted = {
+        to->x1, to->y1,
+        to->x2, to->y2,
+        to->x3, to->y3,
+        to->x4, to->y4,
+    };
+    SortBB(&sorted);
+    Matrix* h = GetHomographyMatrix(from, &sorted);
+    // Convert the homography matrix into a transformation matrix. The
+    // conversion is in-place: the 8x1 matrix becomes a 3*3 matrix.
+    h->m = realloc(h->m, 3 * 3 * sizeof(float));
+    h->m[8] = 1;
+    h->rows = h->cols = 3;
+
+    // Calculate the inverse transformation
+    if(!MatInvert(h))
+        return 0;
+
+    // Prepare the matrix corresponding to the coordinates (x, y) in the output
+    // image. Note: homogenous coordinates are used (last 1 in the matrix).
+    float vals[] = { 0, 0, 1 };
+    Matrix* out_coords = NewMatrix(3, 1, vals);
+    Matrix* in_coords = NewMatrix(3, 1, vals);
+
+    size_t a, b;
+
+    // Apply the transformation on the input image.
+    for (size_t y = 0; y < dst->height; y++)
+    {
+        out_coords->m[1] = y;
+        for (size_t x = 0; x < dst->width; x++)
+        {
+            out_coords->m[0] = x;
+
+            // Calculate the homogenous coordinates (x', y') as (a, b) in
+            // the input image
+            if(!TransformPoint(h, out_coords, in_coords, &a, &b))
+                continue;
+
+            if (b < src->height && a < src->width)
+            {
+                unsigned int col = src->pixels[b * src->width+a];
+                if (col != 0)
+                {
+                    dst->pixels[y * dst->width + x] = col;
+                }
+            }
+        }
+    }
+
+    DestroyMatrix(in_coords);
+    DestroyMatrix(out_coords);
+    DestroyMatrix(h);
+    return 1;
+}

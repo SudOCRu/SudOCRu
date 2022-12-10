@@ -111,6 +111,8 @@ gboolean DoneSolve(gpointer user_data)
         snprintf(code, sizeof(code), "E%02i", task->result);
         ShowErrorMessage(app, (const char*)&code, "Unable to solve sudoku");
     }
+    gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
+                 "OCRNextButton")), TRUE);
     free(task);
     return G_SOURCE_REMOVE;
 }
@@ -169,6 +171,46 @@ gboolean RunSudokuSolver(GtkButton* button, gpointer user_data)
     return TRUE;
 }
 
+gboolean SaveOCRResults(GtkButton* button, gpointer user_data)
+{
+    SudOCRu* app = user_data;
+    UNUSED(button);
+
+    GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
+                "OCRCorrection"));
+    GtkFileChooserNative *dialog = gtk_file_chooser_native_new(
+            "Export OCR results",
+            GTK_WINDOW(win), 
+            GTK_FILE_CHOOSER_ACTION_SAVE,
+            "Save", "Cancel");
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), "sudoku");
+
+    GtkFileFilter *filter = gtk_file_filter_new();
+    filter = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, "All files");
+    gtk_file_filter_add_pattern(filter, "*");
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+    gint res = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog));
+    if (res == GTK_RESPONSE_ACCEPT)
+    {
+        char *file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+
+        u8 cells[81];
+        for (size_t i = 0; i < sizeof(cells); i++)
+        {
+            cells[i] = app->cells[i]->value;
+        }
+        Sudoku* sudoku = CreateSudoku((const u8*)&cells, 9, 3);
+        if (SaveSudoku(sudoku, file))
+            printf("Successfully export sudoku as `%s`\n", file);
+        DestroySudoku(sudoku);
+    }
+
+    g_object_unref(dialog);
+    return TRUE;
+}
+
 void SetupOCRResults(SudOCRu* app)
 {
     GtkWindow* main = GTK_WINDOW(gtk_builder_get_object(app->ui,
@@ -177,6 +219,8 @@ void SetupOCRResults(SudOCRu* app)
                 "OCRCorrection"));
     GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "OCRNextButton"));
+    GtkButton* save = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                "OCRSaveAsText"));
 
     GtkWindowGroup* grp = gtk_window_get_group(main);
     gtk_window_group_add_window(grp, win);
@@ -209,6 +253,7 @@ void SetupOCRResults(SudOCRu* app)
     g_signal_connect(G_OBJECT(win),
         "delete-event", G_CALLBACK(hide_window), NULL);
     g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
+    g_signal_connect(save, "clicked", G_CALLBACK(SaveOCRResults), app);
     g_signal_connect(next, "clicked", G_CALLBACK(RunSudokuSolver), app);
 
     gtk_window_set_destroy_with_parent(win, TRUE);

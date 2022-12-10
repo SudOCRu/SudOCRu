@@ -96,3 +96,6 @@ Matrix* GetHomographyMatrix(const BBox* from, const BBox* to);
  * must be in the order: (top-left, bottom-left, top-right, bottom-right).
  */
 Image* WarpPerspective(const Image* image, const BBox* from);
+
+int UnwarpPerspective(const Image* src, const BBox* from, const Image* dst,
+        const BBox* to);

@@ -7,17 +7,8 @@
 
 typedef void (*SudOCRu_Callback)(SudOCRu*, const char*);
 
-void SaveReconstructedGrid(SudOCRu* app, const char* name)
-{
-    if (SaveImageFile(app->cropped_grid, name))
-    {
-        printf("Successfully saved `%s`\n", name);
-    } else {
-        printf("Failed to save sudoku\n");
-    }
-}
-
-void ShowSaveFileDialog(SudOCRu* app, SudOCRu_Callback callback)
+void ShowSaveFileDialog(SudOCRu* app, SudOCRu_Callback callback,
+        const char* current_name, int accept_img)
 {
     GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "SaveWindow"));
@@ -26,13 +17,17 @@ void ShowSaveFileDialog(SudOCRu* app, SudOCRu_Callback callback)
             GTK_WINDOW(win), 
             GTK_FILE_CHOOSER_ACTION_SAVE,
             "Save", "Cancel");
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), "sudoku.png");
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), current_name);
 
-    GtkFileFilter *filter = gtk_file_filter_new();
-    gtk_file_filter_set_name(filter, "Images (png)");
-    gtk_file_filter_add_pattern(filter, "*.png");
-    gtk_file_filter_add_mime_type(filter, "image/png");
-    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    GtkFileFilter *filter;
+    if (accept_img)
+    {
+        filter = gtk_file_filter_new();
+        gtk_file_filter_set_name(filter, "Images (png)");
+        gtk_file_filter_add_pattern(filter, "*.png");
+        gtk_file_filter_add_mime_type(filter, "image/png");
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    }
 
     filter = gtk_file_filter_new();
     gtk_file_filter_set_name(filter, "All files");
@@ -62,8 +57,13 @@ Image* ReconstructGrid(SudOCRu* app)
     }
     SDL_Color col = {254, 142, 6, 0};
 
-    Invert(app->cropped_grid);
-    SDL_Surface* surf = ImageAsSurface(app->cropped_grid);
+    Image* cropped = app->cropped_grid;
+    Invert(cropped);
+
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0,
+            cropped->width,
+            cropped->height,
+            32, SDL_PIXELFORMAT_RGB888);
     PrintStage(1, 2, "Preparing", 1);
 
     PrintStage(2, 2, "Rendering", 0);
@@ -91,15 +91,47 @@ Image* ReconstructGrid(SudOCRu* app)
     }
     PrintStage(2, 2, "Rendering 81/81", 1);
 
-    return SurfaceAsImage(surf);
+    Image* img = SurfaceAsImage(surf);
+    BBox from = { 0, 0, 0, cropped->height, cropped->width,
+        cropped->height, cropped->width, 0 };
+    if(UnwarpPerspective(img, &from, app->original_image,
+            app->grid->bounds))
+    {
+        return img;
+    }
+    DestroyImage(img);
+    return NULL;
 }
 
-gboolean SaveGrid(GtkButton* button, gpointer user_data)
+void SaveStandaloneGrid(SudOCRu* app, const char* name)
+{
+    if (SaveImageFile(app->cropped_grid, name))
+    {
+        printf("Successfully saved `%s`\n", name);
+    } else {
+        printf("Failed to save sudoku\n");
+    }
+}
+
+gboolean SaveResultGrid(GtkButton* button, gpointer user_data)
 {
     UNUSED(button);
     SudOCRu* app = user_data;
 
-    ShowSaveFileDialog(app, SaveReconstructedGrid);
+    ShowSaveFileDialog(app, SaveStandaloneGrid, "grid.png", 1);
+    return TRUE;
+}
+
+void SaveSudokuAsText(SudOCRu* app, const char* name)
+{
+    if (SaveSudoku(app->sudoku, name))
+        printf("Successfully exported sudoku as `%s`\n", name);
+}
+
+gboolean SaveResultAsText(GtkButton* button, gpointer user_data)
+{
+    UNUSED(button);
+    ShowSaveFileDialog(user_data, SaveSudokuAsText, "sudoku", 0);
     return TRUE;
 }
 
@@ -110,13 +142,18 @@ void SetupSolveResults(SudOCRu* app)
     GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "SaveWindow"));
     GtkButton* save = GTK_BUTTON(gtk_builder_get_object(app->ui,
-                "SaveAsGridButton"));
+                "SaveAsGrid"));
+    GtkButton* saveText = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                "SaveAsTextButton"));
+    GtkButton* saveReconstructed = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                "SaveReconstructed"));
 
     GtkWindowGroup* grp = gtk_window_get_group(main);
     gtk_window_group_add_window(grp, win);
     gtk_window_set_screen(win, gdk_screen_get_default());
 
-    g_signal_connect(save, "clicked", G_CALLBACK(SaveGrid), app);
+    g_signal_connect(save, "clicked", G_CALLBACK(SaveResultGrid), app);
+    g_signal_connect(saveText, "clicked", G_CALLBACK(SaveResultAsText), app);
     g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
     g_signal_connect(G_OBJECT(win),
         "delete-event", G_CALLBACK(hide_window), NULL);
@@ -135,11 +172,10 @@ void ShowSolveResults(SudOCRu* app)
     Image* reconstructed = ReconstructGrid(app);
     if (reconstructed != NULL)
     {
-        DrawImage(reconstructed, img);
         DestroyImage(app->cropped_grid);
         app->cropped_grid = reconstructed;
     }
-    DrawImage(app->cropped_grid, img);
+    DrawImage(app->original_image, img);
 
     gtk_widget_show(GTK_WIDGET(win));
     gtk_window_set_keep_above(win, TRUE);
