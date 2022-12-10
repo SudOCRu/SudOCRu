@@ -60,8 +60,9 @@ int main(int argc, char *argv[])
             if (output[i] > output[result]){
                 result = i;
             }
-            //printf("Output%i = %lf\n",i,output[i]);
+            printf("Output%i = %lf\n",i,output[i]);
         }
+        printf("\n");
         //printf("result = %i\n",result);
         DestroyNeuralNetwork(network);
         DestroyDatapoint(data);
@@ -75,6 +76,7 @@ int main(int argc, char *argv[])
         }
         for (long i = 0; i < nbr; i++){
             Learn(network, sample, nbImg, 0.05);
+            printf("i=%li\n",i);
         }
         SaveNetwork(network, "network");
         printf("network saved.\n");
