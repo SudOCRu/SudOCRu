@@ -51,13 +51,6 @@ gpointer ThreadProcessImage(gpointer thr_data) {
         app->cells_len = 0;
         DestroyImage(app->cropped_grid);
 
-        if (img->height > 800)
-        {
-            Image* downscaled = DownscaleImage(img, 0, 0, img->width,
-                    img->height, img->width / 2, img->height / 2, 0);
-            DestroyImage(img);
-            img = downscaled;
-        }
         if (app->tmp_buffer == NULL)
         {
             app->tmp_buffer =

@@ -11,7 +11,16 @@ gboolean hide_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
 void DrawImage(Image* img, GtkImage* to)
 {
-    SDL_Surface* surf = ImageAsSurface(img);
+    SDL_Surface* surf;
+    if (img->height > 800)
+    {
+        Image* downscaled = DownscaleImage(img, 0, 0, img->width,
+                img->height, img->width / 2, img->height / 2, 0);
+        surf = ImageAsSurface(downscaled);
+        DestroyImage(downscaled);
+    } else {
+        surf = ImageAsSurface(img);
+    }
     CopySurfaceToGdkImage(surf, to);
     SDL_FreeSurface(surf);
 }

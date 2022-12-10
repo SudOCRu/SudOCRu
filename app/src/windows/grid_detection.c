@@ -82,6 +82,37 @@ gboolean RunOCR(GtkButton* button, gpointer user_data)
     return TRUE;
 }
 
+/*
+void redraw_item(GtkDrawingArea *area, GdkRectangle *old, GdkRectangle *new)
+{
+    // Determines the part of the area to redraw.
+    // (The union of the previous and new positions of the disc.)
+    gdk_rectangle_union(old, new, old);
+
+    // Redraws the disc.
+    gtk_widget_queue_draw_area(GTK_WIDGET(area),
+        old->x, old->y, old->width, old->height);
+}
+
+gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    SudOCRu* r = user_data;
+    if (r->grid == NULL)
+        return FALSE;
+
+    // Sets the background to white.
+    cairo_set_source_rgb(cr, 1, 1, 1);
+    cairo_paint(cr);
+
+    // Draws the rectangle in red.
+    cairo_set_source_rgb(cr, 1, 0, 0);
+    cairo_rectangle(cr, r->x, r->y, r->width, r->height);
+    cairo_fill(cr);
+
+    // Propagates the signal.
+    return FALSE;
+}*/
+
 void SetupGridDetection(SudOCRu* app)
 {
     GtkWindow* main = GTK_WINDOW(gtk_builder_get_object(app->ui,
@@ -91,10 +122,16 @@ void SetupGridDetection(SudOCRu* app)
     GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "ResizingNextButton"));
 
+    /*
+    GtkDrawingArea* area =
+        GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "area"));
+        */
+
     GtkWindowGroup* grp = gtk_window_get_group(main);
     gtk_window_group_add_window(grp, win);
     gtk_window_set_screen(win, gdk_screen_get_default());
 
+    //g_signal_connect(area, "draw", G_CALLBACK(on_draw), &game);
     g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
     g_signal_connect(next, "clicked", G_CALLBACK(RunOCR), app);
     g_signal_connect(G_OBJECT(win),

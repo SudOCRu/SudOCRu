@@ -1583,7 +1583,7 @@ Wait few moments</property>
   </object>
   <object class="GtkWindow" id="SaveWindow">
     <property name="can_focus">True</property>
-    <property name="title" translatable="yes"> Solved Sudoku Preview</property>
+    <property name="title" translatable="yes">Solved Sudoku Preview</property>
     <property name="resizable">False</property>
     <property name="window_position">center-always</property>
     <property name="gravity">center</property>
