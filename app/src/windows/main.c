@@ -26,6 +26,32 @@ gboolean DoneProcessing(gpointer user_data)
     return G_SOURCE_REMOVE;
 }
 
+void CleanState(SudOCRu* app)
+{
+    DestroyImage(app->original_image);
+    app->original_image = NULL;
+    DestroyImage(app->processed_image);
+    app->processed_image = NULL;
+    DestroyImage(app->thresholded_image);
+    app->thresholded_image = NULL;
+    FreeSudokuGrid(app->grid);
+    app->grid = NULL;
+    DestroySudoku(app->sudoku);
+    app->sudoku = NULL;
+    if (app->cells != NULL)
+    {
+        for (size_t i = 0; i < app->cells_len; i++)
+        {
+            FreeSudokuCell(app->cells[i]);
+        }
+        free(app->cells);
+        app->cells = NULL;
+    }
+    app->cells_len = 0;
+    DestroyImage(app->cropped_grid);
+    app->cropped_grid = NULL;
+}
+
 gpointer ThreadProcessImage(gpointer thr_data) {
     struct ProcessImageTask* task = thr_data;
     SudOCRu* app = task->app;
@@ -35,22 +61,7 @@ gpointer ThreadProcessImage(gpointer thr_data) {
     Image* img = LoadImageFile(file, &status);
     if (img != NULL && status == ImageOk)
     {
-        DestroyImage(app->original_image);
-        DestroyImage(app->processed_image);
-        DestroyImage(app->thresholded_image);
-        FreeSudokuGrid(app->grid);
-        DestroySudoku(app->sudoku);
-        if (app->cells != NULL)
-        {
-            for (size_t i = 0; i < app->cells_len; i++)
-            {
-                FreeSudokuCell(app->cells[i]);
-            }
-            free(app->cells);
-            app->cells = NULL;
-        }
-        app->cells_len = 0;
-        DestroyImage(app->cropped_grid);
+        CleanState(app);
 
         if (app->tmp_buffer == NULL)
         {

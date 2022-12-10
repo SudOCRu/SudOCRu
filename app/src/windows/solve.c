@@ -59,7 +59,7 @@ Image* ReconstructGrid(SudOCRu* app)
     }
 
     SDL_Color col = { 254, 142, 6, 255 };
-    TTF_SetFontOutline(font_outline, 2); 
+    TTF_SetFontOutline(font_outline, 1 + size / 42); 
     SDL_Color col_outline = { 151, 84, 2, 255 };
 
     Image* cropped = app->cropped_grid;
