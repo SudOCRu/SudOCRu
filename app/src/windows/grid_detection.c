@@ -104,7 +104,9 @@ struct DraggableBB {
     int y3;
     int x4;
     int y4;
+
     int scaledDown;
+    int grabbedPoint;
     SudOCRu* app;
 };
 
@@ -145,15 +147,91 @@ void SetupGridDetection(SudOCRu* app)
                 "ResizingWindow"));
     GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "ResizingNextButton"));
+    GtkDrawingArea* area =
+        GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "ResizeArea"));
 
     GtkWindowGroup* grp = gtk_window_get_group(main);
     gtk_window_group_add_window(grp, win);
     gtk_window_set_screen(win, gdk_screen_get_default());
 
+    gtk_widget_add_events(GTK_WIDGET(area), GDK_BUTTON_PRESS_MASK
+            | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK
+            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
     g_signal_connect(next, "clicked", G_CALLBACK(RunOCR), app);
 
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);
+}
+
+static inline int DistSquared(int x1, int y1, int x2, int y2)
+{
+    int dx = x1 - x2;
+    int dy = y1 - y2;
+    return dx * dx + dy * dy;
+}
+
+gboolean MouseDown(GtkWidget* widget, GdkEventButton* event, gpointer user_data)
+{
+    UNUSED(widget);
+    UNUSED(event);
+    struct DraggableBB* dbb = user_data;
+    int* arr = (int*) dbb;
+    int x = event->x, y = event->y;
+    for (size_t i = 0; i < 8; i += 2)
+    {
+        if (DistSquared(x, y, arr[i], arr[i + 1]) < 16*16)
+        {
+            dbb->grabbedPoint = (i / 2) + 1;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+gboolean MouseUp(GtkWidget* widget, GdkEventButton* event, gpointer user_data)
+{
+    UNUSED(widget);
+    UNUSED(event);
+    struct DraggableBB* dbb = user_data;
+    if (dbb->grabbedPoint != 0)
+    {
+        dbb->grabbedPoint = 0;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+gboolean MouseMove(GtkWidget* widget, GdkEventMotion* event, gpointer user_data)
+{
+    struct DraggableBB* dbb = user_data;
+    int x = event->x, y = event->y;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    switch (dbb->grabbedPoint)
+    {
+        case 1:
+            dbb->x1 = x;
+            dbb->y1 = y;
+            gtk_widget_queue_draw(widget);
+            return TRUE;
+        case 2:
+            dbb->x2 = x;
+            dbb->y2 = y;
+            gtk_widget_queue_draw(widget);
+            return TRUE;
+        case 3:
+            dbb->x3 = x;
+            dbb->y3 = y;
+            gtk_widget_queue_draw(widget);
+            return TRUE;
+        case 4:
+            dbb->x4 = x;
+            dbb->y4 = y;
+            gtk_widget_queue_draw(widget);
+            return TRUE;
+        default:
+            return FALSE;
+    }
 }
 
 gboolean DestroyDraggableBB(GtkWidget* widget, gpointer user_data)
@@ -178,6 +256,8 @@ gboolean StopDraggableBB(GtkWidget* widget, GdkEvent *e, gpointer user_data)
     g_signal_handlers_disconnect_by_func(win,
             G_CALLBACK(DestroyDraggableBB), dbb);
     g_signal_handlers_disconnect_by_func(area, G_CALLBACK(on_draw), dbb);
+    g_signal_handlers_disconnect_by_func(area, G_CALLBACK(MouseDown), dbb);
+    g_signal_handlers_disconnect_by_func(area, G_CALLBACK(MouseUp), dbb);
     gtk_widget_hide(widget);
     free(user_data);
     return TRUE;
@@ -206,6 +286,7 @@ void ShowGridDetection(SudOCRu* app)
     struct DraggableBB* dbb = malloc(sizeof(struct DraggableBB));
     dbb->app = app;
     dbb->scaledDown = 0;
+    dbb->grabbedPoint = 0;
     if (app->original_image->height > 800)
     {
         dbb->scaledDown = 1;
@@ -221,6 +302,9 @@ void ShowGridDetection(SudOCRu* app)
         "delete-event", G_CALLBACK(StopDraggableBB), dbb);
     g_signal_connect(win, "destroy", G_CALLBACK(DestroyDraggableBB), dbb);
     g_signal_connect(area, "draw", G_CALLBACK(on_draw), dbb);
+    g_signal_connect(area, "button-press-event", G_CALLBACK(MouseDown), dbb);
+    g_signal_connect(area, "button-release-event", G_CALLBACK(MouseUp), dbb);
+    g_signal_connect(area, "motion-notify-event", G_CALLBACK(MouseMove), dbb);
 
     gtk_widget_show(GTK_WIDGET(win));
     gtk_window_set_keep_above(win, TRUE);
