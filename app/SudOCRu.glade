@@ -173,6 +173,7 @@ JAMET Kévin</property>
         <child>
           <object class="GtkButton" id="CloseErrorButton">
             <property name="label" translatable="yes">Close</property>
+            <property name="width_request">200</property>
             <property name="height_request">50</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -181,7 +182,7 @@ JAMET Kévin</property>
             <property name="valign">center</property>
             <property name="margin_top">10</property>
             <style>
-              <class name="ClassicButton"/>
+              <class name="ErrorButton"/>
             </style>
           </object>
           <packing>

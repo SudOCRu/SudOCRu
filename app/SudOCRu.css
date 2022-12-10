@@ -14,9 +14,20 @@ window{
 
 .ClassicButton {
     background-image: none;
-    color: #22436a;
-    background-color: #a8c3e5;
-    border-radius: 8px;
+    color: #2376F1;
+    background-color: rgb(220, 233, 253);
+    border-radius: 6px;
+    border:none;
+    font-size: 14px;
+    text-shadow: none;
+    font-weight: bold;
+}
+
+.ErrorButton {
+    background-image: none;
+    color: #fe8e06;
+    background-color: #ffedd7;
+    border-radius: 6px;
     border:none;
     font-size: 14px;
     text-shadow: none;
@@ -25,9 +36,9 @@ window{
 
 .MainButton {
     background-image: none;
-    color: #012f41;
-    background-color: #f2b96c;
-    border-radius: 8px;
+    color: white;
+    background-color: #2376F1;
+    border-radius: 6px;
     border:none;
     font-size: 14px;
     text-shadow: none;
@@ -39,15 +50,24 @@ window{
 /*   ----------------   */
 
 .ClassicButton:hover {
-    color: #14283f;
-    background-color: #92b6e4;
+    background-color: rgb(202, 222, 252);
     border:none;
     font-weight: bold;
 }
 
+.ErrorButton:hover {
+    background-image: none;
+    color: #fe8e06;
+    background-color: #fedaaf;
+    border-radius: 6px;
+    border:none;
+    font-size: 14px;
+    text-shadow: none;
+    font-weight:bold;
+}
+
 .MainButton:hover {
-    color: #00425c;
-    background-color: #ffac3b;
+    background-color: #216cdb;
     border:none;
     font-weight: bold;
 }
@@ -59,6 +79,7 @@ window{
 button.cell {
     background-color: #ebebeb;
     color: #333333;
+    border-radius: 0px;
     font-size: 18px;
     font-weight: bold;
 }
@@ -73,7 +94,6 @@ button.cell.colored {
 button.cell:hover {
     background-color: #fff0dc;
     color: #333333;
-    border-radius: 5px;
     font-size: 18px;
     font-weight: bold;
 }
@@ -81,7 +101,6 @@ button.cell:hover {
 button.cell.colored:hover {
     background-color: #ffc87b;
     color: #00425c;
-    border-radius: 5px;
     font-size: 18px;
     font-weight: bold;
 }
