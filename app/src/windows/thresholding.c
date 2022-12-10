@@ -68,7 +68,7 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
     SudOCRu* app = user_data;
     struct RethresholdTask* task = malloc(sizeof(struct RethresholdTask));
     task->app = app;
-    task->threshold =gtk_range_get_value(
+    task->threshold = gtk_range_get_value(
             GTK_RANGE(gtk_builder_get_object(app->ui, "ThresholdScale")));
 
     GtkButton* apply =
@@ -170,14 +170,12 @@ gboolean RunGridDetection(GtkButton* button, gpointer user_data)
     return TRUE;
 }
 
-void ShowThresholding(SudOCRu* app)
+void SetupThresholding(SudOCRu* app)
 {
     GtkWindow* main = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "MainWindow"));
     GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "ThresholdWindow"));
-    GtkScale* scale = GTK_SCALE(gtk_builder_get_object(app->ui,
-                 "ThresholdScale"));
     GtkButton* apply = GTK_BUTTON(gtk_builder_get_object(app->ui,
                  "ApplyButton"));
     GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
@@ -187,14 +185,6 @@ void ShowThresholding(SudOCRu* app)
     gtk_window_group_add_window(grp, win);
     gtk_window_set_screen(win, gdk_screen_get_default());
 
-    GtkImage* img = GTK_IMAGE(gtk_builder_get_object(app->ui,
-                "ThresholdImage"));
-    DrawImage(app->thresholded_image, img);
-
-    gtk_range_set_range(GTK_RANGE(scale), 0.5, 30);
-    gtk_range_set_round_digits(GTK_RANGE(scale), 2);
-    gtk_range_set_value(GTK_RANGE(scale), THRESH_OPTIMAL * 100.0);
-
     g_signal_connect(G_OBJECT(win),
         "delete-event", G_CALLBACK(hide_window), NULL);
     g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
@@ -203,6 +193,23 @@ void ShowThresholding(SudOCRu* app)
 
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);
-    gtk_window_set_keep_above(win, TRUE);
-    gtk_widget_show(GTK_WIDGET(win));
 }
+
+void ShowThresholding(SudOCRu* app)
+{
+    GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
+                "ThresholdWindow"));
+    GtkScale* scale = GTK_SCALE(gtk_builder_get_object(app->ui,
+                 "ThresholdScale"));
+    GtkImage* img = GTK_IMAGE(gtk_builder_get_object(app->ui,
+                "ThresholdImage"));
+    DrawImage(app->thresholded_image, img);
+
+    gtk_range_set_range(GTK_RANGE(scale), 0.5, 30);
+    gtk_range_set_round_digits(GTK_RANGE(scale), 2);
+    gtk_range_set_value(GTK_RANGE(scale), THRESH_OPTIMAL * 100.0);
+
+    gtk_widget_show(GTK_WIDGET(win));
+    gtk_window_set_keep_above(win, TRUE);
+}
+

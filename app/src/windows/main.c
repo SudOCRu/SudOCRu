@@ -133,8 +133,6 @@ void SetupMainWindow(SudOCRu* app)
                 "LoadFileButton"));
     GtkButton* openAbout = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "AboutUsButton"));
-    GtkButton* close = GTK_BUTTON(gtk_builder_get_object(app->ui,
-                "CloseButton"));
 
     GtkWindowGroup* grp = gtk_window_get_group(win);
     gtk_window_group_add_window(grp, dialog);
@@ -142,7 +140,6 @@ void SetupMainWindow(SudOCRu* app)
     gtk_window_set_screen(dialog, gdk_screen_get_default());
 
     g_signal_connect(load, "clicked", G_CALLBACK(ShowImportFileDialog), app);
-    g_signal_connect(close, "clicked", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect(openAbout, "clicked", G_CALLBACK(ShowAboutDialog), app);
     g_signal_connect(G_OBJECT(dialog), 
         "delete-event", G_CALLBACK(hide_window), NULL);

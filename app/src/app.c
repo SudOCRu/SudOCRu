@@ -5,29 +5,38 @@
 #include "windows/windows.h"
 #include <neuralnetwork.h>
 
-void SudOCRu_init(SudOCRu* ins, GtkBuilder* ui)
+void SudOCRu_init(SudOCRu* app, GtkBuilder* ui)
 {
-    ins->current_window = LOAD_IMAGE;
-    ins->original_image = NULL;
-    ins->processed_image = NULL;
-    ins->thresholded_image = NULL;
-    ins->cropped_grid = NULL;
-    ins->tmp_buffer = NULL;
-    ins->grid = NULL;
-    ins->sudoku = NULL;
-    ins->ui = ui;
-    ins->nn = NULL;
+    app->ui = ui;
+
+    SetupThresholding(app);
+    SetupGridDetection(app);
+    SetupOCRResults(app);
 }
 
 void SudOCRu_destroy(SudOCRu* app)
 {
+    free(app->tmp_buffer);
+
     DestroyImage(app->original_image);
     DestroyImage(app->processed_image);
     DestroyImage(app->thresholded_image);
-    DestroyImage(app->cropped_grid);
-    DestroySudoku(app->sudoku);
+
     FreeSudokuGrid(app->grid);
-    free(app->tmp_buffer);
+    DestroySudoku(app->sudoku);
+    if (app->cells != NULL)
+    {
+        for (size_t i = 0; i < app->cells_len; i++)
+        {
+            FreeSudokuCell(app->cells[i]);
+        }
+        free(app->cells);
+    }
+    app->cells_len = 0;
+
+    DestroyImage(app->cropped_grid);
+
+    DestroyNeuralNetwork(app->nn);
 }
 
 void SetupStyle()
@@ -61,8 +70,9 @@ int main()
         return 1;
     }
 
-    SudOCRu state;
+    SudOCRu state = { 0, };
     SudOCRu_init(&state, builder);
+
     SetupMainWindow(&state);
 
     gtk_main();

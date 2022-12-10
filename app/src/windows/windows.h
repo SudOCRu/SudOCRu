@@ -10,16 +10,7 @@
 #include <SDL2/SDL.h>
 #define UNUSED(x) (void)(x)
 
-typedef enum SudOCRuWindowKind {
-    LOAD_IMAGE,
-    CHANGE_THRESHOLD,
-    FIX_OCR,
-    SAVE_RESULT
-} SudOCRuWindowKind;
-
 typedef struct SudOCRu {
-    SudOCRuWindowKind current_window;
-
     u32* tmp_buffer;
     Image* original_image;
     Image* processed_image;
@@ -38,12 +29,19 @@ typedef struct SudOCRu {
 
 void SetupMainWindow(SudOCRu* app);
 
+void SetupThresholding(SudOCRu* app);
+void ShowThresholding(SudOCRu* app);
+
+void SetupGridDetection(SudOCRu* app);
+void ShowGridDetection(SudOCRu* app);
+
+void SetupOCRResults(SudOCRu* app);
+void ShowOCRResults(SudOCRu* app);
+
+/* Helpers */
 gboolean hide_window(GtkWidget *widget, GdkEvent *event, gpointer data);
 void DrawImage(Image* img, GtkImage* to);
-
 void ShowLoadingDialog(SudOCRu* app, char* name);
 void ShowErrorMessage(SudOCRu* app, const char* error_type,
         const char* error_desc);
-void ShowThresholding(SudOCRu* app);
-void ShowGridDetection(SudOCRu* app);
-void ShowOCRResults(SudOCRu* app);
+
