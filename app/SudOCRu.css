@@ -1,40 +1,97 @@
 /* https://docs.gtk.org/gtk3/css-properties.html#background-properties */
 
-button {
+button{
+    background-image:none;
+}
+
+/*   ----------------   */
+/*     BUTTON HOVER     */
+/*   ----------------   */
+
+.ClassicButton {
     background-image: none;
-    color: #fff;
-    background-color: #6aa1e2;
+    color: #22436a;
+    background-color: #a8c3e5;
     border-radius: 8px;
-    border: 2px solid rgba(0, 0, 0, 0);
+    border: 2px solid #68adff;
     font-size: 14px;
     text-shadow: none;
 }
 
-button:hover {
-    border: 2px solid #889ae3;
+.MainButton {
+    background-image: none;
+    color: #012f41;
+    background-color: #f2b96c;
+    border-radius: 8px;
+    border: 2px solid #c87300;
+    font-size: 14px;
+    text-shadow: none;
 }
 
-button:focus {
-    border: 2px solid #d9def6;
+/*   ----------------   */
+/*     BUTTON HOVER     */
+/*   ----------------   */
+
+.ClassicButton:hover {
+    color: #14283f;
+    background-color: #92b6e4;
+    border: 2px solid #294d76;
 }
+
+.MainButton:hover {
+    color: #00425c;
+    background-color: #ffac3b;
+    border: 2px solid #00597c;
+}
+
+/*   ----------------   */
+/*       CELL GRID      */
+/*   ----------------   */
 
 button.cell {
     background-color: #ebebeb;
     color: #333333;
-    border-radius: 0;
-    border: 1px solid #dedfdc;
+    border: 1px solid #ebebeb;
     font-size: 18px;
     font-weight: bold;
 }
 
 button.cell.colored {
-    background-color: #ffd9c7;
-    border: none;
-    color: #fe6117;
+    background-color: #ffeacd;
+    color: #b46800;
+    border: 1px solid #b46800;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 button.cell:hover {
-    background-color: #dedfdc;
+    background-color: #fff0dc;
+    color: #333333;
+    border-radius: 5px;
+    border: 1px solid #00597c;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+button.cell.colored:hover {
+    background-color: #ffc87b;
+    color: #00425c;
+    border-radius: 5px;
+    border: 1px solid #00597c;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/*   ----------------   */
+/*     ERROR POPUP      */
+/*   ----------------   */
+
+.ErrorType{
+    font-size: 24px;
+}
+
+.ErrorDescription{
+    font-size: 14px;
 }
 
 .digit_input {

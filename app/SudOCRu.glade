@@ -27,7 +27,7 @@
             <property name="margin_right">10</property>
             <property name="margin_top">10</property>
             <property name="margin_bottom">20</property>
-            <property name="pixbuf">imgs/logo.jpg</property>
+            <property name="pixbuf">imgs/logo.png</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -59,6 +59,9 @@ JAMET Kévin</property>
             <property name="margin_right">10</property>
             <property name="margin_top">10</property>
             <property name="margin_bottom">10</property>
+            <style>
+              <class name="ClassicButton"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -94,6 +97,9 @@ JAMET Kévin</property>
                 <property name="margin_right">10</property>
                 <property name="margin_top">10</property>
                 <property name="margin_bottom">10</property>
+                <style>
+                  <class name="MainButton"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -171,6 +177,9 @@ JAMET Kévin</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="margin_top">10</property>
+            <style>
+              <class name="ClassicButton"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -183,6 +192,9 @@ JAMET Kévin</property>
             <property name="can_focus">False</property>
             <property name="margin_bottom">20</property>
             <property name="label" translatable="yes">ErrorDescription</property>
+            <style>
+              <class name="ErrorDescription"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -199,6 +211,9 @@ JAMET Kévin</property>
             <attributes>
               <attribute name="weight" value="ultraheavy"/>
             </attributes>
+            <style>
+              <class name="ErrorType"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -291,6 +306,9 @@ JAMET Kévin</property>
             <property name="margin_right">10</property>
             <property name="margin_top">10</property>
             <property name="margin_bottom">10</property>
+            <style>
+              <class name="MainButton"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -307,6 +325,9 @@ JAMET Kévin</property>
             <property name="margin_right">10</property>
             <property name="margin_top">10</property>
             <property name="margin_bottom">10</property>
+            <style>
+              <class name="ClassicButton"/>
+            </style>
           </object>
           <packing>
             <property name="left_attach">1</property>
@@ -395,6 +416,9 @@ JAMET Kévin</property>
                 <property name="valign">center</property>
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
+                <style>
+                  <class name="MainButton"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1365,7 +1389,6 @@ Wait few moments</property>
         <child>
           <object class="GtkButton" id="OCRCancel">
             <property name="label" translatable="yes">Cancel</property>
-            <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="halign">center</property>
@@ -1432,7 +1455,6 @@ Wait few moments</property>
         <child>
           <object class="GtkButton" id="CancelProcessButton">
             <property name="label" translatable="yes">Cancel</property>
-            <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="halign">center</property>
@@ -1479,6 +1501,9 @@ Wait few moments</property>
                 <property name="margin_right">10</property>
                 <property name="margin_top">10</property>
                 <property name="margin_bottom">10</property>
+                <style>
+                  <class name="MainButton"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1555,6 +1580,9 @@ Wait few moments</property>
                 <property name="margin_right">10</property>
                 <property name="margin_top">10</property>
                 <property name="margin_bottom">10</property>
+                <style>
+                  <class name="MainButton"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1635,7 +1663,6 @@ Wait few moments</property>
         <child>
           <object class="GtkButton" id="CancelSolvingButton">
             <property name="label" translatable="yes">Cancel</property>
-            <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="halign">center</property>
@@ -1682,6 +1709,9 @@ Wait few moments</property>
                 <property name="margin_right">10</property>
                 <property name="margin_top">10</property>
                 <property name="margin_bottom">10</property>
+                <style>
+                  <class name="MainButton"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1738,6 +1768,9 @@ Wait few moments</property>
                     <property name="label" translatable="yes">Apply</property>
                   </object>
                 </child>
+                <style>
+                  <class name="ClassicButton"/>
+                </style>
               </object>
               <packing>
                 <property name="left_attach">1</property>
