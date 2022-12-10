@@ -194,8 +194,15 @@ int SaveSudoku(const Sudoku* sudoku, const char* out_file){
     }
 
     while (index < sudoku->boardsize){
-        if (index != 0 && index % sudoku->boardedge == 0) fprintf(file, "\n");
-        else if (index != 0 && index % 3 == 0) fprintf(file, " ");
+        if (index != 0 && index % sudoku->boardedge == 0)
+        {
+            if ((index / sudoku->boardedge) % sudoku->nbsquares == 0)
+                fprintf(file, "\n");
+            fprintf(file, "\n");
+        }
+        else if (index != 0 && (index % sudoku->nbsquares) == 0)
+            fprintf(file, " ");
+
         if (sudoku->board[index] != 0){
             fprintf(file, "%hhu", sudoku->board[index]);
         }
@@ -327,42 +334,31 @@ int IsSudokuValid(const Sudoku* sudoku){
     return Operation_Succeeded;
 }
 
-/*  > verify
- * Verify if a number is playable in the sudoku (check in PossibleValues if
- * it is playable)
- * > Returns 0 (false) if the number is playable, else 1 (true)
- *      - n : number to test
- *      - flag : all possibilities
- */
-int verify(short n, short flag){
-    short mark = 1 << (n-1);
-    return ((flag & mark) != 0) ? 1 : 0;
-}
+const short SET_MASKS[10] = {
+    0,
+    1 << 0,
+    1 << 1,
+    1 << 2,
+    1 << 3,
+    1 << 4,
+    1 << 5,
+    1 << 6,
+    1 << 7,
+    1 << 8,
+};
 
-/*  > set
- * Set a number as playable in the sudoku (set in PossibleValues if
- * it is playable)
- * > Returns the flag (possibilties) updated with the new possibility
- *      - n : number to set
- *      - flag : all possibilities
- */
-short set (short n, short flag){
-    short mark = 1 << (n-1);
-    return flag | mark;
-}
-
-/*  > clear
- * Clear a number as unplayable in the sudoku (clear in PossibleValues if
- * it is unplayable)
- * > Returns *nothing*
- *      - n : number to set
- *      - flag : all possibilities
- */
-int clear (short n, short* flag){
-    short mark = 1 << (n-1);
-    *flag = *flag & ~mark;
-    return *flag == 0;
-}
+const short CLEAR_MASKS[10] = {
+    0b111111111,
+    ~(1 << 0),
+    ~(1 << 1),
+    ~(1 << 2),
+    ~(1 << 3),
+    ~(1 << 4),
+    ~(1 << 5),
+    ~(1 << 6),
+    ~(1 << 7),
+    ~(1 << 8),
+};
 
 /*  > IsSudokuSolved
  * Check if "sudoku" grid is solved (if the grid is filled of numbers != 0)
@@ -400,25 +396,24 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
     u8 row = index / sudoku->boardedge;
     u8 col = index % sudoku->boardedge;
     short possibilities = 0b111111111;
-    size_t idx;
     u8 cell;
 
     u8 init_row = (row/sudoku->nbsquares)*sudoku->nbsquares;
     u8 init_col = (col/sudoku->nbsquares)*sudoku->nbsquares;
 
-    for(size_t i = 0; i < sudoku->boardedge; i++)
+    for (size_t i = 0, idx = 0; i < sudoku->boardedge; i++)
     {
         /// horizontal
         idx = row * sudoku->boardedge + i;
         cell = sudoku->board[idx];
-        if (cell != 0 && clear(cell, &possibilities)) {
+        if ((possibilities &= CLEAR_MASKS[cell]) == 0) {
             return 0;
         }
 
         // vertical
         idx = i * sudoku->boardedge + col;
         cell = sudoku->board[idx];
-        if (cell != 0 && clear(cell, &possibilities)) {
+        if ((possibilities &= CLEAR_MASKS[cell]) == 0) {
             return 0;
         }
 
@@ -426,7 +421,7 @@ short PossibleValues(const Sudoku* sudoku, u8 index){
         idx = (init_row + (i / sudoku->nbsquares)) * sudoku->boardedge
             + ((i % sudoku->nbsquares) + init_col);
         cell = sudoku->board[idx];
-        if (cell != 0 && clear(cell, &possibilities)) {
+        if ((possibilities &= CLEAR_MASKS[cell]) == 0) {
             return 0;
         }
     }
@@ -450,18 +445,18 @@ int Backtracking(Sudoku* sudoku, size_t i){
     short possibilities = PossibleValues(sudoku, i);
     for (u8 n = 1; n <= 9; n++)
     {
-        if (verify(n, possibilities))
+        if ((possibilities & SET_MASKS[n]) != 0)
         {
             sudoku->board[i] = n;
 
-            if(Backtracking(sudoku, i) == Operation_Succeeded)
+            if (Backtracking(sudoku, i + 1) == Operation_Succeeded)
             {
                 return Operation_Succeeded;
             }
 
-            sudoku->board[i] = 0;
         }
     }
+    sudoku->board[i] = 0;
 
     return Sudoku_Not_Solved;
 }
@@ -490,7 +485,7 @@ int IntBacktracking(const Sudoku* org, Sudoku* sudoku, size_t i){
     short possibilities = PossibleValues(sudoku, i);
     for (u8 n = 1; n <= 9; n++)
     {
-        if (verify(n, possibilities))
+        if ((possibilities & SET_MASKS[n]) != 0)
         {
             sudoku->board[i] = n;
 
@@ -499,13 +494,13 @@ int IntBacktracking(const Sudoku* org, Sudoku* sudoku, size_t i){
             fflush(stdout);
             msleep(15);
 
-            if(IntBacktracking(org, sudoku, i) == Operation_Succeeded)
+            if(IntBacktracking(org, sudoku, i + 1) == Operation_Succeeded)
             {
                 return Operation_Succeeded;
             }
-            sudoku->board[i] = 0;
         }
     }
+    sudoku->board[i] = 0;
 
     return Sudoku_Not_Solved;
 }
