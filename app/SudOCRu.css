@@ -112,6 +112,16 @@ button.cell.colored:hover {
     font-weight: bold;
 }
 
+button.cell.error {
+    background-color: rgba(255, 0, 0, 0.16);
+    color: #FF0000;
+}
+
+button.cell.error:hover {
+    background-color: #FF0000;
+    color: #fff;
+}
+
 /*   ----------------   */
 /*     ERROR POPUP      */
 /*   ----------------   */

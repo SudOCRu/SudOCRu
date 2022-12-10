@@ -30,6 +30,7 @@ gboolean SaveCell(GtkButton* button, gpointer user_data)
         } else {
             gtk_style_context_remove_class(ctx, "colored");
         }
+        gtk_style_context_remove_class(ctx, "error");
         gtk_button_set_label(details->button, digit);
     } else {
         gtk_style_context_remove_class(ctx, "colored");
@@ -95,6 +96,7 @@ gboolean EditCell(GtkButton* button, gpointer user_data)
 struct SolveTask {
     SudOCRu* app;
     int result;
+    InvalidSudokuError* error;
 };
 
 gboolean DoneSolve(gpointer user_data)
@@ -106,10 +108,44 @@ gboolean DoneSolve(gpointer user_data)
     {
         HideWindow(app, "OCRCorrection");
         ShowSolveResults(app);
+    } else if (task->error != NULL) {
+        InvalidSudokuError* error = task->error;
+        PrintError(app->sudoku, error);
+
+        GList *children, *iter;
+        GtkStyleContext *ctx;
+
+        GtkContainer* container = GTK_CONTAINER(gtk_builder_get_object(app->ui,
+                "CellGrid"));
+        children = gtk_container_get_children(container);
+        unsigned char i = 80;
+        for(iter = children; iter != NULL; iter = g_list_next(iter))
+        {
+            ctx = gtk_widget_get_style_context(iter->data);
+
+            if (i-- == error->error_pos)
+            {
+                gtk_style_context_add_class(ctx, "error");
+                break;
+            }
+        }
+        g_list_free(children);
+
+        char* type = error->type == 0 ? "Group" :
+            (error->type == 1 ? "Horizontal" :
+             (error->type == 2 ? "Vertical" : "IsSolved"));
+        size_t error_pos = error->error_pos;
+        short flag = error->flag;
+        char msg[100] = { 0, };
+
+        snprintf(msg, sizeof(msg), "%s check failed:\nInvalid cell at index %lu"
+                ", cell %hi is already placed (state: %hi)", type, error_pos,
+                app->sudoku->board[error_pos], flag);
+        ShowErrorMessage(app, "Invalid Sudoku", msg);
+        free(task->error);
     } else {
-        char code[4];
-        snprintf(code, sizeof(code), "E%02i", task->result);
-        ShowErrorMessage(app, (const char*)&code, "Unable to solve sudoku");
+        ShowErrorMessage(app, "Unable to solve sudoku",
+                "No solution were found :(");
     }
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "OCRNextButton")), TRUE);
@@ -129,10 +165,13 @@ gpointer ThreadSolveSudoku(gpointer thr_data)
         cells[i] = app->cells[i]->value;
     }
     app->sudoku = CreateSudoku((const u8*)&cells, 9, 3);
-    int isSolvable = IsSudokuValid(app->sudoku);
+    InvalidSudokuError* error;
+    int isSolvable = IsSudokuValid(app->sudoku, &error);
     if (isSolvable != 1)
     {
+        printf("\n");
         task->result = isSolvable;
+        task->error = error;
         gdk_threads_add_idle(DoneSolve, task);
         return NULL;
     }
@@ -142,6 +181,7 @@ gpointer ThreadSolveSudoku(gpointer thr_data)
     int solved = Backtracking(app->sudoku, 0);
     if (solved != 1)
     {
+        printf("\n");
         task->result = solved;
         gdk_threads_add_idle(DoneSolve, task);
         return NULL;
@@ -159,7 +199,7 @@ gboolean RunSudokuSolver(GtkButton* button, gpointer user_data)
     SudOCRu* app = user_data;
     UNUSED(button);
 
-    struct SolveTask* task = malloc(sizeof(struct SolveTask));
+    struct SolveTask* task = calloc(1, sizeof(struct SolveTask));
     task->app = app;
 
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
@@ -292,6 +332,7 @@ void ShowOCRResults(SudOCRu* app)
             gtk_button_set_label(but, "");
             gtk_style_context_remove_class(ctx, "colored");
         }
+        gtk_style_context_remove_class(ctx, "error");
     }
     g_list_free(children);
 

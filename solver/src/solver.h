@@ -14,6 +14,12 @@ typedef struct Sudoku {
     u8 nbsquares;
 } Sudoku;
 
+typedef struct InvalidSudokuError {
+    char type; // 0: Group, 1: Horizontal, 2: Vertical
+    size_t error_pos;
+    short flag;
+} InvalidSudokuError;
+
 /*  > CreateSudoku
  * Initializes a new Sudoku board.
  * > Returns a new Sudoku (cols*rows) from array
@@ -47,12 +53,14 @@ Sudoku* ImportSudoku(const char* in_file);
  */
 int SaveSudoku(const Sudoku* sudoku, const char* out_file);
 
+void PrintError(const Sudoku* sudoku, const InvalidSudokuError* error);
+
 /*  > IsSudokuValid
  * Check if "sudoku" grid is valid (if it's solvable)
  * > Returns 0 (false) if the board is not valid, else 1 (true)
  *      - sudoku : Sudoku grid to check
  */
-int IsSudokuValid(const Sudoku* sudoku);
+int IsSudokuValid(const Sudoku* sudoku, InvalidSudokuError** error);
 
 /*  > IsSudokuSolved
  * Check if "sudoku" grid is solved (if the grid is filled of numbers != 0)
