@@ -25,17 +25,6 @@ gboolean DoneOCR(gpointer user_data)
     return G_SOURCE_REMOVE;
 }
 
-void PrepareForOCR(Image* cell, u8* tmp, double* pixels)
-{
-    Image* img = PrepareCell(cell, tmp);
-    for (size_t i = 0; i < 28 * 28; i++)
-    {
-        double col = img->pixels[i] & 0xFF;
-        pixels[i] = col / 255.0;
-    }
-    DestroyImage(img);
-}
-
 gpointer ThreadRunOCR(gpointer thr_data) {
     struct OCRTask* task = thr_data;
     SudOCRu* app = task->app;
@@ -66,9 +55,7 @@ gpointer ThreadRunOCR(gpointer thr_data) {
         SudokuCell* cell = app->cells[i];
         if (CleanCell(cell->data, tmp))
         {
-            double* pixels = malloc(28 * 28 * sizeof(double));
-            PrepareForOCR(cell->data, tmp, pixels);
-            cell->value = ReadDigit(pixels, app->nn);
+            cell->value = ReadDigit(PrepareCell(cell->data, tmp), app->nn);
         } else {
             cell->value = 0;
         }

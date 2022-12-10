@@ -104,7 +104,7 @@ JAMET Kévin</property>
                 <property name="margin_top">10</property>
                 <property name="margin_bottom">10</property>
                 <style>
-                  <class name="MainButton"/>
+                  <class name="ClassicButton"/>
                 </style>
               </object>
               <packing>
@@ -243,49 +243,6 @@ JAMET Kévin</property>
           <packing>
             <property name="left_attach">0</property>
             <property name="top_attach">0</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkWindow" id="FileSaverWindow">
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Save Generated Sudoku</property>
-    <property name="resizable">False</property>
-    <property name="window_position">center-always</property>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
-    <child>
-      <object class="GtkGrid">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <child>
-          <object class="GtkFileChooserWidget" id="FileSaverWidget">
-            <property name="width_request">1000</property>
-            <property name="height_request">800</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="action">save</property>
-            <property name="do_overwrite_confirmation">True</property>
-            <property name="search_mode">True</property>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="SaveButto">
-            <property name="label" translatable="yes">Save</property>
-            <property name="height_request">50</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">1</property>
           </packing>
         </child>
       </object>
@@ -1623,7 +1580,7 @@ Wait few moments</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <child>
-              <object class="GtkButton" id="SaveButton">
+              <object class="GtkButton" id="SaveAsGridButton">
                 <property name="label" translatable="yes">Save</property>
                 <property name="height_request">50</property>
                 <property name="visible">True</property>

@@ -176,7 +176,7 @@ int CleanCell(Image* img, u8* markers)
     return /*(total_size / (M_PI * r_squared) > 0.05f)*/0;
 }
 
-Image* PrepareCell(const Image* cell, const u8* markers) {
+double* PrepareCell(const Image* cell, const u8* markers) {
     size_t min_x = cell->width - 1, min_y = cell->height - 1,
            max_x = 0, max_y = 0;
     // Find the smallest box containg all the components
@@ -211,13 +211,15 @@ Image* PrepareCell(const Image* cell, const u8* markers) {
         }
     }
 
+    double* values = malloc(28 * 28 * sizeof(double));
     Image* r = DownscaleImage(cell, min_x, min_y, max_x, max_y, 28, 28, 0);
     for (size_t i = 0; i < 28 * 28; i++)
     {
-        unsigned char val = r->pixels[i];
-        r->pixels[i] = (val << 16) | (val << 8) | val;
+        double val = r->pixels[i] & 0xFF;
+        values[i] = val / 255.0;
     }
-    return r;
+    DestroyImage(r);
+    return values;
 }
 
 void GrayscaleFilter(Image* image, u8* min, u8* max)

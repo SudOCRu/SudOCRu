@@ -110,7 +110,7 @@ void SetupSolveResults(SudOCRu* app)
     GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "SaveWindow"));
     GtkButton* save = GTK_BUTTON(gtk_builder_get_object(app->ui,
-                "SaveButton"));
+                "SaveAsGridButton"));
 
     GtkWindowGroup* grp = gtk_window_get_group(main);
     gtk_window_group_add_window(grp, win);

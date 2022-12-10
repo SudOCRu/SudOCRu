@@ -79,7 +79,11 @@ int main(int argc, char** argv)
                 SudokuCell* cell = cells[i];
                 if (CleanCell(cell->data, tmp))
                 {
-                    cell->data = PrepareCell(cell->data, tmp);
+                    double* values = PrepareCell(cell->data, tmp);
+                    for (size_t i = 0; i < 28 * 28; i++)
+                    {
+                        cell->data->pixels[i] = values[i] * 0xFFFFFF;
+                    }
                 }
                 snprintf(name, sizeof(name), "cells/cell_%02lu.png", i);
                 if (!SaveImageFile(cell->data, name))
