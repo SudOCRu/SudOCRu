@@ -3,6 +3,10 @@
 button{
     background-image:none;
 }
+window{
+    background-image:none;
+    background-color:white;
+}
 
 /*   ----------------   */
 /*     BUTTON HOVER     */
@@ -13,9 +17,10 @@ button{
     color: #22436a;
     background-color: #a8c3e5;
     border-radius: 8px;
-    border: 2px solid #68adff;
+    border:none;
     font-size: 14px;
     text-shadow: none;
+    font-weight: bold;
 }
 
 .MainButton {
@@ -23,9 +28,10 @@ button{
     color: #012f41;
     background-color: #f2b96c;
     border-radius: 8px;
-    border: 2px solid #c87300;
+    border:none;
     font-size: 14px;
     text-shadow: none;
+    font-weight: bold;
 }
 
 /*   ----------------   */
@@ -35,13 +41,15 @@ button{
 .ClassicButton:hover {
     color: #14283f;
     background-color: #92b6e4;
-    border: 2px solid #294d76;
+    border:none;
+    font-weight: bold;
 }
 
 .MainButton:hover {
     color: #00425c;
     background-color: #ffac3b;
-    border: 2px solid #00597c;
+    border:none;
+    font-weight: bold;
 }
 
 /*   ----------------   */
@@ -51,7 +59,6 @@ button{
 button.cell {
     background-color: #ebebeb;
     color: #333333;
-    border: 1px solid #ebebeb;
     font-size: 18px;
     font-weight: bold;
 }
@@ -59,7 +66,6 @@ button.cell {
 button.cell.colored {
     background-color: #ffeacd;
     color: #b46800;
-    border: 1px solid #b46800;
     font-size: 18px;
     font-weight: bold;
 }
@@ -68,7 +74,6 @@ button.cell:hover {
     background-color: #fff0dc;
     color: #333333;
     border-radius: 5px;
-    border: 1px solid #00597c;
     font-size: 18px;
     font-weight: bold;
 }
@@ -77,7 +82,6 @@ button.cell.colored:hover {
     background-color: #ffc87b;
     color: #00425c;
     border-radius: 5px;
-    border: 1px solid #00597c;
     font-size: 18px;
     font-weight: bold;
 }

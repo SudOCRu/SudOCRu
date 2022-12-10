@@ -52,6 +52,7 @@ JAMET Kévin</property>
         <child>
           <object class="GtkButton" id="GitHubLink">
             <property name="label" translatable="yes">GitHub Repository</property>
+            <property name="height_request">50</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -90,6 +91,7 @@ JAMET Kévin</property>
             <child>
               <object class="GtkButton" id="SaveCellButton">
                 <property name="label" translatable="yes">Save</property>
+                <property name="height_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -171,6 +173,7 @@ JAMET Kévin</property>
         <child>
           <object class="GtkButton" id="CloseErrorButton">
             <property name="label" translatable="yes">Close</property>
+            <property name="height_request">50</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -285,6 +288,7 @@ JAMET Kévin</property>
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <property name="title" translatable="yes">SudOCRu</property>
+    <property name="resizable">False</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -299,6 +303,7 @@ JAMET Kévin</property>
         <child>
           <object class="GtkButton" id="LoadFileButton">
             <property name="label" translatable="yes">Load File</property>
+            <property name="height_request">50</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -318,6 +323,7 @@ JAMET Kévin</property>
         <child>
           <object class="GtkButton" id="AboutUsButton">
             <property name="label" translatable="yes">About</property>
+            <property name="height_request">50</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -410,6 +416,7 @@ JAMET Kévin</property>
             <child>
               <object class="GtkButton" id="OCRNextButton">
                 <property name="label" translatable="yes">Next</property>
+                <property name="height_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -1389,6 +1396,7 @@ Wait few moments</property>
         <child>
           <object class="GtkButton" id="OCRCancel">
             <property name="label" translatable="yes">Cancel</property>
+            <property name="height_request">50</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="halign">center</property>
@@ -1455,6 +1463,7 @@ Wait few moments</property>
         <child>
           <object class="GtkButton" id="CancelProcessButton">
             <property name="label" translatable="yes">Cancel</property>
+            <property name="height_request">50</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="halign">center</property>
@@ -1493,6 +1502,7 @@ Wait few moments</property>
             <child>
               <object class="GtkButton" id="ResizingNextButton">
                 <property name="label" translatable="yes">Next</property>
+                <property name="height_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -1571,6 +1581,7 @@ Wait few moments</property>
             <child>
               <object class="GtkButton" id="SaveButton">
                 <property name="label" translatable="yes">Save</property>
+                <property name="height_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -1663,6 +1674,7 @@ Wait few moments</property>
         <child>
           <object class="GtkButton" id="CancelSolvingButton">
             <property name="label" translatable="yes">Cancel</property>
+            <property name="height_request">50</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="halign">center</property>
@@ -1701,6 +1713,7 @@ Wait few moments</property>
             <child>
               <object class="GtkButton" id="NextButton">
                 <property name="label" translatable="yes">Next</property>
+                <property name="height_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -1753,6 +1766,7 @@ Wait few moments</property>
             </child>
             <child>
               <object class="GtkButton" id="ApplyButton">
+                <property name="height_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
