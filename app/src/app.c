@@ -33,10 +33,10 @@ void SudOCRu_destroy(SudOCRu* app)
         free(app->cells);
     }
     app->cells_len = 0;
-
     DestroyImage(app->cropped_grid);
 
-    DestroyNeuralNetwork(app->nn);
+    if (app->nn != NULL)
+        DestroyNeuralNetwork(app->nn);
 }
 
 void SetupStyle()
@@ -58,6 +58,10 @@ void SetupStyle()
 
 int main()
 {
+    printf("\xF0\x9F\xA6\x90 \033[31;1m\xC2\xBB\033[0m Starting "
+            "\033[35;1mGUI\033[0m...");
+    fflush(stdout);
+
     gtk_init(NULL, NULL);
     GtkBuilder* builder = gtk_builder_new();
     SetupStyle();
@@ -73,9 +77,13 @@ int main()
     SudOCRu state = { 0, };
     SudOCRu_init(&state, builder);
 
+    printf("\033[32;1mOK\033[0m\n");
+
     SetupMainWindow(&state);
 
     gtk_main();
     SudOCRu_destroy(&state);
+    printf("\xF0\x9F\xA6\x90 \033[31;1m\xC2\xBB\033[0m Closing "
+            "\033[35;1mapp\033[0m, bye!\n");
     return 0;
 }
