@@ -94,13 +94,21 @@ Image* ReconstructGrid(SudOCRu* app)
     Image* img = SurfaceAsImage(surf);
     BBox from = { 0, 0, 0, cropped->height, cropped->width,
         cropped->height, cropped->width, 0 };
-    if(UnwarpPerspective(img, &from, app->original_image,
+
+    for (size_t i = 0; i < cropped->width * cropped->height; i++)
+    {
+        if (img->pixels[i] != 0)
+            cropped->pixels[i] = img->pixels[i];
+    }
+
+    if (UnwarpPerspective(img, &from, app->original_image,
             app->grid->bounds))
     {
-        return img;
+        DestroyImage(img);
+        return app->original_image;
     }
     DestroyImage(img);
-    return NULL;
+    return cropped;
 }
 
 void SaveStandaloneGrid(SudOCRu* app, const char* name)
@@ -135,6 +143,19 @@ gboolean SaveResultAsText(GtkButton* button, gpointer user_data)
     return TRUE;
 }
 
+void SaveOriginalImage(SudOCRu* app, const char* name)
+{
+    if (SaveImageFile(app->original_image, name))
+        printf("Successfully saved reconstructed as `%s`\n", name);
+}
+
+gboolean SaveResult(GtkButton* button, gpointer user_data)
+{
+    UNUSED(button);
+    ShowSaveFileDialog(user_data, SaveOriginalImage, "result.png", 0);
+    return TRUE;
+}
+
 void SetupSolveResults(SudOCRu* app)
 {
     GtkWindow* main = GTK_WINDOW(gtk_builder_get_object(app->ui,
@@ -154,6 +175,8 @@ void SetupSolveResults(SudOCRu* app)
 
     g_signal_connect(save, "clicked", G_CALLBACK(SaveResultGrid), app);
     g_signal_connect(saveText, "clicked", G_CALLBACK(SaveResultAsText), app);
+    g_signal_connect(saveReconstructed, "clicked",
+            G_CALLBACK(SaveResult), app);
     g_signal_connect(win, "destroy", G_CALLBACK(hide_window), NULL);
     g_signal_connect(G_OBJECT(win),
         "delete-event", G_CALLBACK(hide_window), NULL);
@@ -172,10 +195,8 @@ void ShowSolveResults(SudOCRu* app)
     Image* reconstructed = ReconstructGrid(app);
     if (reconstructed != NULL)
     {
-        DestroyImage(app->cropped_grid);
-        app->cropped_grid = reconstructed;
+        DrawImage(reconstructed, img);
     }
-    DrawImage(app->original_image, img);
 
     gtk_widget_show(GTK_WIDGET(win));
     gtk_window_set_keep_above(win, TRUE);

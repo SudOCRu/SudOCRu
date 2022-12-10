@@ -1,11 +1,11 @@
 /* https://docs.gtk.org/gtk3/css-properties.html#background-properties */
 
-button{
-    background-image:none;
+button {
+    background-image: none;
 }
-window{
-    background-image:none;
-    background-color:white;
+window {
+    background-image: none;
+    background-color: white;
 }
 
 /*   ----------------   */
