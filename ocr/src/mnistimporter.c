@@ -4,13 +4,19 @@
 
 unsigned char* readImage(FILE *file){
     unsigned char *data = calloc(IMG_LEN, sizeof(unsigned char));
-    int t = fread(data, 1, IMG_LEN, file);
+    //int t = fread(data, 1, IMG_LEN, file);
+    if (1 != fread(data, IMG_LEN, 1, file)){
+        return NULL;
+    }
     return data;
 }
 
 unsigned char readLabel(FILE *file){
     unsigned char data = 0;
-    int t =fread(&data, 1, sizeof(data), file);
+    //int t =fread(&data, 1, sizeof(data), file);
+    if (1 != fread(&data, sizeof(data), 1, file)){
+        return -1;
+    }
     return data;
 }
 
@@ -46,14 +52,16 @@ DataPoint **generateSample(char *dataFileName,
     FILE *results = fopen(resultsFileName, "rb");
     t = fread(skip, sizeof(int), 1, results);
     t = fread(skip, sizeof(int), 1, results);
-
+    if (t != 1){
+        return NULL;
+    }
     unsigned char *labels = readLabels(results, *nbImg);
     double **images = readImages(data, *nbImg);
 
     DataPoint **sample = calloc(*nbImg, sizeof(DataPoint));
-    for (size_t i = 0; i < *nbImg; i++){
+    for (int i = 0; i < *nbImg; i++){
        double *outputs = calloc(10, sizeof(double));
-       for(size_t j = 0; j < 10; j++){
+       for(int j = 0; j < 10; j++){
            outputs[j] = 0;
        }
        outputs[labels[i]] = 1;
