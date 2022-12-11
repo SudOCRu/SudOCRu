@@ -11,7 +11,6 @@ bin/ocr:
 	cp ocr/ocr bin/
 
 bin/ipp:
-	mkdir -p cells
 	make -C ipp/ RELEASE=1
 	cp ipp/ipp bin/
 
@@ -22,6 +21,9 @@ bin/solver:
 bin/sudocru: bin/ocr bin/ipp bin/solver
 	make -C app/ RELEASE=1
 	cp app/sudocru bin/
+	mkdir bin/assets/
+	cp -R app/assets/ bin/assets/
+	cp app/bin/ocr_weights.bin bin/
 
 clean:
 	rm -rf bin $(GENERATED_FILES)

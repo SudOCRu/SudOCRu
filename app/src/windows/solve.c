@@ -52,8 +52,8 @@ Image* ReconstructGrid(SudOCRu* app)
     size_t cell_width = app->cropped_grid->width / 9;
     size_t cell_height = app->cropped_grid->height / 9;
     int size = cell_height / 1.6f;
-    TTF_Font* font = TTF_OpenFont("fonts/Lemon-Regular.ttf", size);
-    TTF_Font* font_outline = TTF_OpenFont("fonts/Lemon-Regular.ttf", size);
+    TTF_Font* font = TTF_OpenFont(FONT_FILE, size);
+    TTF_Font* font_outline = TTF_OpenFont(FONT_FILE, size);
     if (font == NULL || font_outline == NULL)
     {
         printf(".. Eror loading font!\n");

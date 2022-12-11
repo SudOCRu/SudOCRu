@@ -41,6 +41,7 @@ SRCDIRS := $(shell find . -type d -not -path "*$(BUILD)*")
 $(shell mkdir -p $(BUILD)/shared $(SRCDIRS:%=$(BUILD)/%))
 
 all: $(TARGET)
+	@cp -R assets/ bin/assets/
 
 $(LIB):
 	make -C ../ipp lib RELEASE=$(RELEASE)

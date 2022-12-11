@@ -8,6 +8,10 @@
 #include <solver.h>
 #include <gtk/gtk.h>
 #include <SDL2/SDL.h>
+
+#define LAYOUT_FILE "bin/assets/SudOCRu.glade"
+#define STYLE_FILE "bin/assets/SudOCRu.css"
+#define FONT_FILE "bin/assets/Lemon-Regular.ttf"
 #define UNUSED(x) (void)(x)
 
 typedef struct SudOCRu {

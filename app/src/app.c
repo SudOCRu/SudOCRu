@@ -48,7 +48,7 @@ void SetupStyle()
 
     GError *error = 0;
     gtk_css_provider_load_from_file(provider,
-            g_file_new_for_path("SudOCRu.css"), &error);
+            g_file_new_for_path(STYLE_FILE), &error);
     if (error != 0)
     {
         printf("<!> Error loading css\n");
@@ -74,7 +74,8 @@ int main()
     SetupStyle();
 
     GError* error = NULL;
-    if (gtk_builder_add_from_file(builder, "SudOCRu.glade", &error) == 0)
+    if (gtk_builder_add_from_file(builder, LAYOUT_FILE, &error)
+            == 0)
     {
         g_printerr("Error loading layout file: %s\n", error->message);
         g_clear_error(&error);
