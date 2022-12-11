@@ -134,16 +134,14 @@ gboolean OpenLinkGithub(GtkButton* button, gpointer user_data)
 {
     UNUSED(button);
     UNUSED(user_data);
-    system("xdg-open https://github.com/SudOCRu/SudOCRu/");
-    return TRUE;
+    return system("xdg-open https://github.com/SudOCRu/SudOCRu/");
 }
 
 gboolean OpenLinkWebsite(GtkButton* button, gpointer user_data)
 {
     UNUSED(button);
     UNUSED(user_data);
-    system("xdg-open https://sudocru.com/");
-    return TRUE;
+    return system("xdg-open https://sudocru.com/");
 }
 
 void ShowAboutDialog(GtkButton *button, gpointer user_data)
