@@ -282,7 +282,7 @@ void PrintError(const Sudoku* sudoku, const InvalidSudokuError* error)
  *      - sudoku : Sudoku grid to check
  */
 int IsSudokuValid(const Sudoku* sudoku, InvalidSudokuError** out_error){
-    u8 idx, cell, row, col, init_row, init_col;
+    u8 idx = 0, cell, row, col, init_row, init_col;
     short possibilities;
 
     for(u8 gy = 0; gy < sudoku->nbsquares; gy++)

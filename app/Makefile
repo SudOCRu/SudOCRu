@@ -16,8 +16,8 @@ LDLIBS :=  $(addprefix -l,\
 
 RELEASE := 0
 ifneq ($(RELEASE), 0)
-	CFLAGS += -O3 -flto
-	LDFLAGS += -flto
+	CFLAGS += -O3
+	LDFLAGS +=
 else
 	CFLAGS += -Og -g -fsanitize=address,undefined
 	LDFLAGS += -fsanitize=address,undefined
@@ -41,7 +41,7 @@ SRCDIRS := $(shell find . -type d -not -path "*$(BUILD)*")
 $(shell mkdir -p $(BUILD)/shared $(SRCDIRS:%=$(BUILD)/%))
 
 all: $(TARGET)
-	@cp -R assets/ bin/assets/
+	@cp -R assets/ bin/
 
 $(LIB):
 	make -C ../ipp lib RELEASE=$(RELEASE)

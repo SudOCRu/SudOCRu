@@ -7,9 +7,30 @@
 button {
     background-image: none;
 }
+
 window {
     background-image: none;
     background-color: white;
+}
+
+spinner {
+    min-width: 20px;
+    min-height: 20px;
+    background-image: none;
+    background-color: transparent;
+    -gtk-icon-source: url("imgs/shrimp.png");
+    border-radius: 50%;
+    margin: 4px;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        -gtk-icon-transform: rotate(360deg);
+    }
+    100% {
+        -gtk-icon-transform: rotate(0deg);
+    }
 }
 
 /*   ----------------   */

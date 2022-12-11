@@ -69,7 +69,7 @@ int main(int argc, char** argv)
         if (len > 0)
         {
             u32* tmp = malloc(cells[0]->width * cells[0]->height * sizeof(u32));
-            char name[18];
+            char name[19];
             printf("Extracting cell 0/%lu", len);
             for(size_t i = 0; i < len; i++)
             {
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
                     free(values);
                     cell->data = cropped;
                 }
-                snprintf(name, sizeof(name), "cells/cell_%02lu.png", i);
+                snprintf(name, sizeof(name), "cells/cell_%02hhu.png", (u8) i);
                 if (!SaveImageFile(cell->data, name))
                 {
                     printf("\nError: Could not save %s\n", name);

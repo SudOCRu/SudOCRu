@@ -22,7 +22,7 @@ bin/sudocru: bin/ocr bin/ipp bin/solver
 	make -C app/ RELEASE=1
 	cp app/sudocru bin/
 	mkdir bin/assets/
-	cp -R app/assets/ bin/assets/
+	cp -R app/assets/ bin/
 	cp app/bin/ocr_weights.bin bin/
 
 clean:

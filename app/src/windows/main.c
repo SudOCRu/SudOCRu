@@ -1,5 +1,6 @@
 #include "windows.h"
 #include "../utils.h"
+#include <stdlib.h>
 
 struct ProcessImageTask {
     SudOCRu* app;
@@ -16,7 +17,9 @@ gboolean DoneProcessing(gpointer user_data)
     if (!task->result)
     {
         ShowThresholding(app);
-    } else {
+    }
+    else
+    {
         char code[4];
         snprintf(code, sizeof(code), "E%02i", task->result);
         ShowErrorMessage(app, "MainWindow", (const char*)&code,
@@ -102,7 +105,7 @@ void ShowImportFileDialog(GtkButton *button, gpointer user_data)
     GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "MainWindow"));
     GtkFileChooserNative *dialog = gtk_file_chooser_native_new("Choose a file",
-            GTK_WINDOW(win), 
+            GTK_WINDOW(win),
             GTK_FILE_CHOOSER_ACTION_OPEN,
             "Open", "Cancel");
 
@@ -125,6 +128,22 @@ void ShowImportFileDialog(GtkButton *button, gpointer user_data)
     }
 
     gtk_native_dialog_destroy(GTK_NATIVE_DIALOG(dialog));
+}
+
+gboolean OpenLinkGithub(GtkButton* button, gpointer user_data)
+{
+    UNUSED(button);
+    UNUSED(user_data);
+    system("xdg-open https://github.com/SudOCRu/SudOCRu/");
+    return TRUE;
+}
+
+gboolean OpenLinkWebsite(GtkButton* button, gpointer user_data)
+{
+    UNUSED(button);
+    UNUSED(user_data);
+    system("xdg-open https://sudocru.com/");
+    return TRUE;
 }
 
 void ShowAboutDialog(GtkButton *button, gpointer user_data)
@@ -152,6 +171,10 @@ void SetupMainWindow(SudOCRu* app)
                 "LoadFileButton"));
     GtkButton* openAbout = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "AboutUsButton"));
+    GtkButton* openGithub = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                "OpenGithub"));
+    GtkButton* openWebsite = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                "OpenWebsite"));
 
     GtkWindowGroup* grp = gtk_window_get_group(win);
     gtk_window_group_add_window(grp, dialog);
@@ -160,7 +183,9 @@ void SetupMainWindow(SudOCRu* app)
 
     g_signal_connect(load, "clicked", G_CALLBACK(ShowImportFileDialog), app);
     g_signal_connect(openAbout, "clicked", G_CALLBACK(ShowAboutDialog), app);
-    g_signal_connect(G_OBJECT(dialog), 
+    g_signal_connect(openWebsite, "clicked", G_CALLBACK(OpenLinkWebsite), NULL);
+    g_signal_connect(openGithub, "clicked", G_CALLBACK(OpenLinkGithub), NULL);
+    g_signal_connect(G_OBJECT(dialog),
         "delete-event", G_CALLBACK(hide_window), NULL);
     g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 

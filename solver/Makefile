@@ -15,8 +15,8 @@ LDLIBS :=  $(addprefix -l,\
 
 RELEASE := 0
 ifneq ($(RELEASE), 0)
-	CFLAGS += -O3 -flto
-	LDFLAGS += -flto
+	CFLAGS += -O3
+	LDFLAGS +=
 else
 	CFLAGS += -g -fsanitize=address,undefined
 	LDFLAGS += -fsanitize=address,undefined

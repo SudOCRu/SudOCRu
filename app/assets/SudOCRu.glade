@@ -53,7 +53,7 @@ JAMET Kévin</property>
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="GitHubLink">
+          <object class="GtkButton" id="OpenGithub">
             <property name="label" translatable="yes">GitHub Repository</property>
             <property name="height_request">50</property>
             <property name="visible">True</property>
@@ -71,6 +71,27 @@ JAMET Kévin</property>
           <packing>
             <property name="left_attach">0</property>
             <property name="top_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="OpenWebsite">
+            <property name="label" translatable="yes">Website</property>
+            <property name="height_request">50</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_left">10</property>
+            <property name="margin_right">10</property>
+            <property name="margin_top">10</property>
+            <property name="margin_bottom">10</property>
+            <style>
+              <class name="ClassicButton"/>
+              <class name="text"/>
+            </style>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">3</property>
           </packing>
         </child>
       </object>
@@ -1361,13 +1382,14 @@ JAMET Kévin</property>
         <property name="column_homogeneous">True</property>
         <child>
           <object class="GtkSpinner">
-            <property name="width_request">50</property>
-            <property name="height_request">50</property>
+            <property name="width_request">72</property>
+            <property name="height_request">64</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="active">True</property>
+            <property name="margin_top">20</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -1381,6 +1403,7 @@ JAMET Kévin</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="margin_left">10</property>
+            <property name="margin_top">20</property>
             <property name="margin_right">10</property>
             <property name="label" translatable="yes">Extracting Sudoku grid from image...
 Wait few moments</property>
@@ -1431,13 +1454,14 @@ Wait few moments</property>
         <property name="column_homogeneous">True</property>
         <child>
           <object class="GtkSpinner">
-            <property name="width_request">50</property>
-            <property name="height_request">50</property>
+            <property name="width_request">72</property>
+            <property name="height_request">64</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="active">True</property>
+            <property name="margin_top">20</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -1450,6 +1474,7 @@ Wait few moments</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
+            <property name="margin_top">20</property>
             <property name="margin_left">10</property>
             <property name="margin_right">10</property>
             <property name="label" translatable="yes">SudOCRu processing...
@@ -1741,13 +1766,14 @@ of the Sudoku grid</property>
         <property name="column_homogeneous">True</property>
         <child>
           <object class="GtkSpinner">
-            <property name="width_request">50</property>
-            <property name="height_request">50</property>
+            <property name="width_request">72</property>
+            <property name="height_request">72</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="active">True</property>
+            <property name="margin_top">20</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -1760,6 +1786,7 @@ of the Sudoku grid</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
+            <property name="margin_top">20</property>
             <property name="label" translatable="yes">Sudoku is being solved...
 Wait few moments</property>
             <property name="justify">center</property>

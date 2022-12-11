@@ -14,7 +14,7 @@ void ShowSaveFileDialog(SudOCRu* app, SudOCRu_Callback callback,
                 "SaveWindow"));
     GtkFileChooserNative *dialog = gtk_file_chooser_native_new(
             "Save Reconstructed Sudoku",
-            GTK_WINDOW(win), 
+            GTK_WINDOW(win),
             GTK_FILE_CHOOSER_ACTION_SAVE,
             "Save", "Cancel");
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), current_name);
@@ -61,7 +61,7 @@ Image* ReconstructGrid(SudOCRu* app)
     }
 
     SDL_Color col = { 254, 142, 6, 255 };
-    TTF_SetFontOutline(font_outline, 1 + size / 42); 
+    TTF_SetFontOutline(font_outline, 1 + size / 42);
     SDL_Color col_outline = { 151, 84, 2, 255 };
 
     Image* cropped = app->cropped_grid;
@@ -86,14 +86,14 @@ Image* ReconstructGrid(SudOCRu* app)
             snprintf(message, sizeof(message), "Rendering %02lu/81", i + 1);
             PrintStage(2, 2, message, 2);
 
-            digit_surf = TTF_RenderText_Solid(font, digit, col); 
+            digit_surf = TTF_RenderText_Solid(font, digit, col);
             dst.x = cell->x + cell_width / 2 - digit_surf->w / 2;
             dst.y = cell->y + cell_height / 2 - digit_surf->h / 2;
             dst.w = cell->width;
             dst.h = cell->height;
             SDL_BlitSurface(digit_surf, NULL, surf, &dst);
 
-            outline = TTF_RenderText_Solid(font_outline, digit, col_outline); 
+            outline = TTF_RenderText_Solid(font_outline, digit, col_outline);
             dst.x = cell->x + cell_width / 2 - outline->w / 2;
             dst.y = cell->y + cell_height / 2 - outline->h / 2;
             SDL_BlitSurface(outline, NULL, surf, &dst);

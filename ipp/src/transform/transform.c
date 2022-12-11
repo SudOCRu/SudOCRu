@@ -1,4 +1,5 @@
 #include "transform.h"
+#include "../utils.h"
 
 void RotateImage(Image* img, float angle, float midX, float midY)
 {
@@ -154,10 +155,10 @@ Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
 
             for (size_t dy = 0; dy < sy; dy++)
             {
-                size_t ey = clamp(y * sy + dy + top, 0, src->height);
+                size_t ey = min(y * sy + dy + top, src->height - 1);
                 for (size_t dx = 0; dx < sx; dx++)
                 {
-                    size_t ex = clamp(x * sx + left + dx, 0, src->width);
+                    size_t ex = min(x * sx + left + dx, src->width - 1);
                     unsigned int col = src->pixels[ey * src->width + ex];
                     sum_b += (col      ) & 0xFF;
                     sum_g += (col >>  8) & 0xFF;
@@ -205,10 +206,10 @@ void DownscaleImageN(const Image* src, double* out, size_t left, size_t top,
 
             for (size_t dy = 0; dy < sy; dy++)
             {
-                size_t ey = clamp(y * sy + dy + top, 0, src->height);
+                size_t ey = min(y * sy + dy + top, src->height - 1);
                 for (size_t dx = 0; dx < sx; dx++)
                 {
-                    size_t ex = clamp(x * sx + left + dx, 0, src->width);
+                    size_t ex = min(x * sx + left + dx, src->width - 1);
                     sum += src->pixels[ey * src->width + ex] & 0xFF;
                 }
             }

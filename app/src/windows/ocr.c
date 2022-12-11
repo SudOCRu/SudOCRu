@@ -89,7 +89,7 @@ gboolean EditCell(GtkButton* button, gpointer user_data)
 
     SudokuCell* cell = app->cells[details->id];
     DrawImage(cell->data, display);
-    char digit[3] = { 0, };
+    char digit[4] = { 0, };
     if (cell->value != 0)
         snprintf(digit, sizeof(digit), "%hhu", cell->value);
     gtk_entry_set_text(num_input, digit);
@@ -236,7 +236,7 @@ gboolean SaveOCRResults(GtkButton* button, gpointer user_data)
                 "OCRCorrection"));
     GtkFileChooserNative *dialog = gtk_file_chooser_native_new(
             "Export OCR results",
-            GTK_WINDOW(win), 
+            GTK_WINDOW(win),
             GTK_FILE_CHOOSER_ACTION_SAVE,
             "Save", "Cancel");
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), "sudoku");
@@ -334,7 +334,7 @@ void ShowOCRResults(SudOCRu* app)
 
     children = gtk_container_get_children(container);
     unsigned char i = 80;
-    char digit[3] = { 0, };
+    char digit[4] = { 0, };
     for(iter = children; iter != NULL; iter = g_list_next(iter))
     {
         ctx = gtk_widget_get_style_context(iter->data);

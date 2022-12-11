@@ -24,10 +24,15 @@ int GetMaxIndex(double* data, int size){
 DataPoint *gotten(char *fileName){
     FILE *file = fopen(fileName, "rb");
     double *data = calloc(28*28,sizeof(double));
-    int t = fread(data, 28*28*sizeof(double), 1, file);
+    //int t = fread(data, 28*28*sizeof(double), 1, file);
+    if (fread(data, 28*28*sizeof(double), 1, file) != 1){
+	return NULL;
+    }
 
-    char expected = 0;
-    t = fread(&expected, sizeof(char), 1, file);
+    int expected = 0;
+    if (fread(&expected, sizeof(char), 1, file) != 1){
+	return NULL;
+    }
     double *expectedOutputs = calloc(10, sizeof(double));
     for (size_t i = 0; i < 10; i++){
         expectedOutputs[i] = 0;

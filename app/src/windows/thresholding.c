@@ -86,8 +86,8 @@ gboolean ApplyThreshold(GtkButton* button, gpointer user_data)
     g_list_free(children);
 
     GtkWidget* spinner = gtk_spinner_new();
-    gtk_widget_set_halign(spinner, GTK_ALIGN_FILL);
-    gtk_widget_set_valign(spinner, GTK_ALIGN_FILL);
+    gtk_widget_set_halign(spinner, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(spinner, GTK_ALIGN_CENTER);
     gtk_widget_show_all(spinner);
     gtk_spinner_start(GTK_SPINNER(spinner));
     gtk_container_add(container, spinner);
