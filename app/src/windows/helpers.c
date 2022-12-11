@@ -14,8 +14,9 @@ void DrawImage(Image* img, GtkImage* to)
     SDL_Surface* surf;
     if (img->height > 800)
     {
+        size_t ratio = (img->height / 800) + 1;
         Image* downscaled = DownscaleImage(img, 0, 0, img->width,
-                img->height, img->width / 2, img->height / 2, 0);
+                img->height, img->width / ratio, img->height / ratio, 0);
         surf = ImageAsSurface(downscaled);
         DestroyImage(downscaled);
     } else {

@@ -54,6 +54,7 @@ gpointer ThreadRunOCR(gpointer thr_data) {
 
     if (dbb.updated)
     {
+        size_t ratio = (app->original_image->height / 800) + 1;
         BBox* to = app->grid->bounds;
         memcpy(to, &dbb, 8 * sizeof(int));
         SortBB(to);
@@ -61,7 +62,7 @@ gpointer ThreadRunOCR(gpointer thr_data) {
         {
             int* arr = (int*) to;
             for (size_t i = 0; i < 8; i++)
-                arr[i] *= 2;
+                arr[i] *= ratio;
         }
     }
 
@@ -84,8 +85,8 @@ gpointer ThreadRunOCR(gpointer thr_data) {
     PrintStage(2, 3, "Preparing Neural Network", 1);
 
     PrintStage(3, 3, "Reading digits", 0);
-    size_t len = app->cells[0]->width * app->cells[0]->height * sizeof(u8);
-    u8* tmp = malloc(len);
+    size_t len = app->cells[0]->width * app->cells[0]->height * sizeof(u32);
+    u32* tmp = malloc(len);
     for (size_t i = 0; i < app->cells_len; i++)
     {
         SudokuCell* cell = app->cells[i];
@@ -322,12 +323,13 @@ void ShowGridDetection(SudOCRu* app)
     if (app->original_image->height > 800)
     {
         dbb->scaledDown = 1;
-        dbb->max_width = app->original_image->width / 2;
-        dbb->max_height = app->original_image->height / 2;
+        size_t ratio = (app->original_image->height / 800) + 1;
+        dbb->max_width = app->original_image->width / ratio;
+        dbb->max_height = app->original_image->height / ratio;
         int* arr = (int*) &sorted;
         for (size_t i = 0; i < 8; i++)
         {
-            arr[i] /= 2;
+            arr[i] /= ratio;
         }
     } else {
         dbb->scaledDown = 0;
