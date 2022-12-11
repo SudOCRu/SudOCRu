@@ -60,6 +60,16 @@ Image* CropRotateImage(const Image* src, float angle, float midX, float midY,
 Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
         size_t bottom, size_t width, size_t height, unsigned char margin);
 
+/*
+ * DownscaleImageN(const Image* src, double* out, size_t left, size_t top,
+ * size_t right, size_t bottom, size_t width, size_t height)
+ *
+ * Write into the out array the result of the downscaling (using the box mean
+ * method) of the cropped portion of the src image according to the specified
+ * bounds. Note that the values in the output array are normalized (0-1)
+ */
+void DownscaleImageN(const Image* src, double* out, size_t left, size_t top,
+        size_t right, size_t bottom, size_t width, size_t height);
 
 /*
  * GetHomographyMatrix(const BBox* from, const BBox* to) -> Matrix*
@@ -96,3 +106,6 @@ Matrix* GetHomographyMatrix(const BBox* from, const BBox* to);
  * must be in the order: (top-left, bottom-left, top-right, bottom-right).
  */
 Image* WarpPerspective(const Image* image, const BBox* from);
+
+int UnwarpPerspective(const Image* src, const BBox* from, const Image* dst,
+        const BBox* to);

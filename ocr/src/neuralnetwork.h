@@ -4,10 +4,10 @@
 typedef struct LayerLearnData {
     double* inputs;
     int inputsLength;
-
+    
     double* weights;
     int weightsLength;
-
+    
     double* activations;
     int activationsLength;
 
@@ -55,10 +55,13 @@ void DestroyLayerLearnData(LayerLearnData* learnData);
 
 //NeuralNetwork methods
 
-void Learn(NeuralNetwork* neuralNetwork, DataPoint **trainingData,
-        int trainingDataLength, double learnRate);
+void Learn(NeuralNetwork* neuralNetwork,
+        DataPoint **trainingData,
+        int trainingDataLength,
+        double learnRate);
 
-void LearnGradients(NeuralNetwork* neuralNetwork, DataPoint* data,
+void LearnGradients(NeuralNetwork* neuralNetwork,
+        DataPoint* data,
         NetworkLearnData* learnData);
 
 double *ProcessOutputs(NeuralNetwork* neuralNetwork, double inputs[]);
@@ -66,3 +69,7 @@ double *ProcessOutputs(NeuralNetwork* neuralNetwork, double inputs[]);
 void SaveNetwork(NeuralNetwork *network, char *fileName);
 
 NeuralNetwork *ReadNetwork(char *fileName);
+
+//Access
+
+unsigned char ReadDigit(double* pixels, NeuralNetwork *network);

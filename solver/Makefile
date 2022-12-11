@@ -1,5 +1,6 @@
 BUILD := bin
 TARGET := solver
+LIBNAME := lib$(TARGET).a
 TEST_TARGET := $(BUILD)/$(TARGET)_tests
 
 CC := gcc
@@ -24,12 +25,11 @@ endif
 
 INDIRS := $(addprefix -I, \
 	src \
-	src/utils \
 )
 
 TESTFILES := $(shell find tests -name "*.c")
 TESTOFILES := $(TESTFILES:%.c=$(BUILD)/%.o)
-MAINS := $(BUILD)/src/main.o
+MAINS := $(BUILD)/src/main.o $(BUILD)/src/tests_solver.o
 
 CFILES := $(shell find src -name "*.c")
 OFILES := $(CFILES:%.c=$(BUILD)/%.o)
@@ -40,6 +40,11 @@ SRCDIRS := $(shell find . -type d -not -path "*$(BUILD)*")
 $(shell mkdir -p $(SRCDIRS:%=$(BUILD)/%))
 
 all: $(TARGET)
+
+lib: $(BUILD)/$(LIBNAME)
+
+$(BUILD)/$(LIBNAME): $(SRCFILES)
+	ar -rc $@ $^
 
 $(TARGET): $(OFILES)
 	$(V)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
@@ -59,6 +64,6 @@ $(TEST_TARGET): $(SRCFILES) $(TESTOFILES)
 test: $(TEST_TARGET)
 	@./$(TEST_TARGET)
 
-.PHONY: all clean test
+.PHONY: all clean test lib
 
 -include $(DFILES)

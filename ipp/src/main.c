@@ -53,16 +53,22 @@ int main(int argc, char** argv)
         SudokuGrid* grid = ExtractSudoku(img, edges, -50, flags);
         if (grid == NULL)
             errx(EXIT_FAILURE, "Unable to find rects");
-        SudokuCell** cells = ExtractSudokuCells(img, grid, flags, &len);
 
         if ((flags & SC_FLG_DGRD) != 0 && SaveImageFile(edges, "detected.png"))
         {
             printf("Successfully wrote detected.png\n");
         }
 
+        Image* crop;
+        SudokuCell** cells = ExtractSudokuCells(img, grid, flags, &len, &crop);
+        if (SaveImageFile(crop, "sudoku.png"))
+        {
+            printf("Successfully wrote sudoku.png\n");
+        }
+
         if (len > 0)
         {
-            u8* tmp = malloc(cells[0]->width * cells[0]->height * sizeof(u8));
+            u32* tmp = malloc(cells[0]->width * cells[0]->height * sizeof(u32));
             char name[18];
             printf("Extracting cell 0/%lu", len);
             for(size_t i = 0; i < len; i++)
@@ -73,7 +79,15 @@ int main(int argc, char** argv)
                 SudokuCell* cell = cells[i];
                 if (CleanCell(cell->data, tmp))
                 {
-                    cell->data = PrepareCell(cell->data, tmp);
+                    Image* cropped = CreateImage(0, 28, 28, NULL);
+                    double* values = PrepareCell(cell->data, tmp);
+                    for (size_t i = 0; i < 28 * 28; i++)
+                    {
+                        cropped->pixels[i] = values[i] * 0xFFFFFF;
+                    }
+                    DestroyImage(cell->data);
+                    free(values);
+                    cell->data = cropped;
                 }
                 snprintf(name, sizeof(name), "cells/cell_%02lu.png", i);
                 if (!SaveImageFile(cell->data, name))

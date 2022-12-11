@@ -1,0 +1,206 @@
+/* https://docs.gtk.org/gtk3/css-properties.html#background-properties */
+@define-color grid_background #fdfdfd;
+@define-color grid_guide_lines #dededc;
+@define-color grid_lines #f5f5f5;
+@define-color grid_outline #A9A9A9;
+
+button {
+    background-image: none;
+}
+window {
+    background-image: none;
+    background-color: white;
+}
+
+/*   ----------------   */
+/*     BUTTON HOVER     */
+/*   ----------------   */
+
+.ClassicButton {
+    background-image: none;
+    color: #2376F1;
+    background-color: rgb(220, 233, 253);
+    border-radius: 6px;
+    border:none;
+    font-size: 14px;
+    text-shadow: none;
+    font-weight: bold;
+}
+
+.ErrorButton {
+    background-image: none;
+    background-color: rgba(255, 0, 0, 0.16);
+    color: #FF0000;
+    border-radius: 6px;
+    border:none;
+    font-size: 14px;
+    text-shadow: none;
+    font-weight: bold;
+}
+
+.MainButton {
+    background-image: none;
+    color: white;
+    background-color: #2376F1;
+    border-radius: 6px;
+    border:none;
+    font-size: 14px;
+    text-shadow: none;
+    font-weight: bold;
+}
+
+/*   ----------------   */
+/*     BUTTON HOVER     */
+/*   ----------------   */
+
+.ClassicButton:hover {
+    background-color: rgb(202, 222, 252);
+    border:none;
+    font-weight: bold;
+}
+
+.ErrorButton:hover {
+    background-image: none;
+    background-color: rgba(255, 0, 0, 0.32);
+    color: #FF0000;
+    border-radius: 6px;
+    border:none;
+    font-size: 14px;
+    text-shadow: none;
+    font-weight:bold;
+}
+
+.MainButton:hover {
+    background-color: #216cdb;
+    border:none;
+    font-weight: bold;
+}
+
+/*   ----------------   */
+/*       CELL GRID      */
+/*   ----------------   */
+
+button.cell {
+    background-color: @grid_background;
+    color: #333333;
+    border: 1px solid @grid_lines;
+    border-radius: 0px;
+    font-size: 18px;
+    font-weight: bold;
+    transition: box-shadow 0.1s;
+}
+
+/* Vertical guide lines (right part) */
+button.cell:nth-child(9n+4), button.cell:nth-child(9n+7)
+{
+    border-left: 1px solid @grid_guide_lines;
+}
+
+/* Vertical guide lines (left part) */
+button.cell:nth-child(9n+3), button.cell:nth-child(9n+6)
+{
+    border-right: 1px solid @grid_guide_lines;
+}
+
+/* Horizontal guide lines (top part) */
+button.cell:nth-child(n+19):nth-child(-n+27),
+button.cell:nth-child(n+46):nth-child(-n+54)
+{
+    border-bottom: 1px solid @grid_guide_lines;
+}
+
+/* Horizontal guide lines (bottom part) */
+button.cell:nth-child(n+28):nth-child(-n+36),
+button.cell:nth-child(n+55):nth-child(-n+63)
+{
+    border-top: 1px solid @grid_guide_lines;
+}
+
+/* right outline */
+button.cell:nth-child(9n)
+{
+    border-right: 2px solid @grid_outline;
+}
+
+/* left outline */
+button.cell:nth-child(9n+1)
+{
+    border-left: 2px solid @grid_outline;
+}
+
+/* top outline */
+button.cell:nth-child(-n+9)
+{
+    border-top: 2px solid @grid_outline;
+}
+
+/* bottom outline */
+button.cell:nth-child(n+73):nth-child(-n+81)
+{
+    border-bottom: 2px solid @grid_outline;
+}
+
+button.cell:nth-child(1)
+{
+    border-radius: 4px 0 0 0;
+}
+
+button.cell:nth-child(9)
+{
+    border-radius: 0 4px 0 0;
+}
+
+button.cell:nth-child(73)
+{
+    border-radius: 0 0 0 4px;
+}
+
+button.cell:nth-child(81)
+{
+    border-radius: 0 0 4px 0;
+}
+
+button.cell.colored {
+    background-color: #ffedd7;
+    color: #fe8e06;
+}
+
+button.cell:hover {
+    box-shadow: inset 0px 0px 0px 3px #fe8e06;
+    border-radius: 4px;
+}
+
+button.cell.error {
+    background-color: rgba(255, 0, 0, 0.16);
+    color: #FF0000;
+}
+
+button.cell.error:hover {
+    box-shadow: inset 0px 0px 0px 3px #FF0000;
+}
+
+/*   ----------------   */
+/*     ERROR POPUP      */
+/*   ----------------   */
+
+.ErrorType{
+    font-size: 24px;
+}
+
+.ErrorDescription{
+    font-size: 14px;
+}
+
+.digit_input {
+    font-size: 32px;
+}
+
+/*   ----------------   */
+/*     ERROR POPUP      */
+/*   ----------------   */
+
+scale trough highlight {
+    background: #fe8e06;
+    background-image:none;
+    border: none;
+}

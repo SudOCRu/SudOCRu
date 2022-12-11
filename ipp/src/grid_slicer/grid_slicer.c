@@ -95,11 +95,12 @@ SudokuGrid* ExtractSudoku(const Image* org, Image* edges, int threshold,
     FreeRects(rects, rect_count);
     FreePSets(psets, nb_psets);
     FreeLines(lines, len);
+    free(filtered);
     return grid;
 }
 
 SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
-        int flags, size_t* out_count)
+        int flags, size_t* out_count, Image** out_sudoku)
 {
     BBox* bb = grid->bounds;
     Image* sudoku = WarpPerspective(original, bb);
@@ -136,8 +137,9 @@ SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
         return NULL;
     }
 
-    if (SaveImageFile(sudoku, "sudoku.png"))
+    if (flags != 0 && SaveImageFile(sudoku, "sudoku.png"))
         printf("Successfully wrote sudoku.png\n");
+    *out_sudoku = sudoku;
 
     size_t vcells = 9, hcells = 9;
     SudokuCell** cells = malloc(vcells * hcells * sizeof(Image*));
@@ -146,6 +148,25 @@ SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
 
     size_t stepX = sudoku->width / hcells;
     size_t stepY = sudoku->height / vcells;
+
+    size_t cell_w = stepX;
+    size_t cell_h = stepY;
+    int resize = 0;
+    if (cell_w > 200)
+    {
+        size_t ratio = cell_w / 200 + 1;
+        cell_w = cell_w / ratio;
+        cell_h = cell_h / ratio;
+        resize = 1;
+    }
+
+    if (cell_h > 200)
+    {
+        size_t ratio = cell_h / 200 + 1;
+        cell_w = cell_w / ratio;
+        cell_h = cell_h / ratio;
+        resize = 1;
+    }
 
     for (size_t i = 0; i < vcells; i++)
     {
@@ -159,9 +180,16 @@ SudokuCell** ExtractSudokuCells(const Image* original, SudokuGrid* grid,
             SudokuCell* cell = malloc(sizeof(SudokuCell));
             cell->x = j * stepX;
             cell->y = i * stepY;
-            cell->width = stepX;
-            cell->height = stepY;
-            cell->data = CropImage(sudoku, cell->x, cell->y, r, b);
+            cell->width = cell_w;
+            cell->height = cell_h;
+            if (resize)
+            {
+                cell->data = DownscaleImage(sudoku, cell->x, cell->y, r, b,
+                        cell_w, cell_h, 0);
+            } else {
+                cell->data = CropImage(sudoku, cell->x, cell->y, r, b);
+            }
+            cell->value = 0;
             cells[i * hcells + j] = cell;
         }
     }

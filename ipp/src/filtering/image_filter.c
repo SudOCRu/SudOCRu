@@ -25,24 +25,18 @@ void FilterImage(Image* img, u32* tmp, int flags)
     MedianFilter(img, tmp, 5);
     PrintStage(s++, t, "Median Filter (5x5)", 1);
 
+    if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "median.png"))
+        printf("Successfully saved median.png\n");
+
     PrintStage(s, t, "Bilateral Filter (11x11)", 0);
     BilateralFilter(img, tmp, 11, 55, 55);
     PrintStage(s++, t, "Bilateral Filter (11x11)", 1);
-
-    if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "smoothed.png"))
-        printf("Successfully saved smoothed.png\n");
-
-    /*
-    PrintStage(s, t, "Erode (3x3)", 0);
-    Dilate(img, tmp, 3); // Actually Erode because image is not inverted
-    PrintStage(s++, t, "Erode (3x3)", 1);
-    */
 }
 
 void BinarizeImage(Image* img, u32* tmp, float threshold)
 {
     PrintStage(1, 2, "Adaptive Thresholding (15x15)", 0);
-    // normal threshold: 2, optimal: 7%
+    // normal threshold: 2, optimal: 5.5%
     AdaptiveThresholding(img, tmp, 15, threshold);
     PrintStage(1, 2, "Adaptive Thresholding (15x15)", 1);
 
@@ -52,14 +46,14 @@ void BinarizeImage(Image* img, u32* tmp, float threshold)
 }
 
 typedef struct Component {
-    u8 id;
+    u32 id;
     size_t size;
 } Component;
 
 #define CheckNeighbour(x, y) (img->pixels[(y) * img->width + (x)] > 0\
         && markers[(y) * img->width + (x)] == 0)
 
-void FindConnectedPixels(Image* img, u8* markers, size_t x, size_t y,
+void FindConnectedPixels(Image* img, u32* markers, size_t x, size_t y,
         Component* comp)
 {
     markers[y * img->width + x] = comp->id;
@@ -78,7 +72,7 @@ void FindConnectedPixels(Image* img, u8* markers, size_t x, size_t y,
         FindConnectedPixels(img, markers, x, y + 1, comp);
 }
 
-int CleanCell(Image* img, u8* markers)
+int CleanCell(Image* img, u32* markers)
 {
     // Apply a circle mask to remove leftover board lines
     float r_squared = pow(min(img->width * 0.33f, img->height * 0.33f), 2);
@@ -90,14 +84,14 @@ int CleanCell(Image* img, u8* markers)
             if (pow(x - midX, 2) + pow(y - midY, 2) > r_squared)
                 img->pixels[y * img->width + x] = 0;
             else
-                img->pixels[y * img->width + x] &= 0xFF;
+                img->pixels[y * img->width + x] &= 0xFFFFFF;
         }
     }
 
     size_t capacity = 4;
     size_t nb_comp = 0;
     size_t largest = 1;
-    memset(markers, 0, img->width * img->height * sizeof(u8));
+    memset(markers, 0, img->width * img->height * sizeof(u32));
     Component** components = malloc(capacity * sizeof(Component*));
 
     // Find all the connected components in the image and the largest component
@@ -131,8 +125,8 @@ int CleanCell(Image* img, u8* markers)
         return 0;
     }
 
-    // keep all components that are up to 50% smaller than the largest component
-    size_t target = components[largest - 1]->size * 35 / 100;
+    // keep all components that are up to 65% smaller than the largest component
+    size_t target = components[largest - 1]->size * 40 / 100;
     size_t total_size = 0;
     size_t count = 0;
     for (size_t i = 0; i < nb_comp; i++)
@@ -144,19 +138,26 @@ int CleanCell(Image* img, u8* markers)
         }
     }
 
-    // The total number of pixels within the circle must be >12.5% of the total
+    // The total number of pixels within the circle must be >8.5% of the total
     // area in order to mark this cell as not empty.
     //printf("components: %lu/%lu\n", count, nb_comp);
     //printf("fill rate: %lu (%f%%)\n", total_size,
     //        (total_size / (M_PI * r_squared)) * 100.0f);
-    if ((total_size / (M_PI * r_squared) > 0.10f))
+    if (nb_comp == 2 && (components[0]->size + components[1]->size)
+            / (M_PI * r_squared) > 0.075f)
+    {
+        free(components);
+        return 1;
+    }
+    else if ((components[largest - 1]->size / (M_PI * r_squared) > 0.04f) &&
+            (total_size / (M_PI * r_squared) > 0.075f))
     {
         // Component decimation: remove any component not large enough
         for (size_t y = 0; y < img->height; y++)
         {
             for (size_t x = 0; x < img->width; x++)
             {
-                u8 id = markers[y * img->width + x];
+                u32 id = markers[y * img->width + x];
                 if (id > 0 && (components[id - 1]->size >= target))
                 {
                     // use the line below for better visulization
@@ -176,7 +177,7 @@ int CleanCell(Image* img, u8* markers)
     return /*(total_size / (M_PI * r_squared) > 0.05f)*/0;
 }
 
-Image* PrepareCell(const Image* cell, const u8* markers) {
+double* PrepareCell(const Image* cell, const u32* markers) {
     size_t min_x = cell->width - 1, min_y = cell->height - 1,
            max_x = 0, max_y = 0;
     // Find the smallest box containg all the components
@@ -211,13 +212,9 @@ Image* PrepareCell(const Image* cell, const u8* markers) {
         }
     }
 
-    Image* r = DownscaleImage(cell, min_x, min_y, max_x, max_y, 28, 28, 0);
-    for (size_t i = 0; i < 28 * 28; i++)
-    {
-        unsigned char val = r->pixels[i];
-        r->pixels[i] = (val << 16) | (val << 8) | val;
-    }
-    return r;
+    double* values = malloc(28 * 28 * sizeof(double));
+    DownscaleImageN(cell, values, min_x, min_y, max_x, max_y, 28, 28);
+    return values;
 }
 
 void GrayscaleFilter(Image* image, u8* min, u8* max)

@@ -140,7 +140,7 @@ Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
         return dst;
     }
 
-    // Scaling factos
+    // Scaling factors
     size_t sx = round(w / (float)width), sy = round(h / (float)height);
     size_t total = sx * sy; // scaled area
 
@@ -148,7 +148,9 @@ Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
     {
         for (size_t x = 0; x < width; x++)
         {
-            size_t sum = 0;
+            unsigned int sum_r = 0;
+            unsigned int sum_g = 0;
+            unsigned int sum_b = 0;
 
             for (size_t dy = 0; dy < sy; dy++)
             {
@@ -156,16 +158,64 @@ Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
                 for (size_t dx = 0; dx < sx; dx++)
                 {
                     size_t ex = clamp(x * sx + left + dx, 0, src->width);
-                    sum += src->pixels[ey * src->width + ex];
+                    unsigned int col = src->pixels[ey * src->width + ex];
+                    sum_b += (col      ) & 0xFF;
+                    sum_g += (col >>  8) & 0xFF;
+                    sum_r += (col >> 16) & 0xFF;
                 }
             }
 
-            unsigned char val = sum / total;
+            unsigned int val = ((sum_r / total) << 16) |
+                               ((sum_g / total) << 8) |
+                               (sum_b / total);
             dst->pixels[(y + margin) * actual_w + x + margin] = val;
         }
     }
 
     return dst;
+}
+
+void DownscaleImageN(const Image* src, double* out, size_t left, size_t top,
+        size_t right, size_t bottom, size_t width, size_t height)
+{
+    size_t w = right - left, h = bottom - top;
+
+    if (width > w || height > h)
+    {
+        for (size_t y = 0; y < h; y++)
+        {
+            for (size_t x = 0; x < w; x++)
+            {
+                out[y * width + x] =
+                    src->pixels[(y + top) * src->width + x + left] / 255.0;
+            }
+        }
+        return;
+    }
+
+    // Scaling factors
+    size_t sx = round(w / (float)width), sy = round(h / (float)height);
+    double total = sx * sy; // scaled area
+
+    for (size_t y = 0; y < height; y++)
+    {
+        for (size_t x = 0; x < width; x++)
+        {
+            double sum = 0;
+
+            for (size_t dy = 0; dy < sy; dy++)
+            {
+                size_t ey = clamp(y * sy + dy + top, 0, src->height);
+                for (size_t dx = 0; dx < sx; dx++)
+                {
+                    size_t ex = clamp(x * sx + left + dx, 0, src->width);
+                    sum += src->pixels[ey * src->width + ex] & 0xFF;
+                }
+            }
+
+            out[y* width + x] = (sum / total) / 255.0;
+        }
+    }
 }
 
 Matrix* GetHomographyMatrix(const BBox* from, const BBox* to)
@@ -307,4 +357,65 @@ Image* WarpPerspective(const Image* img, const BBox* from)
     DestroyMatrix(out_coords);
     DestroyMatrix(h);
     return out;
+}
+
+int UnwarpPerspective(const Image* src, const BBox* from, const Image* dst,
+        const BBox* to)
+{
+    // Find the transformation associated to transform the bounding box in a 
+    // square of length l.
+    BBox sorted = {
+        to->x1, to->y1,
+        to->x2, to->y2,
+        to->x3, to->y3,
+        to->x4, to->y4,
+    };
+    SortBB(&sorted);
+    Matrix* h = GetHomographyMatrix(from, &sorted);
+    // Convert the homography matrix into a transformation matrix. The
+    // conversion is in-place: the 8x1 matrix becomes a 3*3 matrix.
+    h->m = realloc(h->m, 3 * 3 * sizeof(float));
+    h->m[8] = 1;
+    h->rows = h->cols = 3;
+
+    // Calculate the inverse transformation
+    if(!MatInvert(h))
+        return 0;
+
+    // Prepare the matrix corresponding to the coordinates (x, y) in the output
+    // image. Note: homogenous coordinates are used (last 1 in the matrix).
+    float vals[] = { 0, 0, 1 };
+    Matrix* out_coords = NewMatrix(3, 1, vals);
+    Matrix* in_coords = NewMatrix(3, 1, vals);
+
+    size_t a, b;
+
+    // Apply the transformation on the input image.
+    for (size_t y = 0; y < dst->height; y++)
+    {
+        out_coords->m[1] = y;
+        for (size_t x = 0; x < dst->width; x++)
+        {
+            out_coords->m[0] = x;
+
+            // Calculate the homogenous coordinates (x', y') as (a, b) in
+            // the input image
+            if(!TransformPoint(h, out_coords, in_coords, &a, &b))
+                continue;
+
+            if (b < src->height && a < src->width)
+            {
+                unsigned int col = src->pixels[b * src->width+a];
+                if (col != 0) // skip black color
+                {
+                    dst->pixels[y * dst->width + x] = col;
+                }
+            }
+        }
+    }
+
+    DestroyMatrix(in_coords);
+    DestroyMatrix(out_coords);
+    DestroyMatrix(h);
+    return 1;
 }

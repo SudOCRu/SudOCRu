@@ -38,7 +38,7 @@ void Invert(Image* img)
 {
     size_t l = img->width * img->height;
     for (size_t i = 0; i < l; i++)
-        img->pixels[i] = 255 - (img->pixels[i] & 0xFF);
+        img->pixels[i] = 0xFFFFFF - img->pixels[i];
 }
 
 void Convolve(const Image* img, u32* out, const Kernel* ker)
