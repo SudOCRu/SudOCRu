@@ -95,6 +95,7 @@ SudokuGrid* ExtractSudoku(const Image* org, Image* edges, int threshold,
     FreeRects(rects, rect_count);
     FreePSets(psets, nb_psets);
     FreeLines(lines, len);
+    free(filtered);
     return grid;
 }
 

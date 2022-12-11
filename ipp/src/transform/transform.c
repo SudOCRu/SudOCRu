@@ -175,6 +175,49 @@ Image* DownscaleImage(const Image* src, size_t left, size_t top, size_t right,
     return dst;
 }
 
+void DownscaleImageN(const Image* src, double* out, size_t left, size_t top,
+        size_t right, size_t bottom, size_t width, size_t height)
+{
+    size_t w = right - left, h = bottom - top;
+
+    if (width > w || height > h)
+    {
+        for (size_t y = 0; y < h; y++)
+        {
+            for (size_t x = 0; x < w; x++)
+            {
+                out[y * width + x] =
+                    src->pixels[(y + top) * src->width + x + left] / 255.0;
+            }
+        }
+        return;
+    }
+
+    // Scaling factors
+    size_t sx = round(w / (float)width), sy = round(h / (float)height);
+    double total = sx * sy; // scaled area
+
+    for (size_t y = 0; y < height; y++)
+    {
+        for (size_t x = 0; x < width; x++)
+        {
+            double sum = 0;
+
+            for (size_t dy = 0; dy < sy; dy++)
+            {
+                size_t ey = clamp(y * sy + dy + top, 0, src->height);
+                for (size_t dx = 0; dx < sx; dx++)
+                {
+                    size_t ex = clamp(x * sx + left + dx, 0, src->width);
+                    sum += src->pixels[ey * src->width + ex] & 0xFF;
+                }
+            }
+
+            out[y* width + x] = (sum / total) / 255.0;
+        }
+    }
+}
+
 Matrix* GetHomographyMatrix(const BBox* from, const BBox* to)
 {
     float a_vals[8 * 8] =
@@ -363,7 +406,7 @@ int UnwarpPerspective(const Image* src, const BBox* from, const Image* dst,
             if (b < src->height && a < src->width)
             {
                 unsigned int col = src->pixels[b * src->width+a];
-                if (col != 0)
+                if (col != 0) // skip black color
                 {
                     dst->pixels[y * dst->width + x] = col;
                 }

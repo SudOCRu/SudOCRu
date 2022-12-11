@@ -25,24 +25,18 @@ void FilterImage(Image* img, u32* tmp, int flags)
     MedianFilter(img, tmp, 5);
     PrintStage(s++, t, "Median Filter (5x5)", 1);
 
+    if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "median.png"))
+        printf("Successfully saved median.png\n");
+
     PrintStage(s, t, "Bilateral Filter (11x11)", 0);
     BilateralFilter(img, tmp, 11, 55, 55);
     PrintStage(s++, t, "Bilateral Filter (11x11)", 1);
-
-    if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "smoothed.png"))
-        printf("Successfully saved smoothed.png\n");
-
-    /*
-    PrintStage(s, t, "Erode (3x3)", 0);
-    Dilate(img, tmp, 3); // Actually Erode because image is not inverted
-    PrintStage(s++, t, "Erode (3x3)", 1);
-    */
 }
 
 void BinarizeImage(Image* img, u32* tmp, float threshold)
 {
     PrintStage(1, 2, "Adaptive Thresholding (15x15)", 0);
-    // normal threshold: 2, optimal: 7%
+    // normal threshold: 2, optimal: 5.5%
     AdaptiveThresholding(img, tmp, 15, threshold);
     PrintStage(1, 2, "Adaptive Thresholding (15x15)", 1);
 
@@ -131,7 +125,7 @@ int CleanCell(Image* img, u32* markers)
         return 0;
     }
 
-    // keep all components that are up to 50% smaller than the largest component
+    // keep all components that are up to 75% smaller than the largest component
     size_t target = components[largest - 1]->size * 35 / 100;
     size_t total_size = 0;
     size_t count = 0;
@@ -144,7 +138,7 @@ int CleanCell(Image* img, u32* markers)
         }
     }
 
-    // The total number of pixels within the circle must be >12.5% of the total
+    // The total number of pixels within the circle must be >10% of the total
     // area in order to mark this cell as not empty.
     //printf("components: %lu/%lu\n", count, nb_comp);
     //printf("fill rate: %lu (%f%%)\n", total_size,
@@ -212,13 +206,7 @@ double* PrepareCell(const Image* cell, const u32* markers) {
     }
 
     double* values = malloc(28 * 28 * sizeof(double));
-    Image* r = DownscaleImage(cell, min_x, min_y, max_x, max_y, 28, 28, 0);
-    for (size_t i = 0; i < 28 * 28; i++)
-    {
-        double val = r->pixels[i] & 0xFF;
-        values[i] = val / 255.0;
-    }
-    DestroyImage(r);
+    DownscaleImageN(cell, values, min_x, min_y, max_x, max_y, 28, 28);
     return values;
 }
 
