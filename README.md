@@ -4,6 +4,19 @@ automatically detects Sudoku Boards in an image, extract its cells, identify
 the digits in each cell, solves and reconstruct the original sudoku. This
 projet is fully written in C using SDL2, SDL2\_image and glade.
 
+## How to use the SudOCRu app
+
+   1) Launch App in bin/sudocru
+   2) Click on Load File and chose a png/jpg file with a sudoku grid 
+      to solve
+   3) Then, chose a nice threshold level to make the lines and numbers
+      more clear and click on next
+   4) Resize image if lines are not detected correctly and click on next
+   5) Modify cells recognized by the neural network if needed by clicking
+      on the cell and save, then click on next
+   6) Sudoku grid is ready to save, chose the filetype to save on and 
+      close the window
+
 **Folders overview**:
 - "app": UI app and utilities
 - "examples": Folder containing files used to demonstrate the different parts

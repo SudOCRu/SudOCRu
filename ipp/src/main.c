@@ -83,7 +83,8 @@ int main(int argc, char** argv)
                     double* values = PrepareCell(cell->data, tmp);
                     for (size_t i = 0; i < 28 * 28; i++)
                     {
-                        cropped->pixels[i] = values[i] * 0xFFFFFF;
+                        unsigned int col = values[i] * 0xFF;
+                        cropped->pixels[i] = (col << 16) | (col << 8) | col;
                     }
                     DestroyImage(cell->data);
                     free(values);
