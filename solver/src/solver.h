@@ -14,6 +14,12 @@ typedef struct Sudoku {
     u8 nbsquares;
 } Sudoku;
 
+typedef struct InvalidSudokuError {
+    char type; // 0: Group, 1: Horizontal, 2: Vertical
+    size_t error_pos;
+    short flag;
+} InvalidSudokuError;
+
 /*  > CreateSudoku
  * Initializes a new Sudoku board.
  * > Returns a new Sudoku (cols*rows) from array
@@ -47,12 +53,14 @@ Sudoku* ImportSudoku(const char* in_file);
  */
 int SaveSudoku(const Sudoku* sudoku, const char* out_file);
 
+void PrintError(const Sudoku* sudoku, const InvalidSudokuError* error);
+
 /*  > IsSudokuValid
  * Check if "sudoku" grid is valid (if it's solvable)
  * > Returns 0 (false) if the board is not valid, else 1 (true)
  *      - sudoku : Sudoku grid to check
  */
-int IsSudokuValid(const Sudoku* sudoku);
+int IsSudokuValid(const Sudoku* sudoku, InvalidSudokuError** error);
 
 /*  > IsSudokuSolved
  * Check if "sudoku" grid is solved (if the grid is filled of numbers != 0)
@@ -69,12 +77,14 @@ int IsSudokuSolved(const Sudoku* sudoku);
  */
 short PossibleValues(const Sudoku* sudoku, u8 index);
 
-/*  > SolveSudoku
- * Solve Sudoku using back-tracking algorithm
- * > Returns NULL if the board is not solved, else a new Sudoku grid solved
- *      - sudoku : Sudoku grid to solve
+/*  > Backtracking
+ * Recursion of solve using backtracking algo. For each box box in the sudoku
+ * grid, it will test every solution possible until it tested all solutions.
+ * Sudoku in ref is modified to return the sudoku solved
+ * > Returns 0 (false) if it was not able to find a solution, else 1 (true)
+ *      - sudoku : sudoku pointer to modify
  */
-Sudoku* SolveSudoku(const Sudoku* sudoku, int interactive);
+int Backtracking(Sudoku* sudoku, size_t i);
 
 /*  > InteractiveSolveSudoku
  * Solve Sudoku using back-tracking algorithm and print each step
@@ -82,6 +92,13 @@ Sudoku* SolveSudoku(const Sudoku* sudoku, int interactive);
  *      - sudoku : Sudoku grid to solve
  */
 int IntBacktracking(const Sudoku* orginal, Sudoku* sudoku, size_t i);
+
+/*  > SolveSudoku
+ * Solve Sudoku using back-tracking algorithm
+ * > Returns NULL if the board is not solved, else a new Sudoku grid solved
+ *      - sudoku : Sudoku grid to solve
+ */
+Sudoku* SolveSudoku(const Sudoku* sudoku, int interactive);
 
 /*  > PrintSudoku
  * Print the sudoku board

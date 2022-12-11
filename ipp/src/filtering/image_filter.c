@@ -1,49 +1,12 @@
 #include "image_filter.h"
+#include "filters.h"
+#include "edge_detection.h"
+#include "../transform/transform.h"
 #include "../utils.h"
 
-const float GAUS_KERNEL_3[] =
+void FilterImage(Image* img, u32* tmp, int flags)
 {
-    1/16.0f, 2/16.0f, 1/16.0f,
-    2/16.0f, 4/16.0f, 2/16.0f,
-    1/16.0f, 2/16.0f, 1/16.0f,
-};
-const float CANN_KERNEL_5[] =
-{
-    2/159.0f,  4/159.0f,  5/159.0f,  4/159.0f, 2/159.0f,
-    4/159.0f,  9/159.0f, 12/159.0f,  9/159.0f, 4/159.0f,
-    5/159.0f, 12/159.0f, 15/159.0f, 12/159.0f, 5/159.0f,
-    4/159.0f,  9/159.0f, 12/159.0f,  9/159.0f, 4/159.0f,
-    2/159.0f,  4/159.0f,  5/159.0f,  4/159.0f, 2/159.0f,
-};
-const float GAUS_KERNEL_5[] =
-{
-    1/273.0F, 4/273.0F, 7/273.0F, 4/273.0F, 1/273.0F,
-    4/273.0F, 16/273.0F, 26/273.0F, 16/273.0F, 4/273.0F,
-    7/273.0F, 26/273.0F, 41/273.0F, 26/273.0F, 7/273.0F,
-    4/273.0F, 16/273.0F, 26/273.0F, 16/273.0F, 4/273.0F,
-    1/273.0F, 4/273.0F, 7/273.0F, 4/273.0F, 1/273.0F,
-};
-
-size_t max(size_t a, size_t b)
-{
-    return a > b ? a : b;
-}
-
-size_t min(size_t a, size_t b)
-{
-    return a < b ? a : b;
-}
-
-void array_insert(u8* begin, u8* end, u8 val)
-{
-    for(; end > begin && val < *(end - 1); end--)
-        *end = *(end - 1);
-    *end = val;
-}
-
-void FilterImage(Image* img, int flags)
-{
-    u8 s = 1, t = 4;
+    u8 s = 1, t = 7;
 
     PrintStage(s, t, "Grayscale filter", 0);
     u8 min = 255, max = 0;
@@ -58,19 +21,200 @@ void FilterImage(Image* img, int flags)
     if ((flags & SC_FLG_DGRS) != 0 && SaveImageFile(img, "grayscale.png"))
         printf("Successfully saved grayscale.png\n");
 
-    u32 histogram[256] = { 0, };
-    PrintStage(s, t, "Median filter (3x3)", 0);
-    MedianFilter(img, 3, histogram);
-    PrintStage(s++, t, "Median filter (3x3)", 1);
+    PrintStage(s, t, "Median Filter (5x5)", 0);
+    MedianFilter(img, tmp, 5);
+    PrintStage(s++, t, "Median Filter (5x5)", 1);
 
     if ((flags & SC_FLG_DMED) != 0 && SaveImageFile(img, "median.png"))
         printf("Successfully saved median.png\n");
 
-    PrintStage(s, t, "Thresholding (Otsu's method)", 0);
-    u8 threshold = ComputeOtsuThreshold(img->width * img->height, histogram);
-    printf(" --> Threshold: %hhu", threshold);
-    ThresholdImage(img, threshold);
-    PrintStage(s++, t, "Thresholding (Otsu's method)", 1);
+    PrintStage(s, t, "Bilateral Filter (11x11)", 0);
+    BilateralFilter(img, tmp, 11, 55, 55);
+    PrintStage(s++, t, "Bilateral Filter (11x11)", 1);
+}
+
+void BinarizeImage(Image* img, u32* tmp, float threshold)
+{
+    PrintStage(1, 2, "Adaptive Thresholding (15x15)", 0);
+    // normal threshold: 2, optimal: 5.5%
+    AdaptiveThresholding(img, tmp, 15, threshold);
+    PrintStage(1, 2, "Adaptive Thresholding (15x15)", 1);
+
+    PrintStage(2, 2, "Dilate (3x3)", 0);
+    Dilate(img, tmp, 3);
+    PrintStage(2, 2, "Dilate (3x3)", 1);
+}
+
+typedef struct Component {
+    u32 id;
+    size_t size;
+} Component;
+
+#define CheckNeighbour(x, y) (img->pixels[(y) * img->width + (x)] > 0\
+        && markers[(y) * img->width + (x)] == 0)
+
+void FindConnectedPixels(Image* img, u32* markers, size_t x, size_t y,
+        Component* comp)
+{
+    markers[y * img->width + x] = comp->id;
+    comp->size += 1;
+
+    if (x > 0 && CheckNeighbour(x - 1, y))
+        FindConnectedPixels(img, markers, x - 1, y, comp);
+
+    if (x < img->width - 1 && CheckNeighbour(x + 1, y))
+        FindConnectedPixels(img, markers, x + 1, y, comp);
+
+    if (y > 0 && CheckNeighbour(x, y - 1))
+        FindConnectedPixels(img, markers, x, y - 1, comp);
+
+    if (y < img->height-1 && CheckNeighbour(x, y + 1))
+        FindConnectedPixels(img, markers, x, y + 1, comp);
+}
+
+int CleanCell(Image* img, u32* markers)
+{
+    // Apply a circle mask to remove leftover board lines
+    float r_squared = pow(min(img->width * 0.33f, img->height * 0.33f), 2);
+    float midX = img->width / 2.0f, midY = img->height / 2.0f;
+    for (size_t y = 0; y < img->height; y++)
+    {
+        for (size_t x = 0; x < img->width; x++)
+        {
+            if (pow(x - midX, 2) + pow(y - midY, 2) > r_squared)
+                img->pixels[y * img->width + x] = 0;
+            else
+                img->pixels[y * img->width + x] &= 0xFFFFFF;
+        }
+    }
+
+    size_t capacity = 4;
+    size_t nb_comp = 0;
+    size_t largest = 1;
+    memset(markers, 0, img->width * img->height * sizeof(u32));
+    Component** components = malloc(capacity * sizeof(Component*));
+
+    // Find all the connected components in the image and the largest component
+    for (size_t y = 0; y < img->height; y++)
+    {
+        for (size_t x = 0; x < img->width; x++)
+        {
+            if (CheckNeighbour(x, y))
+            {
+                Component* cur = calloc(1, sizeof(Component));
+                components[nb_comp++] = cur;
+                cur->id = nb_comp;
+                FindConnectedPixels(img, markers, x, y, cur);
+
+                if (cur->size > components[largest - 1]->size)
+                    largest = nb_comp;
+
+                if (nb_comp == capacity)
+                {
+                    capacity *= 2;
+                    components = realloc(components, capacity *
+                            sizeof(Component*));
+                }
+            }
+        }
+    }
+
+    if (nb_comp == 0)
+    {
+        free(components);
+        return 0;
+    }
+
+    // keep all components that are up to 65% smaller than the largest component
+    size_t target = components[largest - 1]->size * 40 / 100;
+    size_t total_size = 0;
+    size_t count = 0;
+    for (size_t i = 0; i < nb_comp; i++)
+    {
+        if (components[i]->size >= target)
+        {
+            total_size += components[i]->size;
+            count++;
+        }
+    }
+
+    // The total number of pixels within the circle must be >8.5% of the total
+    // area in order to mark this cell as not empty.
+    //printf("components: %lu/%lu\n", count, nb_comp);
+    //printf("fill rate: %lu (%f%%)\n", total_size,
+    //        (total_size / (M_PI * r_squared)) * 100.0f);
+    if (nb_comp == 2 && (components[0]->size + components[1]->size)
+            / (M_PI * r_squared) > 0.075f)
+    {
+        free(components);
+        return 1;
+    }
+    else if ((components[largest - 1]->size / (M_PI * r_squared) > 0.04f) &&
+            (total_size / (M_PI * r_squared) > 0.075f))
+    {
+        // Component decimation: remove any component not large enough
+        for (size_t y = 0; y < img->height; y++)
+        {
+            for (size_t x = 0; x < img->width; x++)
+            {
+                u32 id = markers[y * img->width + x];
+                if (id > 0 && (components[id - 1]->size >= target))
+                {
+                    // use the line below for better visulization
+                    // img->pixels[y * img->width + x] = id * 0xFFFFFF/nb_comp;
+                }
+                else
+                {
+                    markers[y * img->width + x] = 0;
+                    img->pixels[y * img->width + x] = 0;
+                }
+            }
+        }
+        free(components);
+        return 1;
+    }
+    free(components);
+    return /*(total_size / (M_PI * r_squared) > 0.05f)*/0;
+}
+
+double* PrepareCell(const Image* cell, const u32* markers) {
+    size_t min_x = cell->width - 1, min_y = cell->height - 1,
+           max_x = 0, max_y = 0;
+    // Find the smallest box containg all the components
+    for (size_t y = 0; y < cell->height; y++)
+    {
+        for (size_t x = 0; x < cell->width; x++)
+        {
+            if (markers[y * cell->width + x] != 0)
+            {
+                min_x = min(min_x, x);
+                min_y = min(min_y, y);
+                max_x = max(max_x, x);
+                max_y = max(max_y, y);
+            }
+        }
+    }
+
+    // Make the cropped image a square
+    size_t new_width = max_x - min_x;
+    size_t new_height = max_y - min_y;
+    if (new_width != new_height)
+    {
+        if (new_width > new_height)
+        {
+            size_t diff = new_width - new_height;
+            max_y += diff - diff / 2;
+            min_y -= diff / 2;
+        } else {
+            size_t diff = new_height - new_width;
+            max_x += diff - diff / 2;
+            min_x -= diff / 2;
+        }
+    }
+
+    double* values = malloc(28 * 28 * sizeof(double));
+    DownscaleImageN(cell, values, min_x, min_y, max_x, max_y, 28, 28);
+    return values;
 }
 
 void GrayscaleFilter(Image* image, u8* min, u8* max)
@@ -90,28 +234,6 @@ void GrayscaleFilter(Image* image, u8* min, u8* max)
     }
 }
 
-void EnhanceContrast(Image* image, u8 f, u8* min, u8* max)
-{
-    size_t len = image->width * image->height;
-    for (size_t i = 0; i < len; i++)
-    {
-        u32 c = image->pixels[i] & 0xFF;
-        for (size_t k = 1; k < f; k++)
-        {
-            if (c >= (k * 255) / f && c <= ((k + 1) * 255) / f)
-            {
-                c = ((k + 1) * 255) / f;
-                image->pixels[i] = c | (c << 8) | (c << 16);
-
-                // Prepapre for next stage: Contrast stretching
-                if (c > *max) *max = c;
-                else if (c < *min) *min = c;
-                break;
-            }
-        }
-    }
-}
-
 void StretchContrast(Image* img, u8 min, u8 max)
 {
     if (min == 0 && max == 255) return;
@@ -125,76 +247,33 @@ void StretchContrast(Image* img, u8 min, u8 max)
     }
 }
 
-void MedianFilter(Image* img, size_t block, u32 histogram[256])
-{
-    ssize_t w = img->width, h = img->height;
-    size_t side = block / 2;
-    u8* vals = calloc(block * block, sizeof(u8));
-    for (ssize_t y = 0; y < h; y++)
-    {
-        for (ssize_t x = 0; x < w; x++)
-        {
-            size_t i = 0;
-            ssize_t endX = x + side;
-            ssize_t endY = y + side;
-            for (ssize_t dy = y - side; dy <= endY; dy++)
-            {
-                for (ssize_t dx = x - side; dx <= endX; dx++)
-                {
-                    u8 col = 0;
-                    if (dy >= 0 && dx >= 0 && dy < h && dx < w)
-                        col = img->pixels[dy * w + dx] & 0xFF;
+void AutoBrigthness(Image* image, float clip) {
+    u32 hist[256] = { 0, };
+    FillHistogram(image, hist);
 
-                    array_insert(vals, vals + i, col);
-                    i++;
-                }
-            }
+    u32 acc[256] = { 0, };
+    acc[0] = hist[0];
+    for (size_t i = 1; i < 256; i++)
+        acc[i] = acc[i - 1] + hist[i];
 
-            u8 c = vals[i / 2];
-            img->pixels[y * w + x] = (c << 16) | (c << 8) | c;
+    float threshold = clip * 0.5 * acc[255];
+    u8 min = 0;
+    while (min < 255 && acc[min] < threshold) min++;
 
-            // Prepapre for next stage: Otsu's method
-            histogram[c]++;
-        }
-    }
+    threshold = (1 - clip) * 0.5 * acc[255];
+    u8 max = 255;
+    while (max > 0 && acc[max] >= threshold) max--;
 
-    free(vals);
-}
-
-void GaussianBlur(Image* img, const float* kernel, size_t r)
-{
-    size_t w = img->width, h = img->height;
-    size_t side = r / 2;
-    for (size_t y = side; y < h - side; y++)
-    {
-        for (size_t x = side; x < w - side; x++)
-        {
-            float sum = 0;
-            for (size_t dy = 0; dy < r; dy++)
-            {
-                for (size_t dx = 0; dx < r; dx++)
-                {
-                    u32 c = img->pixels[(y + dy - side) * w + (x + dx - side)];
-                    sum += (float)(c & 0xFF) * kernel[dy * r + dx];
-                }
-            }
-
-            u8 c = sum;
-            img->pixels[y * w + x] = (c << 16) | (c << 8) | c;
-        }
-    }
-}
-
-void GammaFilter(Image* img, float f)
-{
-    size_t len = img->width * img->height;
+    size_t len = image->width * image->height;
+    float alpha = 255 / (max - min);
+    float beta = -min * alpha;
 
     for (size_t i = 0; i < len; i++)
     {
-        float c = 255.0f * pow((float)(img->pixels[i] & 0xFF) / 255.0f, f);
-        u8 g = (c > 255 ? 255 : (c < 0 ? 0 : c));
+        float col = alpha * (float)(image->pixels[i] & 0xFF) + beta;
+        u8 c = col > 255 ? 255 : (col < 0 ? 0 : (u8)col);
 
-        img->pixels[i] = (g << 16) | (g << 8) | g;
+        image->pixels[i] = (c << 16) | (c << 8) | c;
     }
 }
 
@@ -240,6 +319,35 @@ u8 ComputeOtsuThreshold(size_t len, const u32 histogram[256])
     return threshold;
 }
 
+void AdaptiveThresholding(Image* img, u32* buf, size_t r, float threshold)
+{
+    size_t w = img->width, h = img->height;
+    memset(buf, 0, w * h * sizeof(u32));
+    size_t side = r / 2;
+    for (size_t y = side; y < h - side; y++)
+    {
+        for (size_t x = side; x < w - side; x++)
+        {
+            size_t sum = 0;
+            size_t endX = x + side;
+            size_t endY = y + side;
+            for (size_t dy = y - side; dy <= endY; dy++)
+            {
+                for (size_t dx = x - side; dx <= endX; dx++)
+                {
+                    sum += img->pixels[dy * w + dx] & 0xFF;
+                }
+            }
+            float m = threshold > 1 ? (sum / (float)(r * r)) - threshold :
+                (sum / (float)(r * r)) * (1.0 - threshold);
+            buf[y * w + x] = (img->pixels[y * w + x] & 0xFF) >= m ?
+                0 : 0xFFFFFF;
+        }
+    }
+
+    memcpy(img->pixels, buf, w * h * sizeof(u32));
+}
+
 void ThresholdImage(Image* image, u8 threshold)
 {
     size_t len = image->width * image->height;
@@ -249,190 +357,4 @@ void ThresholdImage(Image* image, u8 threshold)
         u32 c = image->pixels[i];
         image->pixels[i] = (c & 0xFF) > threshold ? 0 : 0xFFFFFF;
     }
-}
-
-void AdapativeThresholding(Image* img, size_t r, float threshold)
-{
-    // FIXME: Not working as attended
-    ssize_t w = img->width, h = img->height;
-    ssize_t side = r / 2;
-    for (ssize_t y = side; y < h - side; y++)
-    {
-        for (ssize_t x = side; x < w - side; x++)
-        {
-            float sum = 0;
-            ssize_t endX = x + side;
-            ssize_t endY = y + side;
-            for (ssize_t dy = y - side; dy <= endY; dy++)
-            {
-                for (ssize_t dx = x - side; dx <= endX; dx++)
-                {
-                    if (dy >= 0 && dx >= 0 && dy < h && dx < w)
-                        sum += img->pixels[dy * w + dx] & 0xFF;
-                }
-            }
-            float m = (sum / (r * r)) - threshold;
-            img->pixels[y * w + x] = (img->pixels[y * w + x] & 0xFF)
-                >= m ? 0 : 0xFFFFFF;
-        }
-    }
-}
-
-void SobelOperator(const Image* img, u32* out, float* dirs, u32* max_mag)
-{
-    int Iy[9] =
-    {
-        -1, 0, 1,
-        -2, 0, 2,
-        -1, 0, 1,
-    };
-    int Ix[9] =
-    {
-         1,  2,  1,
-         0,  0,  0,
-        -1, -2, -1,
-    };
-    ssize_t w = img->width, h = img->height;
-    *max_mag = 0;
-    for (ssize_t y = 0; y < h; y++)
-    {
-        for (ssize_t x = 0; x < w; x++)
-        {
-            int gx = 0, gy = 0;
-            for (ssize_t dy = -1; dy <= 1; dy++)
-            {
-                for (ssize_t dx = -1; dx <= 1; dx++)
-                {
-                    ssize_t nx = x + dx;
-                    ssize_t ny = y + dy;
-                    if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-                    u8 c = (img->pixels[ny * w + nx] & 0xFF);
-                    gx += c * Ix[(dy + 1) * 3 + dx + 1];
-                    gy += c * Iy[(dy + 1) * 3 + dx + 1];
-                }
-            }
-            u32 mag = sqrt(gx * gx + gy * gy);
-            if (mag > *max_mag) *max_mag = mag;
-            out[y * w + x] = mag;
-            dirs[y * w + x] = atan2(gy, gx);
-        }
-    }
-}
-
-void NonMaximumSuppression(u32* mat, float* dirs, size_t w, size_t h)
-{
-    for (size_t y = 1; y < h - 1; y++)
-    {
-        for (size_t x = 1; x < w - 1; x++)
-        {
-            size_t i = y * w + x;
-            u32 mag = mat[i];
-            char ring_pos = round(dirs[i] / (M_PI / 4));
-            switch (ring_pos)
-            {
-                case 3:
-                case -1: // -PI/4 && -3PI/4
-                    if (mat[(y + 1) * w + (x - 1)] > mag
-                            || mat[(y - 1) * w + (x + 1)] > mag)
-                        mat[i] = 0;
-                    break;
-                case -4:
-                case 4:
-                case 0: // 0 && PI && -PI
-                    if (mat[y * w + (x + 1)] > mag
-                            || mat[y * w + (x - 1)] > mag)
-                        mat[i] = 0;
-                    break;
-                case -3:
-                case 1: // PI/4 & 3PI/4
-                    if (mat[(y - 1) * w + (x - 1)] > mag
-                            || mat[(y + 1) * w + (x + 1)] > mag)
-                        mat[i] = 0;
-                    break;
-                case -2:
-                case 2: // PI/2 && -PI/2
-                    if (mat[(y + 1) * w + x] > mag
-                            || mat[(y - 1) * w + x] > mag)
-                        mat[i] = 0;
-                    break;
-                default:
-                    printf("NonMaximumSuppression::Unrecheable:"
-                           " Unknown ring pos: %hhi\n", ring_pos);
-                    break;
-            }
-        }
-    }
-}
-
-void DoubleThresholding(u32* mat, size_t len, u32 max, float weak_t,
-        float strong_t, u32 weak, u32 strong)
-{
-    u32 high = max * strong_t;
-    u32 low = high * weak_t;
-
-    for (size_t i = 0; i < len; i++)
-    {
-        u8 c = mat[i];
-        mat[i] = (c >= high ? strong : (c >= low ? weak : 0));
-    }
-}
-
-void Hysteresis(u32* mat, size_t w, size_t h, u32 weak, u32 strong)
-{
-    for (size_t y = 1; y < h - 1; y++)
-    {
-        for (size_t x = 1; x < w - 1; x++)
-        {
-            u32 mag = mat[y * w + x];
-            if (mag != weak) continue;
-            u32 new_val = 0;
-            for (size_t d = 0; d < 9; d++)
-            {
-                size_t dx = x + (d % 3) - 1;
-                size_t dy = y + (d / 3) - 1;
-                if (mat[dy * w + dx] == strong)
-                {
-                    new_val = strong;
-                    break;
-                }
-            }
-            mat[y * w + x] = new_val;
-        }
-    }
-}
-
-Image* CannyEdgeDetection(const Image* src)
-{
-    size_t len = src->width * src->height;
-    Image* out = LoadBufImage(src->pixels, src->width, src->height, NULL);
-    if (out == NULL) return NULL;
-
-    PrintStage(1, 2, "Gaussian blur (3x3)", 0);
-    GaussianBlur(out, CANN_KERNEL_5, 3);
-    PrintStage(1, 2, "Gaussian blur (3x3)", 1);
-
-    u32* mat = calloc(len, sizeof(u32));
-    float* dirs = calloc(len, sizeof(float));
-    u32 max = 0;
-
-    PrintStage(2, 3, "Sobel Operator", 0);
-    SobelOperator(out, mat, dirs, &max);
-    PrintStage(2, 3, "Sobel Operator", 1);
-
-    PrintStage(3, 3, "Edge thinning", 0);
-    NonMaximumSuppression(mat, dirs, src->width, src->height);
-    DoubleThresholding(mat, len, max, 0.25, 0.10, 50, 255);
-    Hysteresis(mat, src->width, src->height, 50, 255);
-    PrintStage(3, 3, "Edge thinning", 1);
-
-    // Rendering
-    for (size_t i = 0; i < len; i++)
-    {
-        u8 c = 2 * mat[i] / 3;
-        out->pixels[i] = (c << 16) | (c << 8) | c;
-    }
-
-    free(dirs);
-    free(mat);
-    return out;
 }

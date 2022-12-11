@@ -65,8 +65,11 @@ Test(solver, create) {
 
 Test(solver, boardNotValid, .init = redirect_io) {
     Sudoku* sd = CreateSudoku(TEST_INVALID, 9, 3);
-    cr_assert(ne(i32, IsSudokuValid(sd), 1),
+    InvalidSudokuError* error = NULL;
+    cr_assert(ne(i32, IsSudokuValid(sd, &error), 1),
             "An invalid sudoku was marked valid");
+    cr_assert(ne(ptr, error, NULL));
+    free(error);
     DestroySudoku(sd);
 }
 
@@ -105,8 +108,10 @@ ParameterizedTestParameters(solver, boardValid) {
 
 ParameterizedTest(u8** board, solver, boardValid) {
     Sudoku* sd = CreateSudoku(*board, 9, 3);
-    cr_assert(eq(i32, IsSudokuValid(sd), 1),
+    InvalidSudokuError* error = NULL;
+    cr_assert(eq(i32, IsSudokuValid(sd, &error), 1),
             "A valid board was marked as invalid");
+    cr_assert(eq(ptr, error, NULL));
     DestroySudoku(sd);
 }
 

@@ -36,12 +36,14 @@ typedef struct PSet {
  * Rect or Rectangle is a rectangle formed by two pairs of parallel lines
  * seperated by a 90° angle in hough space (PI). Squareness is a unitless metric
  * to compare rects to squares by dividing the length of the longest side by its
- * shortest.
+ * shortest. Occ is short for occupency and corresponds to the number of pixels
+ * missing from the rect's outline (lower is better).
 */
 typedef struct Rect {
     PSet* ep1;
     PSet* ep2;
     unsigned int area;
+    unsigned int occ;
     float squareness;
 } Rect;
 
@@ -112,6 +114,23 @@ void GetRectFromBB(BBox* bb, int* l, int* t, int* r, int* b);
  * Note that it is safe to pass NULl to x and/or y.
 */
 int LineIntersection(const Line* l1, const Line* l2, int *x, int *y);
+
+
+/*
+ * SortBB(BBox* bb)
+ *
+ * Sorts in-place the provided bounding box so that its points are always in a
+ * specific order:
+ *
+ *   (x1, y1) ------------ (x2, y2)
+ *      |                     |
+ *      |                     |
+ *      |                     |
+ *      |                     |
+ *      |                     |
+ *   (x4, y4) ------------ (x3, y3)
+ */
+void SortBB(BBox* bb);
 
 /* ---------- MEMORY OPERATIONS ---------- */
 
