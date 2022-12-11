@@ -135,7 +135,6 @@ void ShowAboutDialog(GtkButton *button, gpointer user_data)
 
     gtk_window_set_destroy_with_parent(dialog, TRUE);
     gtk_window_set_modal(dialog, TRUE);
-    gtk_window_set_keep_above(dialog, TRUE);
     gtk_widget_show(GTK_WIDGET(dialog));
 }
 

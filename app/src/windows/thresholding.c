@@ -129,6 +129,7 @@ gpointer ThreadDetectGrid(gpointer thr_data) {
     struct DetectGridTask* task = thr_data;
     SudOCRu* app = task->app;
     const Image* img = app->processed_image;
+    app->grid = NULL;
 
     Image* edges = CannyEdgeDetection(app->thresholded_image, app->tmp_buffer);
     if (edges == NULL)
@@ -209,6 +210,5 @@ void ShowThresholding(SudOCRu* app)
     gtk_range_set_value(GTK_RANGE(scale), THRESH_OPTIMAL * 100.0);
 
     gtk_widget_show(GTK_WIDGET(win));
-    gtk_window_set_keep_above(win, TRUE);
 }
 

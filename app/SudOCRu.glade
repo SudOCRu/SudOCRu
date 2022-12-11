@@ -1529,7 +1529,9 @@ Wait few moments</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
-                <property name="label" translatable="yes">Resizing Image</property>
+                <property name="label" translatable="yes">
+Adjust the bounding box
+of the Sudoku grid</property>
                 <property name="justify">center</property>
                 <style>
                   <class name="text"/>
@@ -1548,6 +1550,8 @@ Wait few moments</property>
                   <object class="GtkDrawingArea" id="ResizeArea">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_top">10</property>
+                    <property name="margin_bottom">10</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>

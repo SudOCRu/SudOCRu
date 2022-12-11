@@ -337,5 +337,4 @@ void ShowOCRResults(SudOCRu* app)
     g_list_free(children);
 
     gtk_widget_show(GTK_WIDGET(win));
-    gtk_window_set_keep_above(win, TRUE);
 }

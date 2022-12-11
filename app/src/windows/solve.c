@@ -209,5 +209,4 @@ void ShowSolveResults(SudOCRu* app)
     }
 
     gtk_widget_show(GTK_WIDGET(win));
-    gtk_window_set_keep_above(win, TRUE);
 }
