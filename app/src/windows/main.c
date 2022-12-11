@@ -124,7 +124,7 @@ void ShowImportFileDialog(GtkButton *button, gpointer user_data)
         WaitFor(task);
     }
 
-    g_object_unref(dialog);
+    gtk_native_dialog_destroy(GTK_NATIVE_DIALOG(dialog));
 }
 
 void ShowAboutDialog(GtkButton *button, gpointer user_data)

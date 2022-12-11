@@ -125,8 +125,8 @@ int CleanCell(Image* img, u32* markers)
         return 0;
     }
 
-    // keep all components that are up to 75% smaller than the largest component
-    size_t target = components[largest - 1]->size * 35 / 100;
+    // keep all components that are up to 65% smaller than the largest component
+    size_t target = components[largest - 1]->size * 40 / 100;
     size_t total_size = 0;
     size_t count = 0;
     for (size_t i = 0; i < nb_comp; i++)
@@ -138,12 +138,19 @@ int CleanCell(Image* img, u32* markers)
         }
     }
 
-    // The total number of pixels within the circle must be >10% of the total
+    // The total number of pixels within the circle must be >8.5% of the total
     // area in order to mark this cell as not empty.
     //printf("components: %lu/%lu\n", count, nb_comp);
     //printf("fill rate: %lu (%f%%)\n", total_size,
     //        (total_size / (M_PI * r_squared)) * 100.0f);
-    if ((total_size / (M_PI * r_squared) > 0.10f))
+    if (nb_comp == 2 && (components[0]->size + components[1]->size)
+            / (M_PI * r_squared) > 0.075f)
+    {
+        free(components);
+        return 1;
+    }
+    else if ((components[largest - 1]->size / (M_PI * r_squared) > 0.04f) &&
+            (total_size / (M_PI * r_squared) > 0.075f))
     {
         // Component decimation: remove any component not large enough
         for (size_t y = 0; y < img->height; y++)
