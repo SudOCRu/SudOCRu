@@ -157,10 +157,10 @@ gboolean DoneSolve(gpointer user_data)
         snprintf(msg, sizeof(msg), "%s check failed:\nInvalid cell at index %lu"
                 ", cell %hi is already placed (state: %hi)", type, error_pos,
                 app->sudoku->board[error_pos], flag);
-        ShowErrorMessage(app, "Invalid Sudoku", msg);
+        ShowErrorMessage(app, "OCRCorrection", "Invalid Sudoku", msg);
         free(task->error);
     } else {
-        ShowErrorMessage(app, "Unable to solve sudoku",
+        ShowErrorMessage(app, "OCRCorrection", "Unable to solve sudoku",
                 "No solution were found :(");
     }
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
@@ -220,7 +220,7 @@ gboolean RunSudokuSolver(GtkButton* button, gpointer user_data)
 
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "OCRNextButton")), FALSE);
-    ShowLoadingDialog(app, "SolvingPopup");
+    ShowLoadingDialog(app, "OCRCorrection", "SolvingPopup");
 
     PrintProcedure("Sudoku Solver");
     g_thread_new("sudoku_solver", ThreadSolveSudoku, task);
@@ -312,6 +312,7 @@ void SetupOCRResults(SudOCRu* app)
     g_signal_connect(save, "clicked", G_CALLBACK(SaveOCRResults), app);
     g_signal_connect(next, "clicked", G_CALLBACK(RunSudokuSolver), app);
 
+    gtk_window_set_transient_for(win, main);
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);
 }

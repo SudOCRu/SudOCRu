@@ -20,7 +20,8 @@ gboolean DoneRethreshold(gpointer user_data)
     }
     else
     {
-        ShowErrorMessage(app, "Runtime error", "Unable to threshold image");
+        ShowErrorMessage(app, "ThresholdWindow", "Runtime error",
+                "Unable to threshold image");
     }
     GtkButton* apply =
         GTK_BUTTON(gtk_builder_get_object(app->ui, "ApplyButton"));
@@ -115,7 +116,9 @@ gboolean DoneGridDetection(gpointer user_data)
         ShowGridDetection(app);
     }
     else {
-        ShowErrorMessage(app, "Runtime error", "Unable to detect grid");
+        ShowErrorMessage(app, "ThresholdWindow", "No Sudoku grid found",
+            "No sudoku grid were found in the image!\n"
+            "Try lowering the threshold.");
     }
     gtk_widget_set_sensitive(GTK_WIDGET(gtk_builder_get_object(app->ui,
                  "ApplyButton")), TRUE);
@@ -191,6 +194,7 @@ void SetupThresholding(SudOCRu* app)
     g_signal_connect(apply, "clicked", G_CALLBACK(ApplyThreshold), app);
     g_signal_connect(next, "clicked", G_CALLBACK(RunGridDetection), app);
 
+    gtk_window_set_transient_for(win, main);
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);
 }

@@ -29,8 +29,8 @@ window {
 
 .ErrorButton {
     background-image: none;
-    color: #fe8e06;
-    background-color: #ffedd7;
+    background-color: rgba(255, 0, 0, 0.16);
+    color: #FF0000;
     border-radius: 6px;
     border:none;
     font-size: 14px;
@@ -61,8 +61,8 @@ window {
 
 .ErrorButton:hover {
     background-image: none;
-    color: #fe8e06;
-    background-color: #fedaaf;
+    background-color: rgba(255, 0, 0, 0.32);
+    color: #FF0000;
     border-radius: 6px;
     border:none;
     font-size: 14px;

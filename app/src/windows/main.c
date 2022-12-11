@@ -19,7 +19,8 @@ gboolean DoneProcessing(gpointer user_data)
     } else {
         char code[4];
         snprintf(code, sizeof(code), "E%02i", task->result);
-        ShowErrorMessage(app, (const char*)&code, "Unable to load image");
+        ShowErrorMessage(app, "MainWindow", (const char*)&code,
+                "Unable to load image");
     }
     g_free(task->name);
     free(task);
@@ -88,7 +89,7 @@ gpointer ThreadProcessImage(gpointer thr_data) {
 
 void WaitFor(struct ProcessImageTask* task)
 {
-    ShowLoadingDialog(task->app, "ProcessingPopup");
+    ShowLoadingDialog(task->app, "MainWindow", "ProcessingPopup");
     PrintProcedure("Image Processing");
     g_thread_new("process_image", ThreadProcessImage, task);
 }
@@ -130,9 +131,12 @@ void ShowAboutDialog(GtkButton *button, gpointer user_data)
 {
     UNUSED(button);
     SudOCRu* app = user_data;
+    GtkWindow* win = GTK_WINDOW(gtk_builder_get_object(app->ui,
+                "MainWindow"));
     GtkWindow* dialog = GTK_WINDOW(gtk_builder_get_object(app->ui,
                 "AboutUsPopup"));
 
+    gtk_window_set_transient_for(dialog, win);
     gtk_window_set_destroy_with_parent(dialog, TRUE);
     gtk_window_set_modal(dialog, TRUE);
     gtk_widget_show(GTK_WIDGET(dialog));
@@ -159,4 +163,6 @@ void SetupMainWindow(SudOCRu* app)
     g_signal_connect(G_OBJECT(dialog), 
         "delete-event", G_CALLBACK(hide_window), NULL);
     g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    gtk_window_present(win);
 }

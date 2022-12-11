@@ -44,8 +44,8 @@ void ShowSolveResults(SudOCRu* app);
 /* Helpers */
 gboolean hide_window(GtkWidget *widget, GdkEvent *event, gpointer data);
 void DrawImage(Image* img, GtkImage* to);
-void ShowLoadingDialog(SudOCRu* app, char* name);
-void ShowErrorMessage(SudOCRu* app, const char* error_type,
+void ShowLoadingDialog(SudOCRu* app, const char* parent, const char* name);
+void ShowErrorMessage(SudOCRu* app, const char* parent, const char* error_type,
         const char* error_desc);
 void HideWindow(SudOCRu* app, const char* name);
 

@@ -41,7 +41,8 @@ gboolean DoneOCR(gpointer user_data)
     } else {
         char code[4];
         snprintf(code, sizeof(code), "E%02i", task->result);
-        ShowErrorMessage(app, (const char*)&code, "Unable to extract digits");
+        ShowErrorMessage(app, "ResizingWindow", (const char*)&code,
+                "Unable to extract digits");
     }
     free(task);
     return G_SOURCE_REMOVE;
@@ -77,6 +78,7 @@ gpointer ThreadRunOCR(gpointer thr_data) {
         app->nn = ReadNetwork("bin/ocr_weights.bin");
         if (app->nn == NULL)
         {
+            fprintf(stderr, "Unable to load Neural Network\n");
             task->result = 1;
             gdk_threads_add_idle(DoneOCR, task);
             return NULL;
@@ -113,7 +115,7 @@ gboolean RunOCR(GtkButton* button, gpointer user_data)
     task->app = dbb->app;
     task->dbb = dbb;
 
-    ShowLoadingDialog(task->app, "OCRPopup");
+    ShowLoadingDialog(task->app, "ResizingWindow", "OCRPopup");
 
     PrintProcedure("OCR");
     g_thread_new("run_ocr", ThreadRunOCR, task);
@@ -176,6 +178,7 @@ void SetupGridDetection(SudOCRu* app)
     gtk_widget_add_events(GTK_WIDGET(area), GDK_BUTTON_PRESS_MASK
             | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK);
 
+    gtk_window_set_transient_for(win, main);
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);
 }
@@ -257,6 +260,45 @@ gboolean MouseMove(GtkWidget* widget, GdkEventMotion* event, gpointer user_data)
     }
 }
 
+gboolean ResetDraggableBB(GtkButton* but, gpointer user_data)
+{
+    UNUSED(but);
+    struct DraggableBB* dbb = user_data;
+    SudOCRu* app = dbb->app;
+    GtkDrawingArea* area =
+        GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "ResizeArea"));
+    BBox* bb = app->grid->bounds;
+    BBox sorted = {
+        bb->x1, bb->y1,
+        bb->x2, bb->y2,
+        bb->x3, bb->y3,
+        bb->x4, bb->y4,
+    };
+    SortBB(&sorted);
+
+    dbb->grabbedPoint = 0;
+    dbb->updated = 0;
+    if (app->original_image->height > 800)
+    {
+        dbb->scaledDown = 1;
+        size_t ratio = (app->original_image->height / 800) + 1;
+        dbb->max_width = app->original_image->width / ratio;
+        dbb->max_height = app->original_image->height / ratio;
+        int* arr = (int*) &sorted;
+        for (size_t i = 0; i < 8; i++)
+        {
+            arr[i] /= ratio;
+        }
+    } else {
+        dbb->scaledDown = 0;
+        dbb->max_width = app->original_image->width;
+        dbb->max_height = app->original_image->height;
+    }
+    memcpy(dbb, &sorted, 8 * sizeof(int));
+    gtk_widget_queue_draw(GTK_WIDGET(area));
+    return TRUE;
+}
+
 gboolean DestroyDraggableBB(GtkWidget* widget, gpointer user_data)
 {
     UNUSED(widget);
@@ -280,6 +322,8 @@ void DisconnectArea(struct DraggableBB* dbb)
                 "ResizingWindow"));
     GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "ResizingNextButton"));
+    GtkButton* reset = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                "ResizingResetButton"));
     GtkDrawingArea* area =
         GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "ResizeArea"));
     g_signal_handlers_disconnect_by_func(area, G_CALLBACK(on_draw), dbb);
@@ -287,6 +331,8 @@ void DisconnectArea(struct DraggableBB* dbb)
     g_signal_handlers_disconnect_by_func(area, G_CALLBACK(MouseDown), dbb);
     g_signal_handlers_disconnect_by_func(area, G_CALLBACK(MouseUp), dbb);
     g_signal_handlers_disconnect_by_func(next, G_CALLBACK(RunOCR), dbb);
+    g_signal_handlers_disconnect_by_func(reset,
+            G_CALLBACK(ResetDraggableBB), dbb);
     g_signal_handlers_disconnect_by_func(G_OBJECT(win),
             G_CALLBACK(StopDraggableBB), dbb);
     g_signal_handlers_disconnect_by_func(win,
@@ -302,6 +348,8 @@ void ShowGridDetection(SudOCRu* app)
                 "ResizingImage"));
     GtkButton* next = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "ResizingNextButton"));
+    GtkButton* reset = GTK_BUTTON(gtk_builder_get_object(app->ui,
+                "ResizingResetButton"));
     GtkDrawingArea* area =
         GTK_DRAWING_AREA(gtk_builder_get_object(app->ui, "ResizeArea"));
 
@@ -342,6 +390,7 @@ void ShowGridDetection(SudOCRu* app)
         "delete-event", G_CALLBACK(StopDraggableBB), dbb);
     g_signal_connect(win, "destroy", G_CALLBACK(DestroyDraggableBB), dbb);
     g_signal_connect(next, "clicked", G_CALLBACK(RunOCR), dbb);
+    g_signal_connect(reset, "clicked", G_CALLBACK(ResetDraggableBB), dbb);
     g_signal_connect(area, "draw", G_CALLBACK(on_draw), dbb);
     g_signal_connect(area, "button-press-event", G_CALLBACK(MouseDown), dbb);
     g_signal_connect(area, "button-release-event", G_CALLBACK(MouseUp), dbb);

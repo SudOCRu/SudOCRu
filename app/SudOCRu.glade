@@ -252,6 +252,8 @@ JAMET Kévin</property>
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <property name="title" translatable="yes">SudOCRu</property>
+    <property name="window_position">center-always</property>
+    <property name="gravity">center</property>
     <property name="resizable">False</property>
     <property name="icon">imgs/logo.png</property>
     <child type="titlebar">
@@ -1502,16 +1504,38 @@ Wait few moments</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
+              <object class="GtkButton" id="ResizingResetButton">
+                <property name="label" translatable="yes">Reset</property>
+                <property name="height_request">50</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="valign">start</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
+                <style>
+                  <class name="ClassicButton"/>
+                  <class name="text"/>
+                </style>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="ResizingNextButton">
                 <property name="label" translatable="yes">Next</property>
                 <property name="height_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="valign">center</property>
+                <property name="valign">start</property>
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
-                <property name="margin_top">10</property>
+                <property name="margin_top">80</property>
                 <property name="margin_bottom">10</property>
                 <style>
                   <class name="MainButton"/>
@@ -1768,7 +1792,7 @@ Wait few moments</property>
   </object>
   <object class="GtkWindow" id="ThresholdWindow">
     <property name="can_focus">True</property>
-    <property name="title" translatable="yes">Set Threshold Level</property>
+    <property name="title" translatable="yes">Image Processing Result</property>
     <property name="resizable">False</property>
     <property name="window_position">center-always</property>
     <property name="gravity">center</property>
@@ -1816,7 +1840,8 @@ Wait few moments</property>
                 <property name="valign">center</property>
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
-                <property name="label" translatable="yes">Chose Threshold Level</property>
+                <property name="label" translatable="yes">Adjust Threshold
+</property>
                 <property name="justify">center</property>
                 <style>
                   <class name="text"/>

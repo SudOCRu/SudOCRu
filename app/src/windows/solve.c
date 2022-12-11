@@ -194,6 +194,7 @@ void SetupSolveResults(SudOCRu* app)
 
     gtk_window_set_destroy_with_parent(win, TRUE);
     gtk_window_set_modal(win, TRUE);
+    gtk_window_set_transient_for(win, main);
 }
 
 void ShowSolveResults(SudOCRu* app)
