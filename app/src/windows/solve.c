@@ -49,7 +49,9 @@ Image* ReconstructGrid(SudOCRu* app)
     PrintProcedure("Grid Reconstruction");
 
     PrintStage(1, 2, "Preparing", 0);
-    int size = app->cells[0]->height / 1.6f;
+    size_t cell_width = app->cropped_grid->width / 9;
+    size_t cell_height = app->cropped_grid->height / 9;
+    int size = cell_height / 1.6f;
     TTF_Font* font = TTF_OpenFont("fonts/Lemon-Regular.ttf", size);
     TTF_Font* font_outline = TTF_OpenFont("fonts/Lemon-Regular.ttf", size);
     if (font == NULL || font_outline == NULL)
@@ -85,15 +87,15 @@ Image* ReconstructGrid(SudOCRu* app)
             PrintStage(2, 2, message, 2);
 
             digit_surf = TTF_RenderText_Solid(font, digit, col); 
-            dst.x = cell->x + cell->width / 2 - digit_surf->w / 2;
-            dst.y = cell->y + cell->height / 2 - digit_surf->h / 2;
+            dst.x = cell->x + cell_width / 2 - digit_surf->w / 2;
+            dst.y = cell->y + cell_height / 2 - digit_surf->h / 2;
             dst.w = cell->width;
             dst.h = cell->height;
             SDL_BlitSurface(digit_surf, NULL, surf, &dst);
 
             outline = TTF_RenderText_Solid(font_outline, digit, col_outline); 
-            dst.x = cell->x + cell->width / 2 - outline->w / 2;
-            dst.y = cell->y + cell->height / 2 - outline->h / 2;
+            dst.x = cell->x + cell_width / 2 - outline->w / 2;
+            dst.y = cell->y + cell_height / 2 - outline->h / 2;
             SDL_BlitSurface(outline, NULL, surf, &dst);
 
             SDL_FreeSurface(digit_surf);
