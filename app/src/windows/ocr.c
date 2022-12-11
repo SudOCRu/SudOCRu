@@ -8,6 +8,8 @@ struct CellDetails {
     GtkButton* button;
 };
 
+gboolean CloseEditCell(GtkWidget *widget, GdkEvent *event, gpointer user_data);
+
 gboolean SaveCell(GtkButton* button, gpointer user_data)
 {
     UNUSED(button);
@@ -32,13 +34,16 @@ gboolean SaveCell(GtkButton* button, gpointer user_data)
         }
         gtk_style_context_remove_class(ctx, "error");
         gtk_button_set_label(details->button, digit);
-    } else {
-        gtk_style_context_remove_class(ctx, "colored");
+        gtk_widget_queue_draw(GTK_WIDGET(details->button));
     }
 
+    GtkWindow* dialog = GTK_WINDOW(gtk_builder_get_object(app->ui,
+                "CellModifPopup"));
     GtkButton* save = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "SaveCellButton"));
     g_signal_handlers_disconnect_by_func(save, G_CALLBACK(SaveCell), details);
+    g_signal_handlers_disconnect_by_func(G_OBJECT(dialog),
+            G_CALLBACK(CloseEditCell), details);
     HideWindow(app, "CellModifPopup");
     return TRUE;
 }
@@ -49,9 +54,20 @@ gboolean CloseEditCell(GtkWidget *widget, GdkEvent *event, gpointer user_data)
     UNUSED(event);
     struct CellDetails* details = user_data;
     SudOCRu* app = details->app;
+    GtkWindow* dialog = GTK_WINDOW(gtk_builder_get_object(app->ui,
+                "CellModifPopup"));
     GtkButton* save = GTK_BUTTON(gtk_builder_get_object(app->ui,
                 "SaveCellButton"));
+
     g_signal_handlers_disconnect_by_func(save, G_CALLBACK(SaveCell), details);
+    g_signal_handlers_disconnect_by_func(G_OBJECT(dialog),
+            G_CALLBACK(CloseEditCell), details);
+
+    GtkStyleContext* ctx = gtk_widget_get_style_context(
+            GTK_WIDGET(details->button));
+    gtk_style_context_remove_class(ctx, "error");
+    gtk_widget_queue_draw(GTK_WIDGET(details->button));
+
     HideWindow(app, "CellModifPopup");
     return TRUE;
 }
