@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 
         if (len > 0)
         {
-            u8* tmp = malloc(cells[0]->width * cells[0]->height * sizeof(u8));
+            u32* tmp = malloc(cells[0]->width * cells[0]->height * sizeof(u32));
             char name[18];
             printf("Extracting cell 0/%lu", len);
             for(size_t i = 0; i < len; i++)

@@ -52,14 +52,14 @@ void BinarizeImage(Image* img, u32* tmp, float threshold)
 }
 
 typedef struct Component {
-    u8 id;
+    u32 id;
     size_t size;
 } Component;
 
 #define CheckNeighbour(x, y) (img->pixels[(y) * img->width + (x)] > 0\
         && markers[(y) * img->width + (x)] == 0)
 
-void FindConnectedPixels(Image* img, u8* markers, size_t x, size_t y,
+void FindConnectedPixels(Image* img, u32* markers, size_t x, size_t y,
         Component* comp)
 {
     markers[y * img->width + x] = comp->id;
@@ -78,7 +78,7 @@ void FindConnectedPixels(Image* img, u8* markers, size_t x, size_t y,
         FindConnectedPixels(img, markers, x, y + 1, comp);
 }
 
-int CleanCell(Image* img, u8* markers)
+int CleanCell(Image* img, u32* markers)
 {
     // Apply a circle mask to remove leftover board lines
     float r_squared = pow(min(img->width * 0.33f, img->height * 0.33f), 2);
@@ -97,7 +97,7 @@ int CleanCell(Image* img, u8* markers)
     size_t capacity = 4;
     size_t nb_comp = 0;
     size_t largest = 1;
-    memset(markers, 0, img->width * img->height * sizeof(u8));
+    memset(markers, 0, img->width * img->height * sizeof(u32));
     Component** components = malloc(capacity * sizeof(Component*));
 
     // Find all the connected components in the image and the largest component
@@ -156,7 +156,7 @@ int CleanCell(Image* img, u8* markers)
         {
             for (size_t x = 0; x < img->width; x++)
             {
-                u8 id = markers[y * img->width + x];
+                u32 id = markers[y * img->width + x];
                 if (id > 0 && (components[id - 1]->size >= target))
                 {
                     // use the line below for better visulization
@@ -176,7 +176,7 @@ int CleanCell(Image* img, u8* markers)
     return /*(total_size / (M_PI * r_squared) > 0.05f)*/0;
 }
 
-double* PrepareCell(const Image* cell, const u8* markers) {
+double* PrepareCell(const Image* cell, const u32* markers) {
     size_t min_x = cell->width - 1, min_y = cell->height - 1,
            max_x = 0, max_y = 0;
     // Find the smallest box containg all the components
