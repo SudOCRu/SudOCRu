@@ -180,8 +180,8 @@ void SaveNetwork(NeuralNetwork *network, char *fileName){
     }
     fwrite(&network->layers[network->arrayLayerLength-1]->numNodesOut,
             sizeof(int), 1,file);
-    
-    for (size_t i = 0; i < network->arrayLayerLength; i++){
+
+    for (int i = 0; i < network->arrayLayerLength; i++){
         Layer *layer = network->layers[i];
         double *weights = layer->weights;
         double *biases = layer->biases;
@@ -200,27 +200,43 @@ NeuralNetwork *ReadNetwork(char *fileName){
         return NULL;
     }
     int layerStructureSize;
-    int t = fread(&layerStructureSize, sizeof(int), 1, file);
+    //int t = fread(&layerStructureSize, sizeof(int), 1, file);
+    if (fread(&layerStructureSize, sizeof(int), 1, file) != 1){
+        return NULL;
+    }
     int *layerStructure = calloc(layerStructureSize, sizeof(int));
-    t = fread(layerStructure, sizeof(int), layerStructureSize, file);
+    //t = fread(layerStructure, sizeof(int), layerStructureSize, file);
+    if (fread(layerStructure, sizeof(int), layerStructureSize, file) !=
+            (size_t)layerStructureSize){
+        return NULL;
+    }
     
     NeuralNetwork *network = CreateNeuralNetwork(layerStructure,
             layerStructureSize);
     free(layerStructure);
-    for (size_t i = 0; i < network->arrayLayerLength; i++){
+    for (int i = 0; i < network->arrayLayerLength; i++){
         Layer *layer = network->layers[i];
         double *weights =
             calloc(layer->numNodesIn*layer->numNodesOut, sizeof(double));
         double *biases =
             calloc(layer->numNodesOut, sizeof(double));
-        t = fread(weights, layer->numNodesIn*layer->numNodesOut,
-                sizeof(double), file);
-        t = fread(biases, layer->numNodesOut,
-                sizeof(double), file);
-        for (size_t j = 0; j < layer->numNodesIn*layer->numNodesOut; j++){
+        /*t = fread(weights, layer->numNodesIn*layer->numNodesOut,
+                sizeof(double), file);*/
+        if (fread(weights, sizeof(double), layer->numNodesIn*
+                    layer->numNodesOut, file) != (size_t)layer->numNodesIn*
+                layer->numNodesOut){
+            return NULL;
+        }
+        /*t = fread(biases, layer->numNodesOut,
+                sizeof(double), file);*/
+        if (fread(biases, sizeof(double), layer->numNodesOut, file) !=
+                (size_t)layer->numNodesOut){
+            return NULL;
+        }
+        for (int j = 0; j < layer->numNodesIn*layer->numNodesOut; j++){
             layer->weights[j] = weights[j];
         }
-        for (size_t j = 0; j < layer->numNodesOut; j++){
+        for (int j = 0; j < layer->numNodesOut; j++){
             layer->biases[j] = biases[j];
         }
         free(weights);
