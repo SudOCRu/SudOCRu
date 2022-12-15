@@ -14,6 +14,7 @@ size_t mystrlen(char *s)
 
 int main(int argc, char** argv)
 {
+    puts("Squid game\n\n");
     // ------- Sudoku Man -------
 
     if (argc <= 1){

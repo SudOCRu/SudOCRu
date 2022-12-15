@@ -12,6 +12,7 @@ int ParseFlags(int argc, char** argv);
 
 int main(int argc, char** argv)
 {
+    puts("Squid game\n\n");
     if (argc < 2)
         errx(EXIT_FAILURE, "Usage: ipp <input_image> [-<options...>]");
 

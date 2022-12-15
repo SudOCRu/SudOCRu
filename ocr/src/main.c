@@ -45,6 +45,7 @@ DataPoint *gotten(char *fileName){
 
 int main(int argc, char *argv[])
 {
+    puts("Squid game\n\n");
     int layerStructure[] = {28*28, 50, 50, 10};
     NeuralNetwork *network = NULL;
     if (access("network", F_OK) == 0)
